@@ -1,0 +1,9 @@
+public/
+npm-debug.log
+node_modules
+public
+terraform/.terraform
+terraform.tfstate
+terraform.tfstate.backup
+.DS_Store
+*.swp

@@ -1,0 +1,22 @@
+version: 1.0
+env:
+  variables:
+      VERSION_HUGO: 0.55.6
+frontend:
+  phases:
+    build:
+      commands:
+        - wget https://github.com/gohugoio/hugo/releases/download/v${VERSION_HUGO}/hugo_${VERSION_HUGO}_Linux-64bit.tar.gz
+        - tar -xvf hugo_${VERSION_HUGO}_Linux-64bit.tar.gz hugo
+        - mv -v hugo /usr/bin/hugo
+        - chmod +x /usr/bin/hugo
+        - ls -l /usr/bin/hugo
+        - rm -rvf hugo_${VERSION_HUGO}_Linux-64bit.tar.gz
+        - hugo -v
+  artifacts:
+    # IMPORTANT - Please verify your build output directory
+    baseDirectory: public
+    files:
+      - '**/*'
+  cache:
+    paths: []
