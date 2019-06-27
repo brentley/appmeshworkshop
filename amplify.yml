@@ -7,6 +7,8 @@ frontend:
     build:
       commands:
         - env
+        - export IMAGE_TAG=$(echo ${AWS_COMMIT_ID} | cut -c1-7)
+        - echo "<p class="build-number">${IMAGE_TAG}</p>" >> layouts/partials/menu-footer.html
         - git submodule init && git submodule update
         - wget https://github.com/gohugoio/hugo/releases/download/v${VERSION_HUGO}/hugo_${VERSION_HUGO}_Linux-64bit.tar.gz
         - tar -xvf hugo_${VERSION_HUGO}_Linux-64bit.tar.gz hugo
