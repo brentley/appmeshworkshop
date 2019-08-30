@@ -5,43 +5,8 @@ admin_path:
 webhook_url: 
 sections:
 - type: directory
-  path: content
-  label: Pages
-  create: all
-  match: "*"
-- type: directory
-  path: content/servicemesh_with_istio
-  label: Servicemesh with istio
-  create: all
-  match: "**/*"
-- type: directory
-  path: content/x-ray
-  label: X ray
-  create: all
-  match: "**/*"
-- type: directory
-  path: content/eksctl
-  label: Eksctl
-  create: all
-  match: "**/*"
-- type: directory
-  path: content/deploy
-  label: Deploy
-  create: all
-  match: "**/*"
-- type: directory
-  path: content/tabs-example
-  label: Tabs example
-  create: all
-  match: "**/*"
-- type: directory
-  path: content/cloudformation
-  label: Cloudformation
-  create: all
-  match: "**/*"
-- type: directory
-  path: content/helm_root
-  label: Helm root
+  path: content/introduction
+  label: Introduction
   create: all
   match: "**/*"
 - type: directory
@@ -50,13 +15,8 @@ sections:
   create: all
   match: "**/*"
 - type: directory
-  path: content/cleanup
-  label: Cleanup
-  create: all
-  match: "**/*"
-- type: directory
-  path: content/introduction
-  label: Introduction
+  path: content/deploy
+  label: Deploy
   create: all
   match: "**/*"
 - type: directory
@@ -65,10 +25,25 @@ sections:
   create: all
   match: "**/*"
 - type: directory
+  path: content/x-ray
+  label: X ray
+  create: all
+  match: "**/*"
+- type: directory
+  path: content/cleanup
+  label: Cleanup
+  create: all
+  match: "**/*"
+- type: directory
   path: content/conclusion
   label: Conclusion
   create: all
   match: "**/*"
+- type: directory
+  path: content
+  label: Pages
+  create: all
+  match: "*"
 upload_dir: static
 public_path: "/images"
 front_matter_path: ''
