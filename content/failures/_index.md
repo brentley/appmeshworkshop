@@ -1,7 +1,7 @@
 ---
-title: "Advanced Tracing"
+title: "Handling Failures"
 chapter: true
-weight: 61
+weight: 81
 ---
 
 # Monitoring the Example Microservices
