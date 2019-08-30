@@ -1,7 +1,7 @@
 ---
-title: "Advanced Tracing"
+title: "Monitoring/Logging for Our Services"
 chapter: true
-weight: 61
+weight: 51
 ---
 
 # Monitoring the Example Microservices
