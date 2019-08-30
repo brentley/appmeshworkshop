@@ -20,11 +20,6 @@ sections:
   create: all
   match: "**/*"
 - type: directory
-  path: content/servicemesh_with_appmesh
-  label: Servicemesh with appmesh
-  create: all
-  match: "**/*"
-- type: directory
   path: content/x-ray
   label: X ray
   create: all
