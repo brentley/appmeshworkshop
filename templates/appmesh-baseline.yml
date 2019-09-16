@@ -1,0 +1,791 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: This stack deploys the baseline infrastructure
+             to be used in the App Mesh Workshop.
+
+Mappings:
+
+  SubnetConfig:
+    VPC:
+      CIDR: '10.0.0.0/16'
+    PublicOne:
+      CIDR: '10.0.0.0/24'
+    PublicTwo:
+      CIDR: '10.0.1.0/24'
+    PrivateOne:
+      CIDR: '10.0.2.0/24'
+    PrivateTwo:
+      CIDR: '10.0.3.0/24'
+
+  InstanceMap:
+    us-east-1:
+      AMI: 'ami-0b69ea66ff7391e80'
+    us-east-2:
+      AMI: 'ami-00c03f7f7f2ec15c3'
+    us-west-1:
+      AMI: 'ami-0245d318c6788de52'
+    us-west-2:
+      AMI: 'ami-04b762b4289fba92b'
+
+Resources:
+        
+  Ruby:
+    Type: AWS::ECR::Repository
+
+  NodeJS:
+    Type: AWS::ECR::Repository
+
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub Cluster-${AWS::StackName}
+
+  RubyLogGroup:
+    Type: AWS::Logs::LogGroup
+
+  NodeJSLogGroup:
+    Type: AWS::Logs::LogGroup
+
+  RubyTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Cpu: 256
+      ExecutionRoleArn: !GetAtt ECSServiceRole.Arn
+      Family: !Sub Ruby-Service-${AWS::StackName} 
+      Memory: 512
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !GetAtt ECSTaskRole.Arn
+      ContainerDefinitions:
+        - Name: ruby-service
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Ruby}:latest
+          PortMappings:
+            - ContainerPort: 3000
+              Protocol: http
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref RubyLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: awslogs-ruby-service
+          Essential: true
+
+  NodeJSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties: 
+      Cpu: 256
+      ExecutionRoleArn: !GetAtt ECSServiceRole.Arn
+      Family: !Sub NodeJS-Service-${AWS::StackName} 
+      Memory: 512
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !GetAtt ECSTaskRole.Arn
+      ContainerDefinitions:
+        - Name: nodejs-service
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${NodeJS }:latest
+          PortMappings:
+            - ContainerPort: 3000
+              Protocol: http
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref NodeJSLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: awslogs-nodejs-service
+          Essential: true
+
+  ExternalLoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub SecurityGroup-ExternalLoadBalancer-${AWS::StackName}
+      GroupDescription: Access to the external load balancer
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: 80
+            ToPort: 80
+            CidrIp: 0.0.0.0/0
+
+  ExternalLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub ExtLB-${AWS::StackName}
+      Scheme: internet-facing
+      Type: application
+      SecurityGroups:
+        - !Ref ExternalLoadBalancerSecurityGroup
+      Subnets:
+        - !Ref PublicSubnetOne
+        - !Ref PublicSubnetTwo
+
+  ExternalListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref RubyTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref ExternalLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  RubyTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 3
+      Port: 80
+      Protocol: HTTP
+      VpcId: !Ref VPC
+      TargetType: ip
+
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      CidrBlock: !FindInMap ['SubnetConfig', 'VPC', 'CIDR']
+      Tags:
+        - Key: Name
+          Value: !Sub VPC-${AWS::StackName}
+
+  PublicSubnetOne:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+         Fn::Select:
+         - 0
+         - Fn::GetAZs: {Ref: 'AWS::Region'}
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap ['SubnetConfig', 'PublicOne', 'CIDR']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub PublicOne-${AWS::StackName}
+  PublicSubnetTwo:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+         Fn::Select:
+         - 1
+         - Fn::GetAZs: {Ref: 'AWS::Region'}
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap ['SubnetConfig', 'PublicTwo', 'CIDR']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub PublicTwo-${AWS::StackName}
+
+  PrivateSubnetOne:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+         Fn::Select:
+         - 0
+         - Fn::GetAZs: {Ref: 'AWS::Region'}
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap ['SubnetConfig', 'PrivateOne', 'CIDR']
+      Tags:
+        - Key: Name
+          Value: !Sub PrivateOne-${AWS::StackName}
+  PrivateSubnetTwo:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+         Fn::Select:
+         - 1
+         - Fn::GetAZs: {Ref: 'AWS::Region'}
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap ['SubnetConfig', 'PrivateTwo', 'CIDR']
+      Tags:
+        - Key: Name
+          Value: !Sub PrivateTwo-${AWS::StackName}
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  GatewayAttachement:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachement
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  PublicSubnetOneRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetOne
+      RouteTableId: !Ref PublicRouteTable
+  PublicSubnetTwoRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetTwo
+      RouteTableId: !Ref PublicRouteTable
+
+  NatGatewayOneAttachment:
+    Type: AWS::EC2::EIP
+    DependsOn: GatewayAttachement
+    Properties:
+        Domain: vpc
+  NatGatewayTwoAttachment:
+    Type: AWS::EC2::EIP
+    DependsOn: GatewayAttachement
+    Properties:
+        Domain: vpc
+  NatGatewayOne:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayOneAttachment.AllocationId
+      SubnetId: !Ref PublicSubnetOne
+  NatGatewayTwo:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayTwoAttachment.AllocationId
+      SubnetId: !Ref PublicSubnetTwo
+  PrivateRouteTableOne:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+  PrivateRouteOne:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableOne
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayOne
+  PrivateRouteTableOneAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableOne
+      SubnetId: !Ref PrivateSubnetOne
+  PrivateRouteTableTwo:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+  PrivateRouteTwo:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableTwo
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayTwo
+  PrivateRouteTableTwoAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableTwo
+      SubnetId: !Ref PrivateSubnetTwo
+
+  VPCEndpointSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub SecurityGroup-VPCEndpoint-${AWS::StackName}
+      GroupDescription: Access to the VPC endpoints
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+          - CidrIp: !FindInMap ['SubnetConfig', 'VPC', 'CIDR']
+            IpProtocol: -1
+
+  EC2Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcEndpointType: Interface
+      SubnetIds:
+        - !Ref PrivateSubnetOne
+        - !Ref PrivateSubnetTwo
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroup
+      ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.ec2' ] ]
+      VpcId: !Ref VPC
+
+  ECRAPIEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcEndpointType: Interface
+      SubnetIds:
+        - !Ref PrivateSubnetOne
+        - !Ref PrivateSubnetTwo
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroup
+      ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.ecr.api' ] ]
+      VpcId: !Ref VPC
+
+  ECRDKREndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcEndpointType: Interface
+      SubnetIds:
+        - !Ref PrivateSubnetOne
+        - !Ref PrivateSubnetTwo
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroup
+      ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.ecr.dkr' ] ]
+      VpcId: !Ref VPC
+
+  EnvoyEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcEndpointType: Interface
+      SubnetIds:
+        - !Ref PrivateSubnetOne
+        - !Ref PrivateSubnetTwo
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroup
+      ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.appmesh-envoy-management' ] ]
+      VpcId: !Ref VPC
+
+  CloudWatchEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcEndpointType: Interface
+      SubnetIds:
+        - !Ref PrivateSubnetOne
+        - !Ref PrivateSubnetTwo
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroup
+      ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.logs' ] ]
+      VpcId: !Ref VPC
+
+  ContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub SecurityGroup-Container-${AWS::StackName}
+      GroupDescription: Access to the containers
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+          - CidrIp: !FindInMap ['SubnetConfig', 'VPC', 'CIDR']
+            IpProtocol: -1
+
+  ECSServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ecs.amazonaws.com
+            - ecs-tasks.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: ECSServiceRolePolicy
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+              - 'ec2:AttachNetworkInterface'
+              - 'ec2:CreateNetworkInterface'
+              - 'ec2:CreateNetworkInterfacePermission'
+              - 'ec2:DeleteNetworkInterface'
+              - 'ec2:DeleteNetworkInterfacePermission'
+              - 'ec2:Describe*'
+              - 'ec2:DetachNetworkInterface'
+              - 'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
+              - 'elasticloadbalancing:DeregisterTargets'
+              - 'elasticloadbalancing:Describe*'
+              - 'elasticloadbalancing:RegisterInstancesWithLoadBalancer'
+              - 'elasticloadbalancing:RegisterTargets'
+              - 'iam:PassRole'
+              - 'ecr:GetAuthorizationToken'
+              - 'ecr:BatchCheckLayerAvailability'
+              - 'ecr:GetDownloadUrlForLayer'
+              - 'ecr:BatchGetImage'
+              - 'logs:DescribeLogStreams'
+              - 'logs:CreateLogStream'
+              - 'logs:CreateLogGroup'
+              - 'logs:PutLogEvents'
+            Resource: '*'
+
+  ECSTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - ecs-tasks.amazonaws.com
+          Action: 
+            - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: ECSTaskRolePolicy
+          PolicyDocument:
+            Statement:
+            - Effect: Allow
+              Action:
+                - 'ecr:GetAuthorizationToken'
+                - 'ecr:BatchCheckLayerAvailability'
+                - 'ecr:GetDownloadUrlForLayer'
+                - 'ecr:BatchGetImage'
+                - 'logs:CreateLogStream'
+                - 'logs:CreateLogGroup'
+                - 'logs:PutLogEvents'
+                - 'appmesh:StreamAggregatedResources'
+                - 'xray:PutTraceSegments'
+                - 'xray:PutTelemetryRecords'
+                - 'xray:GetSamplingRules'
+                - 'xray:GetSamplingTargets'
+                - 'xray:GertSamplingStatisticSumaries'
+              Resource: '*'
+  
+  KeyPairHelperLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt KeyPairHelperExecutionRole.Arn
+      Runtime: python3.7
+      Timeout: 30
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+          def handler(event, context):
+            ec2 = boto3.client('ec2')
+            ssm = boto3.client('ssm')
+
+            data = {}
+
+            keyname = event['ResourceProperties']['KeyName']
+            keyid = event['ResourceProperties']['KeyId']
+
+            paramName = '/appmeshworkshop/keypair/{}'.format(keyname)
+
+            try:
+
+              if (event["RequestType"] == 'Delete'):
+                ssm.delete_parameter(Name = paramName)
+                ec2.delete_key_pair(KeyName=keyname)
+                cfnresponse.send(event, context, cfnresponse.SUCCESS, data)
+
+              if (event["RequestType"] == 'Create'):
+                response = ec2.create_key_pair(KeyName=keyname)
+                ssm.put_parameter(
+                  Name = paramName,
+                  Value = response['KeyMaterial'],
+                  Type = 'SecureString',
+                  KeyId = keyid,
+                  Overwrite = True
+                )
+                data['Name'] = keyname
+                cfnresponse.send(event, context, cfnresponse.SUCCESS, data)
+
+            except Exception as e:
+              errorMessage = e.response['Error']['Message']
+              data['Message'] = errorMessage
+              cfnresponse.send(event, context, cfnresponse.FAILED, data)
+
+  KeyPairHelperExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: "/"
+      Policies:
+        - PolicyName: KeyPairHelperExecutionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow 
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - 'ec2:CreateKeyPair'
+                  - 'ec2:DeleteKeyPair'
+                  - 'ssm:PutParameter'
+                  - 'ssm:DeleteParameter'
+                  - 'kms:Encrypt'
+                Resource: "*"
+
+  KMSKey:
+    Type: AWS::KMS::Key
+    Properties:
+      KeyPolicy:
+        Version: "2012-10-17"
+        Id: master-key
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root              
+            Action:
+              - 'kms:Create*'
+              - 'kms:Describe*'
+              - 'kms:Enable*'
+              - 'kms:List*'
+              - 'kms:Put*'
+              - 'kms:Update*'
+              - 'kms:Revoke*'
+              - 'kms:Disable*'
+              - 'kms:Get*'
+              - 'kms:Delete*'
+              - 'kms:TagResource'
+              - 'kms:UntagResource'
+              - 'kms:ScheduleKeyDeletion'
+              - 'kms:CancelKeyDeletion'
+            Resource: "*"
+          - Sid: Allow Use of the Key
+            Effect: Allow
+            Principal:          
+              AWS: 
+                - !GetAtt KeyPairHelperExecutionRole.Arn
+            Action:
+              - 'kms:Encrypt'
+              - 'kms:Decrypt'
+              - 'kms:ReEncrypt*'
+              - 'kms:GenerateDataKey*'
+              - 'kms:DescribeKey'
+            Resource: "*"
+
+  KMSKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: alias/appmeshworkshop
+      TargetKeyId: !Ref KMSKey
+
+  KeyPair:
+    Type: Custom::KeyPairHelperLambda
+    Properties:
+      ServiceToken: !GetAtt KeyPairHelperLambda.Arn
+      KeyName: id_rsa
+      KeyId: !Ref KMSKey
+                      
+  Cloud9Environment:
+    Type: AWS::Cloud9::EnvironmentEC2
+    Properties:
+      Repositories:
+        - RepositoryUrl: https://github.com/brentley/ecsdemo-frontend
+          PathComponent: /ecsdemo-frontend
+        - RepositoryUrl: https://github.com/brentley/ecsdemo-nodejs
+          PathComponent: /ecsdemo-nodejs  
+        - RepositoryUrl: https://github.com/brentley/ecsdemo-crystal
+          PathComponent: /ecsdemo-crystal
+      AutomaticStopTimeMinutes: 30
+      InstanceType: t2.small
+      Name: !Sub Project-${AWS::StackName}
+      SubnetId: !Ref PublicSubnetOne
+
+  EC2InstanceRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action: 
+              - 'sts:AssumeRole'
+        Path: /
+        Policies:
+          - PolicyName: EC2InstanceRolePolicy
+            PolicyDocument:
+              Statement:
+              - Effect: Allow
+                Action:
+                  - 'ecr:GetAuthorizationToken'
+                  - 'ecr:BatchCheckLayerAvailability'
+                  - 'ecr:GetDownloadUrlForLayer'
+                  - 'ecr:BatchGetImage'
+                  - 'logs:CreateLogStream'
+                  - 'logs:CreateLogGroup'
+                  - 'logs:PutLogEvents'
+                  - 'appmesh:StreamAggregatedResources'
+                  - 'xray:PutTraceSegments'
+                  - 'xray:PutTelemetryRecords'
+                  - 'xray:GetSamplingRules'
+                  - 'xray:GetSamplingTargets'
+                  - 'xray:GertSamplingStatisticSumaries'
+                Resource: '*'
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2InstanceRole
+
+  EC2InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Access to the instance
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+          - IpProtocol: tcp
+            SourceSecurityGroupId: !Ref InternalLoadBalancerSecurityGroup
+            FromPort: 3000
+            ToPort: 3000
+          - IpProtocol: tcp
+            CidrIp: !FindInMap ['SubnetConfig', 'VPC', 'CIDR']
+            FromPort: 22
+            ToPort: 22
+
+  CrystalEC2InstanceLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    DependsOn: 
+      - KeyPair
+      - PrivateRouteOne
+      - PrivateRouteTwo
+    Properties:
+      LaunchTemplateName: !Sub Crystal-EC2Instance-LaunchTemplate-${AWS::StackName}
+      LaunchTemplateData:
+        KeyName: !GetAtt KeyPair.Name
+        ImageId: 
+          Fn::FindInMap:
+            - InstanceMap
+            - !Ref AWS::Region
+            - AMI        
+        InstanceType: t2.micro
+        InstanceInitiatedShutdownBehavior: terminate
+        IamInstanceProfile:
+          Arn: !GetAtt InstanceProfile.Arn
+        SecurityGroupIds: 
+          - !Ref EC2InstanceSecurityGroup
+        UserData:
+          Fn::Base64:
+            Fn::Join:
+              - "\n"
+              -
+                - |
+                  #!/bin/bash -ex
+                  exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+
+                  # Setup crystal repository
+                  curl https://dist.crystal-lang.org/rpm/setup.sh | sudo bash
+                  rpm --import https://dist.crystal-lang.org/rpm/RPM-GPG-KEY
+                  
+                  cat > /etc/yum.repos.d/crystal.repo <<EOF
+                  [crystal]
+                  name = Crystal
+                  baseurl = https://dist.crystal-lang.org/rpm/
+                  EOF
+                  
+                  # Install crystal jq git
+                  yum -y install crystal jq git
+
+                  # Install dev libs
+                  yum -y install openssl-devel
+
+                  # Clone the repo and build the app
+                  cd /home/ec2-user
+                  git clone https://github.com/brentley/ecsdemo-crystal.git
+                  cd ecsdemo-crystal
+
+                  export HOME=/home/ec2-user
+                  shards install
+                  crystal build --release src/server.cr
+                  
+                  # Run at boot
+                  sed -i '$ d' startup.sh && echo "./server" >> startup.sh
+                  nohup ./startup.sh &
+                - |
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+            - Key: Name
+              Value: !Sub Crystal-EC2Instance-${AWS::StackName}
+
+  CrystalAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: !Sub Crystal-AutoScalingGroup-${AWS::StackName}
+      HealthCheckGracePeriod: 120
+      DesiredCapacity: 2
+      LaunchTemplate: 
+        LaunchTemplateId: !Ref CrystalEC2InstanceLaunchTemplate
+        Version: !GetAtt CrystalEC2InstanceLaunchTemplate.LatestVersionNumber 
+      MaxSize: 3
+      MinSize: 1
+      TargetGroupARNs: 
+        - !Ref CrystalTargetGroup
+      VPCZoneIdentifier:
+        - !Ref PrivateSubnetOne
+        - !Ref PrivateSubnetTwo
+
+  InternalLoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub SecurityGroup-InternalLoadBalancer-${AWS::StackName}
+      GroupDescription: Access to the internal load balancer
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+          - IpProtocol: tcp
+            CidrIp: !FindInMap ['SubnetConfig', 'VPC', 'CIDR']
+            FromPort: 3000
+            ToPort: 3000
+
+  InternalLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub IntLB-${AWS::StackName}
+      Scheme: internal
+      Type: application
+      SecurityGroups:
+        - !Ref InternalLoadBalancerSecurityGroup
+      Subnets:
+        - !Ref PrivateSubnetOne
+        - !Ref PrivateSubnetTwo
+
+  InternalListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref CrystalTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref InternalLoadBalancer
+      Port: 3000
+      Protocol: HTTP
+
+  CrystalTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /health
+      HealthCheckProtocol: HTTP
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 3
+      Port: 3000
+      Protocol: HTTP
+      VpcId: !Ref VPC
+      TargetType: instance
+
+  HostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties: 
+      HostedZoneConfig: 
+        Comment: !Sub App Mesh Workshop private DNS zone
+      Name:  appmeshworkshop.local
+      VPCs:
+      - VPCId: !Ref VPC
+        VPCRegion: !Ref AWS::Region
+
+  CrystalRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: crystal.appmeshworkshop.local
+      Type: A
+      AliasTarget:
+        HostedZoneId: !GetAtt InternalLoadBalancer.CanonicalHostedZoneID
+        DNSName: !GetAtt InternalLoadBalancer.DNSName
