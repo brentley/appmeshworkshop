@@ -29,7 +29,7 @@ Mappings:
 
 Resources:
         
-  Ruby:
+  Crystal:
     Type: AWS::ECR::Repository
 
   NodeJS:
@@ -40,60 +40,32 @@ Resources:
     Properties:
       ClusterName: !Sub Cluster-${AWS::StackName}
 
-  RubyLogGroup:
+  CrystalLogGroup:
     Type: AWS::Logs::LogGroup
 
-  NodeJSLogGroup:
-    Type: AWS::Logs::LogGroup
-
-  RubyTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Cpu: 256
-      ExecutionRoleArn: !GetAtt ECSServiceRole.Arn
-      Family: !Sub Ruby-Service-${AWS::StackName} 
-      Memory: 512
-      NetworkMode: awsvpc
-      RequiresCompatibilities:
-        - FARGATE
-      TaskRoleArn: !GetAtt ECSTaskRole.Arn
-      ContainerDefinitions:
-        - Name: ruby-service
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Ruby}:latest
-          PortMappings:
-            - ContainerPort: 3000
-              Protocol: http
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref RubyLogGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: awslogs-ruby-service
-          Essential: true
-
-  NodeJSTaskDefinition:
+  CrystalTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties: 
       Cpu: 256
       ExecutionRoleArn: !GetAtt ECSServiceRole.Arn
-      Family: !Sub NodeJS-Service-${AWS::StackName} 
+      Family: !Sub Crystal-Service-${AWS::StackName} 
       Memory: 512
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
       TaskRoleArn: !GetAtt ECSTaskRole.Arn
       ContainerDefinitions:
-        - Name: nodejs-service
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${NodeJS }:latest
+        - Name: crystal-service
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Crystal}:latest
           PortMappings:
             - ContainerPort: 3000
               Protocol: http
           LogConfiguration:
             LogDriver: awslogs
             Options:
-              awslogs-group: !Ref NodeJSLogGroup
+              awslogs-group: !Ref CrystalLogGroup
               awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: awslogs-nodejs-service
+              awslogs-stream-prefix: awslogs-crystal-service
           Essential: true
 
   ExternalLoadBalancerSecurityGroup:
@@ -134,14 +106,14 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckIntervalSeconds: 10
-      HealthCheckPath: /
+      HealthCheckPath: /health
       HealthCheckProtocol: HTTP
       HealthyThresholdCount: 3
       UnhealthyThresholdCount: 3
-      Port: 80
+      Port: 3000
       Protocol: HTTP
       VpcId: !Ref VPC
-      TargetType: ip
+      TargetType: instance
 
   VPC:
     Type: AWS::EC2::VPC
@@ -572,21 +544,6 @@ Resources:
       KeyName: id_rsa
       KeyId: !Ref KMSKey
                       
-  Cloud9Environment:
-    Type: AWS::Cloud9::EnvironmentEC2
-    Properties:
-      Repositories:
-        - RepositoryUrl: https://github.com/brentley/ecsdemo-frontend
-          PathComponent: /ecsdemo-frontend
-        - RepositoryUrl: https://github.com/brentley/ecsdemo-nodejs
-          PathComponent: /ecsdemo-nodejs  
-        - RepositoryUrl: https://github.com/brentley/ecsdemo-crystal
-          PathComponent: /ecsdemo-crystal
-      AutomaticStopTimeMinutes: 30
-      InstanceType: t2.small
-      Name: !Sub Project-${AWS::StackName}
-      SubnetId: !Ref PublicSubnetOne
-
   EC2InstanceRole:
       Type: AWS::IAM::Role
       Properties:
@@ -633,7 +590,7 @@ Resources:
       VpcId: !Ref VPC
       SecurityGroupIngress:
           - IpProtocol: tcp
-            SourceSecurityGroupId: !Ref InternalLoadBalancerSecurityGroup
+            SourceSecurityGroupId: !Ref ExternalLoadBalancerSecurityGroup
             FromPort: 3000
             ToPort: 3000
           - IpProtocol: tcp
@@ -641,14 +598,14 @@ Resources:
             FromPort: 22
             ToPort: 22
 
-  CrystalEC2InstanceLaunchTemplate:
+  RubyEC2InstanceLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     DependsOn: 
       - KeyPair
       - PrivateRouteOne
       - PrivateRouteTwo
     Properties:
-      LaunchTemplateName: !Sub Crystal-EC2Instance-LaunchTemplate-${AWS::StackName}
+      LaunchTemplateName: !Sub Ruby-EC2Instance-LaunchTemplate-${AWS::StackName}
       LaunchTemplateData:
         KeyName: !GetAtt KeyPair.Name
         ImageId: 
@@ -656,7 +613,7 @@ Resources:
             - InstanceMap
             - !Ref AWS::Region
             - AMI        
-        InstanceType: t2.micro
+        InstanceType: t2.medium
         InstanceInitiatedShutdownBehavior: terminate
         IamInstanceProfile:
           Arn: !GetAtt InstanceProfile.Arn
@@ -671,54 +628,54 @@ Resources:
                   #!/bin/bash -ex
                   exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
-                  # Setup crystal repository
-                  curl https://dist.crystal-lang.org/rpm/setup.sh | sudo bash
-                  rpm --import https://dist.crystal-lang.org/rpm/RPM-GPG-KEY
+                  # Install required libs
+                  yum install -y git gcc gcc-c++ make readline-devel openssl-devel sqlite-devel gmp-devel jq
                   
-                  cat > /etc/yum.repos.d/crystal.repo <<EOF
-                  [crystal]
-                  name = Crystal
-                  baseurl = https://dist.crystal-lang.org/rpm/
-                  EOF
-                  
-                  # Install crystal jq git
-                  yum -y install crystal jq git
+                  # Install rbenv
+                  git clone git://github.com/rbenv/rbenv.git /tmp/.rbenv
+                  echo 'export PATH="/tmp/.rbenv/bin:/usr/local/bin:$PATH"' >> /tmp/.bashrc
+                  echo 'eval "$(rbenv init -)"' >> /tmp/.bashrc
+                  source /tmp/.bashrc
 
-                  # Install dev libs
-                  yum -y install openssl-devel
+                  # Install ruby-build
+                  git clone git://github.com/rbenv/ruby-build.git /tmp/ruby-build
+                  cd /tmp/ruby-build
+                  ./install.sh
+
+                  rbenv install 2.5.1 && rbenv global 2.5.1
+
+                  # Install rails and bundler
+                  gem install --force rails bundler
+                  gem update --system
 
                   # Clone the repo and build the app
-                  cd /home/ec2-user
-                  git clone https://github.com/brentley/ecsdemo-crystal.git
-                  cd ecsdemo-crystal
-
-                  export HOME=/home/ec2-user
-                  shards install
-                  crystal build --release src/server.cr
+                  git clone https://github.com/brentley/ecsdemo-frontend.git /tmp/ecsdemo-frontend
+                  cd /tmp/ecsdemo-frontend
+                  bundle install
                   
                   # Run at boot
-                  sed -i '$ d' startup.sh && echo "./server" >> startup.sh
+                  sed -i '$ d' startup.sh && echo 'rails s -e production -b 0.0.0.0' >> startup.sh
                   nohup ./startup.sh &
                 - |
         TagSpecifications:
           - ResourceType: instance
             Tags:
             - Key: Name
-              Value: !Sub Crystal-EC2Instance-${AWS::StackName}
+              Value: !Sub Ruby-EC2Instance-${AWS::StackName}
 
-  CrystalAutoScalingGroup:
+  RubyAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      AutoScalingGroupName: !Sub Crystal-AutoScalingGroup-${AWS::StackName}
-      HealthCheckGracePeriod: 120
+      AutoScalingGroupName: !Sub Ruby-AutoScalingGroup-${AWS::StackName}
+      HealthCheckGracePeriod: 300
       DesiredCapacity: 2
       LaunchTemplate: 
-        LaunchTemplateId: !Ref CrystalEC2InstanceLaunchTemplate
-        Version: !GetAtt CrystalEC2InstanceLaunchTemplate.LatestVersionNumber 
+        LaunchTemplateId: !Ref RubyEC2InstanceLaunchTemplate
+        Version: !GetAtt RubyEC2InstanceLaunchTemplate.LatestVersionNumber 
       MaxSize: 3
       MinSize: 1
       TargetGroupARNs: 
-        - !Ref CrystalTargetGroup
+        - !Ref RubyTargetGroup
       VPCZoneIdentifier:
         - !Ref PrivateSubnetOne
         - !Ref PrivateSubnetTwo
@@ -768,7 +725,7 @@ Resources:
       Port: 3000
       Protocol: HTTP
       VpcId: !Ref VPC
-      TargetType: instance
+      TargetType: ip
 
   HostedZone:
     Type: AWS::Route53::HostedZone
@@ -789,3 +746,31 @@ Resources:
       AliasTarget:
         HostedZoneId: !GetAtt InternalLoadBalancer.CanonicalHostedZoneID
         DNSName: !GetAtt InternalLoadBalancer.DNSName
+
+Outputs:
+  InternalLoadBalancerDNS:
+    Description: The DNS for the internal load balancer
+    Value: !GetAtt InternalLoadBalancer.DNSName
+  ExternalLoadBalancerDNS:
+    Description: The DNS for the external load balancer
+    Value: !GetAtt ExternalLoadBalancer.DNSName    
+  PrivateSubnetOne:
+    Value: !Ref PrivateSubnetOne
+  PrivateSubnetTwo:
+    Value: !Ref PrivateSubnetTwo
+  EcsClusterName:
+    Value: !Ref ECSCluster
+  StackName:
+    Value: !Sub ${AWS::StackName}
+  CrystalTaskDefinition:
+    Value: !Ref CrystalTaskDefinition
+  RubyTargetGroupArn:
+    Value: !Ref RubyTargetGroup
+  CrystalTargetGroupArn:
+    Value: !Ref CrystalTargetGroup
+  ContainerSecurityGroup:
+    Value: !Ref ContainerSecurityGroup
+  CrystalEcrRepo:
+    Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Crystal}
+  NodeJSEcrRepo:
+    Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${NodeJS}
