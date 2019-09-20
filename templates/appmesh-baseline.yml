@@ -501,7 +501,7 @@ Resources:
           - Sid: Enable IAM User Permissions
             Effect: Allow
             Principal:
-              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root              
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
             Action:
               - 'kms:Create*'
               - 'kms:Describe*'
@@ -523,6 +523,8 @@ Resources:
             Principal:          
               AWS: 
                 - !GetAtt KeyPairHelperExecutionRole.Arn
+                - !Sub arn:aws:iam::${AWS::AccountId}:role/appmeshworkshop-admin
+                - !Sub arn:aws:iam::${AWS::AccountId}:role/TeamRole
             Action:
               - 'kms:Encrypt'
               - 'kms:Decrypt'
