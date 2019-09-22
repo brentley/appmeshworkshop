@@ -1,10 +1,10 @@
 ---
-title: "Add Appmesh to Our Services"
+title: "Mesh the Frontend Service"
 chapter: true
 weight: 41
 ---
 
-# Mesh the Example Microservices
+# Mesh the Frontend Ruby Service
 
 ![microservices](/images/crystal.svg)
 {{% children showhidden="false" %}}
