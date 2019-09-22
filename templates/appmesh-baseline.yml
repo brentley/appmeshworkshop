@@ -277,6 +277,20 @@ Resources:
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroup
       ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.ec2' ] ]
+      PrivateDnsEnabled: true
+      VpcId: !Ref VPC
+
+  EC2MessagesEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcEndpointType: Interface
+      SubnetIds:
+        - !Ref PrivateSubnetOne
+        - !Ref PrivateSubnetTwo
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroup
+      ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.ec2messages' ] ]
+      PrivateDnsEnabled: true
       VpcId: !Ref VPC
 
   ECRAPIEndpoint:
@@ -289,6 +303,7 @@ Resources:
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroup
       ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.ecr.api' ] ]
+      PrivateDnsEnabled: true
       VpcId: !Ref VPC
 
   ECRDKREndpoint:
@@ -301,6 +316,7 @@ Resources:
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroup
       ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.ecr.dkr' ] ]
+      PrivateDnsEnabled: true
       VpcId: !Ref VPC
 
   EnvoyEndpoint:
@@ -313,6 +329,7 @@ Resources:
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroup
       ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.appmesh-envoy-management' ] ]
+      PrivateDnsEnabled: true
       VpcId: !Ref VPC
 
   CloudWatchEndpoint:
@@ -325,6 +342,33 @@ Resources:
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroup
       ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.logs' ] ]
+      PrivateDnsEnabled: true
+      VpcId: !Ref VPC
+
+  SSMEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcEndpointType: Interface
+      SubnetIds:
+        - !Ref PrivateSubnetOne
+        - !Ref PrivateSubnetTwo
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroup
+      ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.ssm' ] ]
+      PrivateDnsEnabled: true
+      VpcId: !Ref VPC
+
+  SSMMessagesEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcEndpointType: Interface
+      SubnetIds:
+        - !Ref PrivateSubnetOne
+        - !Ref PrivateSubnetTwo
+      SecurityGroupIds:
+        - !Ref VPCEndpointSecurityGroup
+      ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.ssmmessages' ] ]
+      PrivateDnsEnabled: true
       VpcId: !Ref VPC
 
   ContainerSecurityGroup:
@@ -523,8 +567,7 @@ Resources:
             Principal:          
               AWS: 
                 - !GetAtt KeyPairHelperExecutionRole.Arn
-                - !Sub arn:aws:iam::${AWS::AccountId}:role/appmeshworkshop-admin
-                - !Sub arn:aws:iam::${AWS::AccountId}:role/TeamRole
+                - !Sub arn:aws:iam::${AWS::AccountId}:role/AppMesh-Workshop-Admin
             Action:
               - 'kms:Encrypt'
               - 'kms:Decrypt'
@@ -558,6 +601,8 @@ Resources:
             Action: 
               - 'sts:AssumeRole'
         Path: /
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
         Policies:
           - PolicyName: EC2InstanceRolePolicy
             PolicyDocument:
@@ -577,6 +622,10 @@ Resources:
                   - 'xray:GetSamplingRules'
                   - 'xray:GetSamplingTargets'
                   - 'xray:GertSamplingStatisticSumaries'
+                  - 'servicediscovery:RegisterInstance'
+                  - 'route53:CreateHealthCheck'
+                  - 'route53:ChangeResourceRecordSets'
+                  - 'route53:UpdateHealthCheck'
                 Resource: '*'
 
   InstanceProfile:
@@ -606,6 +655,7 @@ Resources:
       - KeyPair
       - PrivateRouteOne
       - PrivateRouteTwo
+#      - RubyService
     Properties:
       LaunchTemplateName: !Sub Ruby-EC2Instance-LaunchTemplate-${AWS::StackName}
       LaunchTemplateData:
@@ -654,11 +704,21 @@ Resources:
                   git clone https://github.com/brentley/ecsdemo-frontend.git /tmp/ecsdemo-frontend
                   cd /tmp/ecsdemo-frontend
                   bundle install
-                  
+
+                  # Set environment variables for routing
+                  export CRYSTAL_URL='http://crystal.appmeshworkshop.service:3000/crystal'
+                  export NODEJS_URL='http://nodejs.appmeshworkshop.service:3000'
+
                   # Run at boot
                   sed -i '$ d' startup.sh && echo 'rails s -e production -b 0.0.0.0' >> startup.sh
                   nohup ./startup.sh &
-                - |
+
+#                  export AWS_DEFAULT_REGION=$(curl -s  http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
+#                  export INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+#                  export INSTANCE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+                - |                  
+#                - !Join [' ', ['aws servicediscovery register-instance --service-id', !Ref RubyService, '--instance-id $INSTANCE_ID --attributes AWS_INSTANCE_IPV4=$INSTANCE_IP,AWS_INSTANCE_PORT=3000']]
+
         TagSpecifications:
           - ResourceType: instance
             Tags:
@@ -729,25 +789,59 @@ Resources:
       VpcId: !Ref VPC
       TargetType: ip
 
-  HostedZone:
-    Type: AWS::Route53::HostedZone
-    Properties: 
-      HostedZoneConfig: 
-        Comment: !Sub App Mesh Workshop private DNS zone
-      Name:  appmeshworkshop.local
-      VPCs:
-      - VPCId: !Ref VPC
-        VPCRegion: !Ref AWS::Region
-
-  CrystalRecordSet:
-    Type: AWS::Route53::RecordSet
+  Namespace:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
     Properties:
-      HostedZoneId: !Ref HostedZone
-      Name: crystal.appmeshworkshop.local
-      Type: A
-      AliasTarget:
-        HostedZoneId: !GetAtt InternalLoadBalancer.CanonicalHostedZoneID
-        DNSName: !GetAtt InternalLoadBalancer.DNSName
+      Description: App Mesh Workshop private DNS namespace
+      Name: appmeshworkshop.service
+      Vpc: !Ref VPC
+
+  NodeJSService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties: 
+      Description: Discovery service for the NodeJS service
+      DnsConfig:
+        RoutingPolicy: MULTIVALUE
+        DnsRecords:
+          - TTL: 60
+            Type: SRV
+      HealthCheckCustomConfig: 
+        FailureThreshold: 1
+      Name: nodejs
+      NamespaceId: !Ref Namespace
+
+#  RubyService:
+#    Type: AWS::ServiceDiscovery::Service
+#    Properties: 
+#      Description: Discovery service for the Ruby service
+#      DnsConfig:
+#        RoutingPolicy: MULTIVALUE
+#        DnsRecords:
+#          - TTL: 60
+#            Type: SRV
+#      HealthCheckCustomConfig: 
+#        FailureThreshold: 1
+#      Name: frontend
+#      NamespaceId: !Ref Namespace
+
+  CrystalService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties: 
+      Description: Discovery service for the Crystal service
+      DnsConfig:
+        RoutingPolicy: WEIGHTED
+        DnsRecords:
+          - TTL: 60
+            Type: A
+      Name: crystal
+      NamespaceId: !Ref Namespace
+
+  CrystalServiceRegistration:
+    Type: AWS::ServiceDiscovery::Instance
+    Properties: 
+      InstanceAttributes: 
+        AWS_ALIAS_DNS_NAME: !GetAtt InternalLoadBalancer.DNSName
+      ServiceId: !Ref CrystalService
 
 Outputs:
   InternalLoadBalancerDNS:
@@ -776,3 +870,7 @@ Outputs:
     Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Crystal}
   NodeJSEcrRepo:
     Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${NodeJS}
+  NamespaceId:
+    Value: !Ref Namespace
+  RubyAutoScalingGroupName:
+    Value: !Ref RubyAutoScalingGroup

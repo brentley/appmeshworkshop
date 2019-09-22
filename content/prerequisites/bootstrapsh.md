@@ -28,7 +28,7 @@ cat > scripts/bootstrap <<-"EOF"
   echo "Building Docker Containers"
   scripts/build-containers
   echo "Creating the ECS Services"
-  scripts/create-ecs-services
+  scripts/create-ecs-service
 
 EOF
 
@@ -67,7 +67,7 @@ cat > scripts/build-containers <<-"EOF"
 
   $(aws ecr get-login --no-include-email)
 
-  docker build -t frontend-service ecsdemo-frontend
+  docker build -t frontend-service ecsdemo-crystal
   docker tag frontend-service:latest $CRYSTAL_ECR_REPO:latest
   docker push $CRYSTAL_ECR_REPO:latest
 
