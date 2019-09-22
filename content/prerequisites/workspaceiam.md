@@ -51,7 +51,7 @@ aws iam get-instance-profile --instance-profile-name $INSTANCE_PROFILE_NAME --qu
 
 The output assumed-role name should contain:
 ```
-eksworkshop-admin
+AppMesh-Workshop-Admin
 or
 TeamRole
 ```
@@ -64,7 +64,7 @@ If the _Arn_ contains the role name from above and an Instance ID, you may proce
 {
     "Account": "123456789012", 
     "UserId": "AROA1SAMPLEAWSIAMROLE:i-01234567890abcdef", 
-    "Arn": "arn:aws:sts::123456789012:assumed-role/eksworkshop-admin/i-01234567890abcdef"
+    "Arn": "arn:aws:sts::123456789012:assumed-role/AppMesh-Workshop-Admin/i-01234567890abcdef"
 }
 or
 {
