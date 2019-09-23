@@ -1,5 +1,5 @@
 ---
-title: "Create the virtual services"
+title: "Create the virtual service"
 date: 2018-09-18T17:39:30-05:00
 weight: 20
 ---
@@ -11,14 +11,4 @@ Let’s create the virtual services for our application microservices:
 ```
 aws appmesh create-virtual-service --mesh-name AppMesh-Workshop \
                                    --virtual-service-name frontend.appmeshworkshop.service
-```
-
-```
-aws appmesh create-virtual-service --mesh-name AppMesh-Workshop \
-                                   --virtual-service-name crystal.appmeshworkshop.service
-```
-
-```
-aws appmesh create-virtual-service --mesh-name AppMesh-Workshop \
-                                   --virtual-service-name nodejs.appmeshworkshop.service
 ```

@@ -41,7 +41,7 @@ mainSteps:
         - export AWS_DEFAULT_REGION=$(curl -s  http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
         - INSTANCE_ID=$(curl http://169.254.169.254/latest/meta-data/instance-id);
         - INSTANCE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4);
-        - aws servicediscovery register-instance --service-id {{serviceid}} --instance-id $INSTANCE_ID --attributes AWS_INSTANCE_IPV4=$INSTANCE_IP,AWS_INSTANCE_PORT=3000
+        - aws servicediscovery register-instance --service-id {{serviceid}} --instance-id $INSTANCE_ID --attributes AWS_INSTANCE_IPV4=$INSTANCE_IP,AWS_INSTANCE_PORT=3000,VERSION=1
 ```
 
 * Call the SSM API to create the document
@@ -61,5 +61,12 @@ aws ssm create-association \
       --name AppMesh-Workshop-RegisterInstance \
       --targets "Key=tag:aws:autoscaling:groupName,Values=$AUTOSCALING_GROUP" \
       --schedule-expression "cron(0 0/30 * 1/1 * ? *)" \
+      --max-errors 0 \
+      --max-concurrency 50% \
       --parameters "serviceid={serviceid}"
+```
+
+* Query if instances were correctly registered
+```
+aws servicediscovery discover-instances --namespace-name appmeshworkshop.service --service-name frontend --query-parameters VERSION=1
 ```
