@@ -11,5 +11,5 @@ Throughout this workshop we will use App Mesh, to gain consistent visibility and
 Let's start creating the service mesh. A service mesh is a logical boundary for network traffic between the services that reside within it.
 
 ```
-aws appmesh create-mesh --mesh-name AppMesh-Workshop
+aws appmesh create-mesh --mesh-name AppMesh-Workshop --spec egressFilter={type=ALLOW_ALL}
 ```
