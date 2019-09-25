@@ -1,7 +1,7 @@
 ---
-title: "Deploy Frontend Service"
+title: "Install the envoy proxy"
 date: 2018-09-18T17:40:09-05:00
-weight: 30
+weight: 25
 ---
 
 Let’s bring up the Ruby Frontend!
