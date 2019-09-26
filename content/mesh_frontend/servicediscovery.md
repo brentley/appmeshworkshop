@@ -13,18 +13,18 @@ We will be using **AWS Cloud Map** to discover our resources. In some way, our b
 ```
 NAMESPACE_ID=$(jq < cfn-output.json -r '.NamespaceId'); \
 aws servicediscovery create-service \
-      --name frontend \
+      --name frontend23 \
       --namespace-id $NAMESPACE_ID \
       --description 'Discovery service for the frontend service' \
       --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=SRV,TTL=60}]' \
-      --health-check-custom-config 'FailureThreshold=1'
+      --health-check-custom-config FailureThreshold=1
 ```
 
 {{% notice note %}}
 Check the json output, and write down the value of the **Id** that AWS Cloud Map assigned to the service you just created.
 {{% /notice %}}
 
-* We will use **Systems Manager State Manager** to configure the EC2 instances that serve the frontend microservice. State Manager uses documents to specify configuration. Create a YAML file in your Cloud9 environment named **configure-instance.yml** with the following content:
+* We will use **Systems Manager State Manager** to configure the EC2 instances that serve the frontend microservice. EC2 instances will register themsleves in Cloud Map on startup and deregister on terminaton. State Manager uses documents to specify configuration. Create a YAML file in your Cloud9 environment named **configure-instance.yml** with the following content:
 ```
 ---
 schemaVersion: '2.2'
@@ -112,5 +112,8 @@ aws ssm create-association \
 
 * Query if instances were correctly registered
 ```
-aws servicediscovery discover-instances --namespace-name appmeshworkshop.service --service-name frontend --query-parameters VERSION=1
+aws servicediscovery discover-instances \
+      --namespace-name appmeshworkshop.service \
+      --service-name frontend \
+      --query-parameters VERSION=1
 ```

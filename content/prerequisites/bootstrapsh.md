@@ -21,13 +21,13 @@ cat > scripts/bootstrap <<-"EOF"
 
   #! /bin/bash -ex
 
-  echo "Installing tools"
+  echo 'Installing tools'
   scripts/install-tools
-  echo "Fetching CloudFormation outputs"
+  echo 'Fetching CloudFormation outputs'
   scripts/fetch-outputs
-  echo "Building Docker Containers"
+  echo 'Building Docker Containers'
   scripts/build-containers
-  echo "Creating the ECS Services"
+  echo 'Creating the ECS Services'
   scripts/create-ecs-service
 
 EOF
@@ -53,7 +53,8 @@ cat > scripts/fetch-outputs <<-"EOF"
   #! /bin/bash -ex
 
   STACK_NAME="$(echo $C9_PROJECT | sed 's/^Project-//')"
-  aws cloudformation describe-stacks --stack-name "$STACK_NAME" | jq -r '[.Stacks[0].Outputs[] | {key: .OutputKey, value: .OutputValue}] | from_entries' > cfn-output.json
+  aws cloudformation describe-stacks \
+    --stack-name "$STACK_NAME" | jq -r '[.Stacks[0].Outputs[] | {key: .OutputKey, value: .OutputValue}] | from_entries' > cfn-output.json
 
 EOF
 
@@ -95,7 +96,7 @@ cat > scripts/create-ecs-service <<-"EOF"
     --task-definition $TASK_DEF \
     --load-balancer targetGroupArn=$TARGET_GROUP,containerName=crystal-service,containerPort=3000 \
     --desired-count 2 \
-    --launch-type "FARGATE" \
+    --launch-type FARGATE \
     --network-configuration \
         "awsvpcConfiguration={
           subnets=[$SUBNET_ONE,$SUBNET_TWO],
