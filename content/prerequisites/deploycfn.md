@@ -11,7 +11,10 @@ curl https://raw.githubusercontent.com/brentley/appmeshworkshop/master/templates
 
 #### Deploy the CloudFormation stack:
 ```
-aws cloudformation deploy --template-file appmesh-baseline.yml --stack-name AppMesh-Workshop --capabilities CAPABILITY_IAM 
+aws cloudformation deploy \
+  --template-file appmesh-baseline.yml \
+  --stack-name AppMesh-Workshop \
+  --capabilities CAPABILITY_IAM 
 ```
 
 The CloudFormation template will launch the following:
