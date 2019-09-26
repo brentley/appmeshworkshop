@@ -13,7 +13,7 @@ We will be using **AWS Cloud Map** to discover our resources. In some way, our b
 ```
 NAMESPACE_ID=$(jq < cfn-output.json -r '.NamespaceId'); \
 aws servicediscovery create-service \
-      --name frontend23 \
+      --name frontend \
       --namespace-id $NAMESPACE_ID \
       --description 'Discovery service for the frontend service' \
       --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=SRV,TTL=60}]' \
