@@ -9,14 +9,15 @@ A virtual service is an abstraction of a real service that is provided by a virt
 * Start by creating the virtual node
 
 ```
-EXT_LOAD_BALANCER=$(jq < cfn-output.json -r '.ExternalLoadBalancerDNS');
 SPEC=$(cat <<-EOF
-    { 
-      "serviceDiscovery": {
-        "dns": { 
-          "hostname": "$EXT_LOAD_BALANCER"
-        }
-      },
+    { 
+      "serviceDiscovery": {
+        "awsCloudMap": { 
+          "attributes": [ { "key": "VERSION", "value": "1" } ],
+          "namespaceName": "appmeshworkshop.pvt.local",
+          "serviceName": "crystal"
+        }
+      },
       "logging": {
         "accessLog": {
           "file": {
@@ -34,7 +35,7 @@ EOF
 ); \
 aws appmesh create-virtual-node \
       --mesh-name AppMesh-Workshop \
-      --virtual-node-name frontend-v1 \
+      --virtual-node-name crystal-v2 \
       --spec "$SPEC"
 ```
 
@@ -53,6 +54,6 @@ EOF
 ); \
 aws appmesh create-virtual-service \
       --mesh-name AppMesh-Workshop \
-      --virtual-service-name frontend.appmeshworkshop.hosted.local \
+      --virtual-service-name crystal.appmeshworkshop.hosted.local \
       --spec "$SPEC"
 ```
