@@ -707,18 +707,14 @@ Resources:
                   bundle install
 
                   # Set environment variables for routing
-                  export CRYSTAL_URL='http://crystal.appmeshworkshop.service:3000/crystal'
-                  export NODEJS_URL='http://nodejs.appmeshworkshop.service:3000'
+                  export CRYSTAL_URL='http://crystal.appmeshworkshop.hosted.local:3000/crystal'
+                  export NODEJS_URL='http://nodejs.appmeshworkshop.pvt.local:3000'
 
                   # Run at boot
                   sed -i '$ d' startup.sh && echo 'rails s -e production -b 0.0.0.0' >> startup.sh
                   nohup ./startup.sh &
-
-#                  export AWS_DEFAULT_REGION=$(curl -s  http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
-#                  export INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-#                  export INSTANCE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
+                  
                 - |                  
-#                - !Join [' ', ['aws servicediscovery register-instance --service-id', !Ref RubyService, '--instance-id $INSTANCE_ID --attributes AWS_INSTANCE_IPV4=$INSTANCE_IP,AWS_INSTANCE_PORT=3000']]
 
         TagSpecifications:
           - ResourceType: instance
@@ -790,11 +786,33 @@ Resources:
       VpcId: !Ref VPC
       TargetType: ip
 
+  DnsHostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: appmeshworkshop.hosted.local
+      HostedZoneConfig:
+        Comment: Private hosted zone
+      VPCs:
+        - VPCId: !Ref VPC
+          VPCRegion: !Ref AWS::Region
+
+  CrystalRecordSet:
+    Type: AWS::Route53::RecordSet
+    DependsOn:
+      - InternalLoadBalancer
+    Properties:
+      AliasTarget:
+        HostedZoneId: !GetAtt InternalLoadBalancer.CanonicalHostedZoneID
+        DNSName: !GetAtt InternalLoadBalancer.DNSName
+      HostedZoneId: !Ref DnsHostedZone
+      Name: crystal.appmeshworkshop.hosted.local
+      Type: A
+          
   Namespace:
     Type: AWS::ServiceDiscovery::PrivateDnsNamespace
     Properties:
       Description: App Mesh Workshop private DNS namespace
-      Name: appmeshworkshop.service
+      Name: appmeshworkshop.pvt.local
       Vpc: !Ref VPC
 
   NodeJSService:
@@ -810,39 +828,6 @@ Resources:
         FailureThreshold: 1
       Name: nodejs
       NamespaceId: !Ref Namespace
-
-#  RubyService:
-#    Type: AWS::ServiceDiscovery::Service
-#    Properties: 
-#      Description: Discovery service for the Ruby service
-#      DnsConfig:
-#        RoutingPolicy: MULTIVALUE
-#        DnsRecords:
-#          - TTL: 60
-#            Type: SRV
-#      HealthCheckCustomConfig: 
-#        FailureThreshold: 1
-#      Name: frontend
-#      NamespaceId: !Ref Namespace
-
-  CrystalService:
-    Type: AWS::ServiceDiscovery::Service
-    Properties: 
-      Description: Discovery service for the Crystal service
-      DnsConfig:
-        RoutingPolicy: WEIGHTED
-        DnsRecords:
-          - TTL: 60
-            Type: A
-      Name: crystal
-      NamespaceId: !Ref Namespace
-
-  CrystalServiceRegistration:
-    Type: AWS::ServiceDiscovery::Instance
-    Properties: 
-      InstanceAttributes: 
-        AWS_ALIAS_DNS_NAME: !GetAtt InternalLoadBalancer.DNSName
-      ServiceId: !Ref CrystalService
 
 Outputs:
   InternalLoadBalancerDNS:
