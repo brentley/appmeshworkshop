@@ -8,7 +8,7 @@ It is time to install the envoy proxy on our EC2 instances. We will use **Sys
 
 * Create a file named **configure-instance.yml** in your Cloud9 environment, and copy/paste the following content:
 
-```
+```yaml
 ---
 schemaVersion: '2.2'
 description: Configure instances
@@ -48,7 +48,7 @@ mainSteps:
 ```
 
 * Call the SSM API to create the document
-```
+```bash
 aws ssm create-document \
       --name AppMesh-Workshop-ConfigureInstance \
       --document-format YAML \
@@ -58,7 +58,7 @@ aws ssm create-document \
 
 * Create an association using State Manager. An association is a binding of the intent (described in the document) to a target specified by either a list of instance IDs or a tag query. Use the following command to create an association. Note that you are specifying a tag query in the target parameter and using the Frontend Auto Scaling group name. **Replace {serviceid} with the service id you wrote down previousy**.
 
-```
+```bash
 AUTOSCALING_GROUP=$(jq < cfn-output.json -r '.RubyAutoScalingGroupName'); \
 aws ssm create-association \
       --name AppMesh-Workshop-ConfigureInstance \

@@ -12,7 +12,7 @@ The following bootstrap scripts will do the following:
  - Create the ECS services
 
 #### Create the bootstrap scripts
-```
+```bash
 cd ~/environment
 mkdir scripts
 
@@ -109,7 +109,7 @@ chmod +x scripts/*
 ```
 
 #### Run them!
-```
+```bash
 cd ~/environment
 scripts/bootstrap
 ```

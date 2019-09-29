@@ -8,16 +8,15 @@ A virtual service is an abstraction of a real service that is provided by a virt
 
 * Start by creating the virtual node
 
-```
+```bash
+INT_LOAD_BALANCER=$(jq < cfn-output.json -r '.InternalLoadBalancerDNS');
 SPEC=$(cat <<-EOF
-    { 
-      "serviceDiscovery": {
-        "awsCloudMap": { 
-          "attributes": [ { "key": "VERSION", "value": "1" } ],
-          "namespaceName": "appmeshworkshop.pvt.local",
-          "serviceName": "crystal"
-        }
-      },
+    { 
+      "serviceDiscovery": {
+        "dns": { 
+          "hostname": "$INT_LOAD_BALANCER"
+        }
+      },
       "logging": {
         "accessLog": {
           "file": {
@@ -35,18 +34,18 @@ EOF
 ); \
 aws appmesh create-virtual-node \
       --mesh-name AppMesh-Workshop \
-      --virtual-node-name crystal-v2 \
+      --virtual-node-name crystal-v1 \
       --spec "$SPEC"
 ```
 
 * Now, we are ready to create the virtual service
 
-```
+```bash
 SPEC=$(cat <<-EOF
     { 
       "provider": {
         "virtualNode": { 
-          "virtualNodeName": "frontend-v1"
+          "virtualNodeName": "crystal-v1"
         }
       }
     }

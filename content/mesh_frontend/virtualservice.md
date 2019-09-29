@@ -8,7 +8,7 @@ A virtual service is an abstraction of a real service that is provided by a virt
 
 * Start by creating the virtual node
 
-```
+```bash
 EXT_LOAD_BALANCER=$(jq < cfn-output.json -r '.ExternalLoadBalancerDNS');
 SPEC=$(cat <<-EOF
     { 
@@ -40,7 +40,7 @@ aws appmesh create-virtual-node \
 
 * Now, we are ready to create the virtual service
 
-```
+```bash
 SPEC=$(cat <<-EOF
     { 
       "provider": {
