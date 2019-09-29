@@ -1,7 +1,7 @@
 ---
 title: "Advanced Tracing"
 chapter: true
-weight: 61
+weight: 35
 ---
 
 # Monitoring the Example Microservices

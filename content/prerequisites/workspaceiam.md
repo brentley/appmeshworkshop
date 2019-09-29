@@ -17,12 +17,14 @@ the EKS IAM authentication, so we will disable it and rely on the IAM role inste
 
 To ensure temporary credentials aren't already in place we will also remove
 any existing credentials file:
-```
+
+```bash
 rm -vf ${HOME}/.aws/credentials
 ```
 
 We should configure our aws cli with our current region as default:
-```
+
+```bash
 export ACCOUNT_ID=$(aws sts get-caller-identity --output text --query Account)
 export AWS_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
 
@@ -36,9 +38,8 @@ aws configure get default.region
 
 Use the [GetCallerIdentity](https://docs.aws.amazon.com/cli/latest/reference/sts/get-caller-identity.html) CLI command to validate that the Cloud9 IDE is using the correct IAM role.
 
-```
+```bash
 aws sts get-caller-identity
-
 ```
 
 <!--
@@ -50,6 +51,7 @@ aws iam get-instance-profile --instance-profile-name $INSTANCE_PROFILE_NAME --qu
 -->
 
 The output assumed-role name should contain:
+
 ```
 AppMesh-Workshop-Admin
 or

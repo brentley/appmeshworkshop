@@ -1,25 +1,58 @@
 ---
-title: "Add service discovery"
+title: "Enable service discovery"
 date: 2018-09-18T17:39:30-05:00
-weight: 10
+weight: 30
 ---
 
-App Mesh supports microservice applications that use service discovery naming for their components. 
+A virtual service is an abstraction of a real service that is provided by a virtual node in the mesh. Virtual nodes act as a logical pointer to a particular task group, such as an EC2 Auto Scaling Group, an Amazon ECS service or a Kubernetes deployment.
 
-We will be using **AWS Cloud Map** to discover new versions of our Crystal backend service, instead of using an Application Load Balancer. Cloud Map enables you to name your application resources with custom names, and it automatically updates the locations of these dynamically changing resources. 
+* Start by creating the virtual node
 
-* Let's create a service in Cloud Map for our crystal microservice
-
+```bash
+SPEC=$(cat <<-EOF
+    { 
+      "serviceDiscovery": {
+        "awsCloudMap": { 
+          "namespaceName": "appmeshworkshop.hosted.local",
+          "serviceName": "crystal"
+        }
+      },
+      "logging": {
+        "accessLog": {
+          "file": {
+            "path": "/dev/stdout"
+          }
+        }
+      },      
+      "listeners": [
+        {
+          "portMapping": { "port": 3000, "protocol": "http" }
+        }
+      ]
+    }
+EOF
+); \
+aws appmesh create-virtual-node \
+      --mesh-name AppMesh-Workshop \
+      --virtual-node-name crystal-v1 \
+      --spec "$SPEC"
 ```
-NAMESPACE_ID=$(jq < cfn-output.json -r '.NamespaceId'); \
-aws servicediscovery create-service \
-      --name crystal \
-      --namespace-id $NAMESPACE_ID \
-      --description 'Discovery service for the crystal service' \
-      --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=SRV,TTL=60}]' \
-      --health-check-custom-config FailureThreshold=1
-```
 
-{{% notice note %}}
-Check the json output, and write down the value of the **Id** that AWS Cloud Map assigned to the service you just created.
-{{% /notice %}}
+* Now, we are ready to create the virtual service
+
+```bash
+SPEC=$(cat <<-EOF
+    { 
+      "provider": {
+        "virtualNode": { 
+          "virtualNodeName": "crystal-v1"
+        }
+      }
+    }
+EOF
+); \
+aws appmesh create-virtual-service \
+      --mesh-name AppMesh-Workshop \
+      --virtual-service-name crystal.appmeshworkshop.hosted.local \
+      --spec "$SPEC"
+```

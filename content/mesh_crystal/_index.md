@@ -1,7 +1,7 @@
 ---
 title: "Mesh the Crystal Service"
 chapter: true
-weight: 51
+weight: 15
 ---
 
 # Mesh the Backend Crystal Service

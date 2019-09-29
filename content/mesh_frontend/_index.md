@@ -1,7 +1,7 @@
 ---
 title: "Mesh the Frontend Service"
 chapter: true
-weight: 41
+weight: 20
 ---
 
 # Mesh the Frontend Ruby Service

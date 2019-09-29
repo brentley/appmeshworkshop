@@ -1,7 +1,7 @@
 ---
-title: "Monitoring/Logging for Our Services"
+title: "Monitoring & Logging"
 chapter: true
-weight: 51
+weight: 30
 ---
 
 # Monitoring the Example Microservices

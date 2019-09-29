@@ -5,12 +5,12 @@ weight: 21
 ---
 
 #### Download the CloudFormation template:
-```
+```bash
 curl https://raw.githubusercontent.com/brentley/appmeshworkshop/master/templates/appmesh-baseline.yml -o appmesh-baseline.yml
 ```
 
 #### Deploy the CloudFormation stack:
-```
+```bash
 aws cloudformation deploy \
   --template-file appmesh-baseline.yml \
   --stack-name AppMesh-Workshop \
