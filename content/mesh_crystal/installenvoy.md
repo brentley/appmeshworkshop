@@ -70,3 +70,14 @@ echo $TASK_DEF_NEW > /tmp/$TASK_DEF_FAMILY.json &&
 aws ecs register-task-definition \
       --cli-input-json file:///tmp/$TASK_DEF_FAMILY.json
 ```
+
+* Update the service
+
+```bash
+CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
+TASK_DEF_ARN=$(jq < cfn-output.json -r '.CrystalTaskDefinition');
+aws ecs update-service \
+      --cluster $CLUSTER_NAME \
+      --service CrystalService \
+      --task-definition "$(echo $TASK_DEF_ARN | awk -F: '{$7=$7+1}1' OFS=:)"
+```
