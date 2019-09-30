@@ -4,8 +4,6 @@ date: 2018-09-18T17:39:30-05:00
 weight: 5
 ---
 
-**AWS Cloud Map** is a cloud resource discovery service. Cloud Map enables you to name your application resources with custom names, and it automatically updates the locations of these dynamically changing resources.
-
 The following SSM Document, lets you register / deregister EC2 instances belonging to an Auto Scaling Group in Cloud Map service using servicetl.
 
 Create a YAML file named **configure-cloudmap.yml** and copy/paste the following content:
