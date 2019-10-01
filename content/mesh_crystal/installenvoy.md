@@ -55,9 +55,9 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
           "type": "APPMESH",
           "containerName": "envoy",
           "properties": [
-            { "name": "IgnoredUID", "value": "1390"},
-            { "name": "ProxyIngressPort", "value": "1500"},
-            { "name": "ProxyEgressPort", "value": "1501"},
+            { "name": "IgnoredUID", "value": "1337"},
+            { "name": "ProxyIngressPort", "value": "15000"},
+            { "name": "ProxyEgressPort", "value": "15001"},
             { "name": "AppPorts", "value": "3000"},
             { "name": "EgressIgnoredIPs", "value": "169.254.170.2,169.254.169.254"}
           ]
