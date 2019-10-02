@@ -12,18 +12,20 @@ Mappings:
       CIDR: '10.0.0.0/24'
     PublicTwo:
       CIDR: '10.0.1.0/24'
-    PrivateOne:
+    PublicThree:
       CIDR: '10.0.2.0/24'
-    PrivateTwo:
+    PrivateOne:
       CIDR: '10.0.3.0/24'
+    PrivateTwo:
+      CIDR: '10.0.4.0/24'
+    PrivateThree:
+      CIDR: '10.0.5.0/24'
 
   InstanceMap:
     us-east-1:
       AMI: 'ami-0b69ea66ff7391e80'
     us-east-2:
       AMI: 'ami-00c03f7f7f2ec15c3'
-    us-west-1:
-      AMI: 'ami-0245d318c6788de52'
     us-west-2:
       AMI: 'ami-04b762b4289fba92b'
 
@@ -91,6 +93,7 @@ Resources:
       Subnets:
         - !Ref PublicSubnetOne
         - !Ref PublicSubnetTwo
+        - !Ref PublicSubnetThree
 
   ExternalListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -151,6 +154,19 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub PublicTwo-${AWS::StackName}
+  PublicSubnetThree:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+         Fn::Select:
+         - 2
+         - Fn::GetAZs: {Ref: 'AWS::Region'}
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap ['SubnetConfig', 'PublicThree', 'CIDR']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub PublicThree-${AWS::StackName}
 
   PrivateSubnetOne:
     Type: AWS::EC2::Subnet
@@ -176,6 +192,18 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub PrivateTwo-${AWS::StackName}
+  PrivateSubnetThree:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone:
+         Fn::Select:
+         - 2
+         - Fn::GetAZs: {Ref: 'AWS::Region'}
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap ['SubnetConfig', 'PrivateThree', 'CIDR']
+      Tags:
+        - Key: Name
+          Value: !Sub PrivateThree-${AWS::StackName}
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -205,6 +233,11 @@ Resources:
     Properties:
       SubnetId: !Ref PublicSubnetTwo
       RouteTableId: !Ref PublicRouteTable
+  PublicSubnetThreeRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetThree
+      RouteTableId: !Ref PublicRouteTable
 
   NatGatewayOneAttachment:
     Type: AWS::EC2::EIP
@@ -212,6 +245,11 @@ Resources:
     Properties:
         Domain: vpc
   NatGatewayTwoAttachment:
+    Type: AWS::EC2::EIP
+    DependsOn: GatewayAttachement
+    Properties:
+        Domain: vpc
+  NatGatewayThreeAttachment:
     Type: AWS::EC2::EIP
     DependsOn: GatewayAttachement
     Properties:
@@ -226,6 +264,11 @@ Resources:
     Properties:
       AllocationId: !GetAtt NatGatewayTwoAttachment.AllocationId
       SubnetId: !Ref PublicSubnetTwo
+  NatGatewayThree:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayThreeAttachment.AllocationId
+      SubnetId: !Ref PublicSubnetThree
   PrivateRouteTableOne:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -256,6 +299,21 @@ Resources:
     Properties:
       RouteTableId: !Ref PrivateRouteTableTwo
       SubnetId: !Ref PrivateSubnetTwo
+  PrivateRouteTableThree:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+  PrivateRouteThree:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableThree
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayThree
+  PrivateRouteTableTwoAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableThree
+      SubnetId: !Ref PrivateSubnetThree
 
   VPCEndpointSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -274,6 +332,7 @@ Resources:
       SubnetIds:
         - !Ref PrivateSubnetOne
         - !Ref PrivateSubnetTwo
+        - !Ref PrivateSubnetThree
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroup
       ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.ec2' ] ]
@@ -287,6 +346,7 @@ Resources:
       SubnetIds:
         - !Ref PrivateSubnetOne
         - !Ref PrivateSubnetTwo
+        - !Ref PrivateSubnetThree
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroup
       ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.ec2messages' ] ]
@@ -300,6 +360,7 @@ Resources:
       SubnetIds:
         - !Ref PrivateSubnetOne
         - !Ref PrivateSubnetTwo
+        - !Ref PrivateSubnetThree
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroup
       ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.ecr.api' ] ]
@@ -313,6 +374,7 @@ Resources:
       SubnetIds:
         - !Ref PrivateSubnetOne
         - !Ref PrivateSubnetTwo
+        - !Ref PrivateSubnetThree
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroup
       ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.ecr.dkr' ] ]
@@ -326,6 +388,7 @@ Resources:
       SubnetIds:
         - !Ref PrivateSubnetOne
         - !Ref PrivateSubnetTwo
+        - !Ref PrivateSubnetThree
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroup
       ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.appmesh-envoy-management' ] ]
@@ -339,6 +402,7 @@ Resources:
       SubnetIds:
         - !Ref PrivateSubnetOne
         - !Ref PrivateSubnetTwo
+        - !Ref PrivateSubnetThree
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroup
       ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.logs' ] ]
@@ -352,6 +416,7 @@ Resources:
       SubnetIds:
         - !Ref PrivateSubnetOne
         - !Ref PrivateSubnetTwo
+        - !Ref PrivateSubnetThree
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroup
       ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.ssm' ] ]
@@ -365,6 +430,7 @@ Resources:
       SubnetIds:
         - !Ref PrivateSubnetOne
         - !Ref PrivateSubnetTwo
+        - !Ref PrivateSubnetThree
       SecurityGroupIds:
         - !Ref VPCEndpointSecurityGroup
       ServiceName: !Join [ '', [ 'com.amazonaws.', { 'Ref': 'AWS::Region' }, '.ssmmessages' ] ]
@@ -656,6 +722,7 @@ Resources:
       - KeyPair
       - PrivateRouteOne
       - PrivateRouteTwo
+      - PrivateRouteThree
 #      - RubyService
     Properties:
       LaunchTemplateName: !Sub Ruby-EC2Instance-LaunchTemplate-${AWS::StackName}
@@ -727,17 +794,18 @@ Resources:
     Properties:
       AutoScalingGroupName: !Sub Ruby-AutoScalingGroup-${AWS::StackName}
       HealthCheckGracePeriod: 300
-      DesiredCapacity: 2
+      DesiredCapacity: 3
       LaunchTemplate: 
         LaunchTemplateId: !Ref RubyEC2InstanceLaunchTemplate
         Version: !GetAtt RubyEC2InstanceLaunchTemplate.LatestVersionNumber 
       MaxSize: 3
-      MinSize: 1
+      MinSize: 3
       TargetGroupARNs: 
         - !Ref RubyTargetGroup
       VPCZoneIdentifier:
         - !Ref PrivateSubnetOne
         - !Ref PrivateSubnetTwo
+        - !Ref PrivateSubnetThree
 
   InternalLoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -762,6 +830,7 @@ Resources:
       Subnets:
         - !Ref PrivateSubnetOne
         - !Ref PrivateSubnetTwo
+        - !Ref PrivateSubnetThree
 
   InternalListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -840,6 +909,8 @@ Outputs:
     Value: !Ref PrivateSubnetOne
   PrivateSubnetTwo:
     Value: !Ref PrivateSubnetTwo
+  PrivateSubnetThree:
+    Value: !Ref PrivateSubnetThree
   EcsClusterName:
     Value: !Ref ECSCluster
   StackName:
