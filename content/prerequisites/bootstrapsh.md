@@ -88,6 +88,7 @@ cat > scripts/create-ecs-service <<-"EOF"
   TARGET_GROUP=$(jq < cfn-output.json -r '.CrystalTargetGroupArn')
   SUBNET_ONE=$(jq < cfn-output.json -r '.PrivateSubnetOne')
   SUBNET_TWO=$(jq < cfn-output.json -r '.PrivateSubnetTwo')
+  SUBNET_THREE=$(jq < cfn-output.json -r '.PrivateSubnetThree')
   SECURITY_GROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup')
 
   aws ecs create-service \
@@ -99,7 +100,7 @@ cat > scripts/create-ecs-service <<-"EOF"
     --launch-type FARGATE \
     --network-configuration \
         "awsvpcConfiguration={
-          subnets=[$SUBNET_ONE,$SUBNET_TWO],
+          subnets=[$SUBNET_ONE,$SUBNET_TWO,$SUBNET_THREE],
           securityGroups=[$SECURITY_GROUP],
           assignPublicIp=DISABLED}"
 
