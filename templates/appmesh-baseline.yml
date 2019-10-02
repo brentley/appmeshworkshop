@@ -309,7 +309,7 @@ Resources:
       RouteTableId: !Ref PrivateRouteTableThree
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref NatGatewayThree
-  PrivateRouteTableTwoAssociation:
+  PrivateRouteTableThreeAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref PrivateRouteTableThree
