@@ -12,6 +12,6 @@ Let's start creating the service mesh. A service mesh is a logical boundary for 
 
 ```bash
 aws appmesh create-mesh \
-  --mesh-name AppMesh-Workshop \
+  --mesh-name appmesh-workshop \
   --spec egressFilter={type=DROP_ALL}
 ```

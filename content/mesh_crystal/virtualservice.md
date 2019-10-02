@@ -33,7 +33,7 @@ SPEC=$(cat <<-EOF
 EOF
 ); \
 aws appmesh create-virtual-node \
-      --mesh-name AppMesh-Workshop \
+      --mesh-name appmesh-workshop \
       --virtual-node-name crystal-v1 \
       --spec "$SPEC"
 ```
@@ -52,7 +52,7 @@ SPEC=$(cat <<-EOF
 EOF
 ); \
 aws appmesh create-virtual-service \
-      --mesh-name AppMesh-Workshop \
+      --mesh-name appmesh-workshop \
       --virtual-service-name crystal.appmeshworkshop.hosted.local \
       --spec "$SPEC"
 ```

@@ -14,14 +14,19 @@ The Crystal backend service operates behind an internal (dedicated) load balance
 * Let's create a new service
 
 ```bash
-CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
-TASK_DEF_ARN=$(jq < cfn-output.json -r '.CrystalTaskDefinition');
+CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName')
+TASK_DEF_ARN=$(jq < cfn-output.json -r '.CrystalTaskDefinition')
+PRIVSUB1=$(jq < cfn-output.json -r '.PrivateSubnetOne')
+PRIVSUB2=$(jq < cfn-output.json -r '.PrivateSubnetTwo')
+PRIVSUB3=$(jq < cfn-output.json -r '.PrivateSubnetThree')
+SECGROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup')
 aws ecs create-service \
-      --cluster $CLUSTER_NAME \
-      --service CrystalService-SD \
-      --task-definition "$(echo $TASK_DEF_ARN | awk -F: '{$7=$7+1}1' OFS=:)" \
-      --desired-count 2 \
-      --platform-version LATEST \
-      --service-registries
-
+  --cluster $CLUSTER_NAME \
+  --service-name CrystalService-SD \
+  --task-definition "$(echo $TASK_DEF_ARN | awk -F: '{$7=$7+1}1' OFS=:)" \
+  --desired-count 3 \
+  --platform-version LATEST \
+  --service-registries \
+  --launch-type FARGATE \
+  --network-configuration "awsvpcConfiguration={subnets=[$PRIVSUB1,$PRIVSUB2,$PRIVSUB3],securityGroups=[$SECGROUP],assignPublicIp=DISABLED}"
 ```
