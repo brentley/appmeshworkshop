@@ -13,7 +13,7 @@ curl https://raw.githubusercontent.com/brentley/appmeshworkshop/master/templates
 ```bash
 aws cloudformation deploy \
   --template-file appmesh-baseline.yml \
-  --stack-name AppMesh-Workshop \
+  --stack-name appmesh-workshop \
   --capabilities CAPABILITY_IAM 
 ```
 

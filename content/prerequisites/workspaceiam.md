@@ -54,8 +54,6 @@ The output assumed-role name should contain:
 
 ```
 AppMesh-Workshop-Admin
-or
-TeamRole
 ```
 
 #### VALID
@@ -68,17 +66,11 @@ If the _Arn_ contains the role name from above and an Instance ID, you may proce
     "UserId": "AROA1SAMPLEAWSIAMROLE:i-01234567890abcdef", 
     "Arn": "arn:aws:sts::123456789012:assumed-role/AppMesh-Workshop-Admin/i-01234567890abcdef"
 }
-or
-{
-    "Account": "123456789012", 
-    "UserId": "AROA1SAMPLEAWSIAMROLE:i-01234567890abcdef", 
-    "Arn": "arn:aws:sts::123456789012:assumed-role/TeamRole/i-01234567890abcdef"
-}
 ```
 
 #### INVALID
 
-If the _Arn contains anything other than `TeamRole`, `MasterRole`, or does not match the role name output above, <span style="color: red;">**DO NOT PROCEED**</span>. Go back and confirm the steps on this page.
+If the _Arn_ contains `TeamRole`, `MasterRole`, or does not match the role name output above, <span style="color: red;">**DO NOT PROCEED**</span>. Go back and confirm the steps on this page.
 
 ```output
 {

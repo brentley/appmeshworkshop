@@ -22,13 +22,13 @@ cat > scripts/bootstrap <<-"EOF"
   #! /bin/bash -ex
 
   echo 'Installing tools'
-  scripts/install-tools
+  ~/environment/scripts/install-tools
   echo 'Fetching CloudFormation outputs'
-  scripts/fetch-outputs
+  ~/environment/scripts/fetch-outputs
   echo 'Building Docker Containers'
-  scripts/build-containers
+  ~/environment/scripts/build-containers
   echo 'Creating the ECS Services'
-  scripts/create-ecs-service
+  ~/environment/scripts/create-ecs-service
 
 EOF
 
@@ -38,9 +38,14 @@ cat > scripts/install-tools <<-"EOF"
   #! /bin/bash -ex
 
   sudo yum install -y jq gettext
+
   sudo curl --silent --location -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.13.7/bin/linux/amd64/kubectl
   sudo chmod +x /usr/local/bin/kubectl
-  if ! [ -x "$(command -v jq)" ] || ! [ -x "$(command -v envsubst)" ] || ! [ -x "$(command -v kubectl)" ]; then
+
+  curl --silent --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+  sudo mv -v /tmp/eksctl /usr/local/bin
+
+  if ! [ -x "$(command -v jq)" ] || ! [ -x "$(command -v envsubst)" ] || ! [ -x "$(command -v kubectl)" ] || ! [ -x "$(command -v eksctl)" ]; then
     echo 'ERROR: tools not installed.' >&2
     exit 1
   fi
@@ -52,9 +57,31 @@ cat > scripts/fetch-outputs <<-"EOF"
 
   #! /bin/bash -ex
 
-  STACK_NAME="$(echo $C9_PROJECT | sed 's/^Project-//')"
+  STACK_NAME="$(echo $C9_PROJECT | sed 's/^Project-//' | tr 'A-Z' 'a-z')"
   aws cloudformation describe-stacks \
     --stack-name "$STACK_NAME" | jq -r '[.Stacks[0].Outputs[] | {key: .OutputKey, value: .OutputValue}] | from_entries' > cfn-output.json
+
+EOF
+
+# build eks script
+cat > scripts/build-eks <<-"EOF"
+
+  #! /bin/bash -ex
+
+  if ! aws sts get-caller-identity --query Arn | \
+    grep -q 'assumed-role/AppMesh-Workshop-Admin/i-'
+  then
+    echo "Your role is not set correctly for this instance"
+    exit 1
+  fi
+
+  STACK_NAME="$(echo $C9_PROJECT | sed 's/^Project-//' | tr 'A-Z' 'a-z')"
+  PRIVSUB1=$(jq < cfn-output.json -r '.PrivateSubnetOne')
+  PRIVSUB2=$(jq < cfn-output.json -r '.PrivateSubnetTwo')
+  PRIVSUB3=$(jq < cfn-output.json -r '.PrivateSubnetThree')
+  echo eksctl create cluster -n $STACK_NAME \
+    --vpc-private-subnets $PRIVSUB1,$PRIVSUB2,$PRIVSUB3 \
+    --nodes 3
 
 EOF
 
