@@ -130,7 +130,7 @@ aws ecs create-service \
   --service-name CrystalService \
   --task-definition $TASK_DEF \
   --load-balancer targetGroupArn=$TARGET_GROUP,containerName=crystal-service,containerPort=3000 \
-  --desired-count 2 \
+  --desired-count 3 \
   --launch-type FARGATE \
   --network-configuration \
       "awsvpcConfiguration={
