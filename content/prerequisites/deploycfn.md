@@ -6,7 +6,9 @@ weight: 21
 
 #### Download the CloudFormation template:
 ```bash
-curl https://raw.githubusercontent.com/brentley/appmeshworkshop/master/templates/appmesh-baseline.yml -o appmesh-baseline.yml
+cd ~/environment
+
+curl -s https://raw.githubusercontent.com/brentley/appmeshworkshop/master/templates/appmesh-baseline.yml -o appmesh-baseline.yml
 ```
 
 #### Deploy the CloudFormation stack:
