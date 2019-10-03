@@ -141,6 +141,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub PublicOne-${AWS::StackName}
+        - Key: kubernetes.io/role/elb
+          Value: 1
   PublicSubnetTwo:
     Type: AWS::EC2::Subnet
     Properties:
@@ -154,6 +156,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub PublicTwo-${AWS::StackName}
+        - Key: kubernetes.io/role/elb
+          Value: 1
   PublicSubnetThree:
     Type: AWS::EC2::Subnet
     Properties:
@@ -167,6 +171,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub PublicThree-${AWS::StackName}
+        - Key: kubernetes.io/role/elb
+          Value: 1
 
   PrivateSubnetOne:
     Type: AWS::EC2::Subnet
@@ -180,6 +186,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub PrivateOne-${AWS::StackName}
+        - Key: kubernetes.io/role/internal-elb
+          Value: 1
   PrivateSubnetTwo:
     Type: AWS::EC2::Subnet
     Properties:
@@ -192,6 +200,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub PrivateTwo-${AWS::StackName}
+        - Key: kubernetes.io/role/internal-elb
+          Value: 1
   PrivateSubnetThree:
     Type: AWS::EC2::Subnet
     Properties:
@@ -204,6 +214,8 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub PrivateThree-${AWS::StackName}
+        - Key: kubernetes.io/role/internal-elb
+          Value: 1
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -931,3 +943,4 @@ Outputs:
     Value: !Ref Namespace
   RubyAutoScalingGroupName:
     Value: !Ref RubyAutoScalingGroup
+
