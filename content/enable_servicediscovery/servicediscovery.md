@@ -1,7 +1,7 @@
 ---
-title: "Enable service discovery"
+title: "Create a new Crystal service"
 date: 2018-09-18T17:39:30-05:00
-weight: 30
+weight: 10
 ---
 
 **AWS Cloud Map** is a cloud resource discovery service. Cloud Map enables you to name your application resources with custom names, and it automatically updates the locations of these dynamically changing resources.

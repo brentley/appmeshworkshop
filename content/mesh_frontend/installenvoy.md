@@ -19,8 +19,6 @@ parameters:
         type: String
       vNodeName:
         type: String         
-      serviceId:
-        type: String
 mainSteps:
 - action: aws:configureDocker
       name: configureDocker
@@ -37,12 +35,6 @@ mainSteps:
               --env AWS_SECRET_ACCESS_KEY=$aws_access_secret_key \
               --env AWS_SESSION_TOKEN=$aws_session_token \
               --env APPMESH_VIRTUAL_NODE_NAME=mesh/{{meshName}}/virtualNode/{{vNodeName}} \
-              --env ENABLE_ENVOY_XRAY_TRACING=1  \
-              --log-driver=awslogs \
-              --log-opt awslogs-region={{region}} \
-              --log-opt awslogs-group=/ec2/{{meshName}} \
-              --log-opt awslogs-create-group=true \
-              --log-opt tag="envoy/{{.FullID}}"  \
               -u 1337 --network host \ 
               111345817488.dkr.ecr.{{region}}.amazonaws.com/aws-appmesh-envoy:v1.11.1.1-prod
 ```
