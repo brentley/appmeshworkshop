@@ -1,7 +1,7 @@
 ---
 title: "Create an IAM role for your workspace"
 chapter: false
-weight: 25
+weight: 13
 ---
 
 
