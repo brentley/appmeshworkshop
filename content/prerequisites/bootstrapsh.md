@@ -39,6 +39,8 @@ cat > scripts/install-tools <<-"EOF"
 
 sudo yum install -y jq gettext
 
+sudo wget -O /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/2.4.0/yq_linux_amd65
+sudo chmod +x /usr/local/bin/yq
 sudo curl --silent --location -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.13.7/bin/linux/amd64/kubectl
 sudo chmod +x /usr/local/bin/kubectl
 
