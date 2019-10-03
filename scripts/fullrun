@@ -1,0 +1,306 @@
+#!/bin/bash
+
+download_cf_template() {
+  cd ~/environment
+  curl -s https://raw.githubusercontent.com/brentley/appmeshworkshop/master/templates/appmesh-baseline.yml -o appmesh-baseline.yml
+}
+
+deploy_cf_template() {
+  cd ~/environment
+  aws cloudformation deploy \
+  --template-file appmesh-baseline.yml \
+  --stack-name appmesh-workshop \
+  --capabilities CAPABILITY_IAM 
+}
+
+create_scripts() {
+  cd ~/environment
+  mkdir scripts
+
+  # bootstrap script
+  cat > scripts/bootstrap <<-"EOF"
+
+  #!/bin/bash -ex
+
+  echo 'Installing tools'
+  ~/environment/scripts/install-tools
+  echo 'Fetching CloudFormation outputs'
+  ~/environment/scripts/fetch-outputs
+  echo 'Building Docker Containers'
+  ~/environment/scripts/build-containers
+  echo 'Creating the ECS Services'
+  ~/environment/scripts/create-ecs-service
+
+EOF
+
+  # tools script
+  cat > scripts/install-tools <<-"EOF"
+
+  #!/bin/bash -ex
+
+  sudo yum install -y jq gettext
+
+  sudo curl --silent --location -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.13.7/bin/linux/amd64/kubectl
+  sudo chmod +x /usr/local/bin/kubectl
+
+  curl --silent --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+  sudo mv -v /tmp/eksctl /usr/local/bin
+
+  if ! [ -x "$(command -v jq)" ] || ! [ -x "$(command -v envsubst)" ] || ! [ -x "$(command -v kubectl)" ] || ! [ -x "$(command -v eksctl)" ]; then
+    echo 'ERROR: tools not installed.' >&2
+    exit 1
+  fi
+
+EOF
+
+  # fetch-outputs script
+  cat > scripts/fetch-outputs <<-"EOF"
+
+  #!/bin/bash -ex
+
+  STACK_NAME="$(echo $C9_PROJECT | sed 's/^Project-//' | tr 'A-Z' 'a-z')"
+  aws cloudformation describe-stacks \
+    --stack-name "$STACK_NAME" | jq -r '[.Stacks[0].Outputs[] | {key: .OutputKey, value: .OutputValue}] | from_entries' > cfn-output.json
+
+EOF
+
+  # build eks script
+  cat > scripts/build-eks <<-"EOF"
+
+  
+  #!/bin/bash
+
+  set -ex
+
+  if ! aws sts get-caller-identity --query Arn | \
+    grep -q 'assumed-role/AppMesh-Workshop-Admin/i-'
+  then
+    echo "Your role is not set correctly for this instance"
+    exit 1
+  fi
+
+  ~/environment/scripts/fetch-outputs
+
+  STACK_NAME="$(echo $C9_PROJECT | sed 's/^Project-//' | tr 'A-Z' 'a-z')"
+  PRIVSUB1=$(jq < cfn-output.json -r '.PrivateSubnetOne')
+  PRIVSUB2=$(jq < cfn-output.json -r '.PrivateSubnetTwo')
+  PRIVSUB3=$(jq < cfn-output.json -r '.PrivateSubnetThree')
+  eksctl create cluster -n $STACK_NAME \
+    --vpc-private-subnets $PRIVSUB1,$PRIVSUB2,$PRIVSUB3 \
+    --node-private-networking \
+    --ssh-access \
+    --nodes 3
+
+EOF
+
+  # build-containers script
+  cat > scripts/build-containers <<-"EOF"
+
+  #!/bin/bash -ex
+
+  CRYSTAL_ECR_REPO=$(jq < cfn-output.json -r '.CrystalEcrRepo')
+  NODEJS_ECR_REPO=$(jq < cfn-output.json -r '.NodeJSEcrRepo')
+
+  $(aws ecr get-login --no-include-email)
+
+  docker build -t frontend-service ecsdemo-crystal
+  docker tag frontend-service:latest $CRYSTAL_ECR_REPO:latest
+  docker push $CRYSTAL_ECR_REPO:latest
+
+  docker build -t nodejs-service ecsdemo-nodejs
+  docker tag nodejs-service:latest $NODEJS_ECR_REPO:latest
+  docker push $NODEJS_ECR_REPO:latest
+
+EOF
+
+  # create-ecs-service script
+  cat > scripts/create-ecs-service <<-"EOF"
+
+  #!/bin/bash -ex
+
+  CLUSTER=$(jq < cfn-output.json -r '.EcsClusterName')
+  TASK_DEF=$(jq < cfn-output.json -r '.CrystalTaskDefinition')
+  TARGET_GROUP=$(jq < cfn-output.json -r '.CrystalTargetGroupArn')
+  SUBNET_ONE=$(jq < cfn-output.json -r '.PrivateSubnetOne')
+  SUBNET_TWO=$(jq < cfn-output.json -r '.PrivateSubnetTwo')
+  SUBNET_THREE=$(jq < cfn-output.json -r '.PrivateSubnetThree')
+  SECURITY_GROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup')
+
+  aws ecs create-service \
+    --cluster $CLUSTER \
+    --service-name CrystalService \
+    --task-definition $TASK_DEF \
+    --load-balancer targetGroupArn=$TARGET_GROUP,containerName=crystal-service,containerPort=3000 \
+    --desired-count 3 \
+    --launch-type FARGATE \
+    --network-configuration \
+        "awsvpcConfiguration={
+          subnets=[$SUBNET_ONE,$SUBNET_TWO,$SUBNET_THREE],
+          securityGroups=[$SECURITY_GROUP],
+          assignPublicIp=DISABLED}"
+
+EOF
+
+  chmod +x scripts/*
+}
+
+run_scripts() {
+  cd ~/environment
+  scripts/bootstrap
+}
+
+retrieve_key() {
+  # Retrieve private key
+  aws ssm get-parameter \
+    --name /appmeshworkshop/keypair/id_rsa \
+    --with-decryption | jq .Parameter.Value --raw-output > ~/.ssh/id_rsa
+
+  # Set appropriate permission on private key
+  chmod 600 ~/.ssh/id_rsa
+
+  # Store public key separately from private key
+  ssh-keygen -y -f ~/.ssh/id_rsa > ~/.ssh/id_rsa.pub
+}
+
+build_eks() {
+  cd ~/environment
+  scripts/build-eks
+}
+
+create_mesh() {
+  aws appmesh create-mesh \
+    --mesh-name appmesh-workshop \
+    --spec egressFilter={type=DROP_ALL}
+}
+
+create_virtual_node() {
+  INT_LOAD_BALANCER=$(jq < cfn-output.json -r '.InternalLoadBalancerDNS');
+  SPEC=$(cat <<-EOF
+      { 
+        "serviceDiscovery": {
+          "dns": { 
+            "hostname": "$INT_LOAD_BALANCER"
+          }
+        },
+        "logging": {
+          "accessLog": {
+            "file": {
+              "path": "/dev/stdout"
+            }
+          }
+        },      
+        "listeners": [
+          {
+            "portMapping": { "port": 3000, "protocol": "http" }
+          }
+        ]
+      }
+EOF
+  ); \
+  aws appmesh create-virtual-node \
+        --mesh-name appmesh-workshop \
+        --virtual-node-name crystal-v1 \
+        --spec "$SPEC"
+}
+
+create_virtual_service() {
+  SPEC=$(cat <<-EOF
+    { 
+      "provider": {
+        "virtualNode": { 
+          "virtualNodeName": "crystal-v1"
+        }
+      }
+    }
+EOF
+  ); \
+  aws appmesh create-virtual-service \
+        --mesh-name appmesh-workshop \
+        --virtual-service-name crystal.appmeshworkshop.hosted.local \
+        --spec "$SPEC"
+}
+
+add_envoy_sidecar() {
+  ENVOY_REGISTRY="111345817488.dkr.ecr.$AWS_REGION.amazonaws.com";
+  TASK_DEF_ARN=$(jq < cfn-output.json -r '.CrystalTaskDefinition');
+  TASK_DEF_OLD=$(aws ecs describe-task-definition --task-definition $TASK_DEF_ARN);
+  TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
+    | jq ' .taskDefinition' \
+    | jq --arg ENVOY_REGISTRY $ENVOY_REGISTRY '.containerDefinitions += 
+        [
+          {
+            "environment": [
+              {
+                "name": "APPMESH_VIRTUAL_NODE_NAME",
+                "value": "mesh/appmesh-workshop/virtualNode/crystal-v1"
+              }
+            ],
+            "image": ($ENVOY_REGISTRY + "/aws-appmesh-envoy:v1.11.1.1-prod"),
+            "healthCheck": {
+              "retries": 3,
+              "command": [
+                "CMD-SHELL",
+                "curl -s http://localhost:9901/server_info | grep state | grep -q LIVE"
+              ],
+              "timeout": 2,
+              "interval": 5,
+              "startPeriod": 10
+            },
+            "essential": true,
+            "user": "1337",
+            "name": "envoy"
+          }
+        ]' \
+    | jq ' .containerDefinitions[0] +=
+        { 
+          "dependsOn": [ 
+            { 
+              "containerName": "envoy",
+              "condition": "HEALTHY" 
+            }
+          ] 
+        }' \
+    | jq ' . += 
+        { 
+          "proxyConfiguration": {
+            "type": "APPMESH",
+            "containerName": "envoy",
+            "properties": [
+              { "name": "IgnoredUID", "value": "1337"},
+              { "name": "ProxyIngressPort", "value": "15000"},
+              { "name": "ProxyEgressPort", "value": "15001"},
+              { "name": "AppPorts", "value": "3000"},
+              { "name": "EgressIgnoredIPs", "value": "169.254.170.2,169.254.169.254"}
+            ]
+          }
+        }' \
+    | jq ' del( .status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
+  ); \
+  TASK_DEF_FAMILY=$(echo $TASK_DEF_ARN | cut -d"/" -f2 | cut -d":" -f1);
+  echo $TASK_DEF_NEW > /tmp/$TASK_DEF_FAMILY.json && 
+  aws ecs register-task-definition \
+        --cli-input-json file:///tmp/$TASK_DEF_FAMILY.json
+}
+
+update_ecs_service() {
+  CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
+  TASK_DEF_ARN=$(jq < cfn-output.json -r '.CrystalTaskDefinition');
+  aws ecs update-service \
+        --cluster $CLUSTER_NAME \
+        --service CrystalService \
+        --task-definition "$(echo $TASK_DEF_ARN | awk -F: '{$7=$7+1}1' OFS=:)"
+
+}
+
+
+download_cf_template && \
+deploy_cf_template && \
+create_scripts && \
+run_scripts && \
+retrieve_key && \
+build_eks && \
+create_mesh && \
+create_virtual_node && \
+create_virtual_service && \
+add_envoy_sidecar && \
+update_ecs_service

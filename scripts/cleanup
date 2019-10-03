@@ -1,0 +1,54 @@
+#!/bin/bash
+
+NODE_ECR=$(jq < ~/environment/cfn-output.json -r '.NodeJSEcrRepo' | cut -f2 -d/)
+CRYS_ECR=$(jq < ~/environment/cfn-output.json -r '.CrystalEcrRepo' | cut -f2 -d/)
+CLUSTER=$(jq < ~/environment/cfn-output.json -r '.EcsClusterName')
+
+delete_eks() {
+  # clean eks control plane
+  for c in $(aws eks list-clusters | jq -r .clusters[] | grep -io appmesh-workshop); do
+    aws eks delete-cluster --name $c
+    eksctl delete cluster --name $c
+  done
+}
+
+delete_ecr() {
+  # clean ecr
+  for r in $(aws ecr describe-repositories | grep -E -o "$NODE_ECR|$CRYS_ECR" | uniq); do
+    aws ecr delete-repository --repository-name $r --force
+  done
+}
+
+delete_mesh() {
+  # clean app mesh
+  for m in $(aws appmesh list-meshes | jq -r .meshes[].meshName | grep -io appmesh-workshop); do
+
+      for s in $(aws appmesh list-virtual-services --mesh-name $m | jq -r .virtualServices[].virtualServiceName); do
+        aws appmesh delete-virtual-service --mesh-name $m --virtual-service-name $s
+      done
+
+      for n in $(aws appmesh list-virtual-nodes --mesh-name $m | jq -r .virtualNodes[].virtualNodeName); do
+        aws appmesh delete-virtual-node --mesh-name $m --virtual-node-name $n
+      done
+          
+      aws appmesh delete-mesh --mesh-name $m 
+  done
+}
+
+delete_ecs() {
+  # clean ecs
+  for service in $(aws ecs list-services --cluster $CLUSTER | jq -r .serviceArns[] | cut -f2 -d/); do
+    aws ecs update-service --cluster $CLUSTER --service $service --desired-count 0
+    aws ecs delete-service --cluster $CLUSTER --service $service
+  done
+}
+
+delete_cf() {
+  # delete cloudformation stacks
+  aws cloudformation delete-stack --stack-name eksctl-appmesh-workshop-cluster
+  aws cloudformation wait stack-delete-complete --stack-name eksctl-appmesh-workshop-cluster
+  aws cloudformation delete-stack --stack-name appmesh-workshop
+  aws cloudformation wait stack-delete-complete --stack-name appmesh-workshop
+}
+
+delete_eks && delete_ecr && delete_mesh && delete_ecs && delete_cf
