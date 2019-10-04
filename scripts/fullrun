@@ -1,5 +1,12 @@
 #!/bin/bash
 
+clone_repos() {
+  cd ~/environment
+  test -d ecsdemo-frontend || git clone https://github.com/brentley/ecsdemo-frontend.git
+  test -d ecsdemo-nodejs   || git clone https://github.com/brentley/ecsdemo-nodejs.git
+  test -d ecsdemo-crystal  || git clone https://github.com/brentley/ecsdemo-crystal.git
+}
+
 download_cf_template() {
   cd ~/environment
   curl -s https://raw.githubusercontent.com/brentley/appmeshworkshop/master/templates/appmesh-baseline.yml -o appmesh-baseline.yml
@@ -40,8 +47,6 @@ EOF
 
   sudo yum install -y jq gettext
 
-  sudo wget -O /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/2.4.0/yq_linux_amd65
-  sudo chmod +x /usr/local/bin/yq
   sudo curl --silent --location -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.13.7/bin/linux/amd64/kubectl
   sudo chmod +x /usr/local/bin/kubectl
 
@@ -294,13 +299,21 @@ update_ecs_service() {
 
 }
 
+deploy_nodejs() {
+  cd ~/environment
+  yq w ecsdemo-nodejs/kubernetes/deployment.yaml spec.replicas 3 | kubectl apply -f -
+  yq w ecsdemo-nodejs/kubernetes/service.yaml spec.type LoadBalancer | kubectl apply -f -
+}
 
+
+clone_repos && \
 download_cf_template && \
 deploy_cf_template && \
 create_scripts && \
 run_scripts && \
 retrieve_key && \
 build_eks && \
+deploy_nodejs && \
 create_mesh && \
 create_virtual_node && \
 create_virtual_service && \
