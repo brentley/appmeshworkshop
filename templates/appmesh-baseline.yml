@@ -744,9 +744,7 @@ Resources:
     Type: AWS::EC2::LaunchTemplate
     DependsOn: 
       - KeyPair
-      - PrivateRouteOne
-      - PrivateRouteTwo
-      - PrivateRouteThree
+      - PublicRoute
 #      - RubyService
     Properties:
       LaunchTemplateName: !Sub Ruby-EC2Instance-LaunchTemplate-${AWS::StackName}
@@ -827,9 +825,9 @@ Resources:
       TargetGroupARNs: 
         - !Ref RubyTargetGroup
       VPCZoneIdentifier:
-        - !Ref PrivateSubnetOne
-        - !Ref PrivateSubnetTwo
-        - !Ref PrivateSubnetThree
+        - !Ref PublicSubnetOne
+        - !Ref PublicSubnetTwo
+        - !Ref PublicSubnetThree
 
   InternalLoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -955,5 +953,6 @@ Outputs:
     Value: !Ref Namespace
   RubyAutoScalingGroupName:
     Value: !Ref RubyAutoScalingGroup
+
 
 
