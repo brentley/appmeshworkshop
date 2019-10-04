@@ -15,11 +15,11 @@ Mappings:
     PublicThree:
       CIDR: '10.0.2.0/24'
     PrivateOne:
-      CIDR: '10.0.3.0/24'
+      CIDR: '10.0.100.0/24'
     PrivateTwo:
-      CIDR: '10.0.4.0/24'
+      CIDR: '10.0.101.0/24'
     PrivateThree:
-      CIDR: '10.0.5.0/24'
+      CIDR: '10.0.102.0/24'
 
   InstanceMap:
     us-east-1:
