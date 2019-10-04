@@ -143,6 +143,8 @@ Resources:
           Value: !Sub PublicOne-${AWS::StackName}
         - Key: kubernetes.io/role/elb
           Value: 1
+        - Key: kubernetes.io/cluster/appmesh-workshop
+          Value: shared
   PublicSubnetTwo:
     Type: AWS::EC2::Subnet
     Properties:
@@ -158,6 +160,8 @@ Resources:
           Value: !Sub PublicTwo-${AWS::StackName}
         - Key: kubernetes.io/role/elb
           Value: 1
+        - Key: kubernetes.io/cluster/appmesh-workshop
+          Value: shared
   PublicSubnetThree:
     Type: AWS::EC2::Subnet
     Properties:
@@ -173,6 +177,8 @@ Resources:
           Value: !Sub PublicThree-${AWS::StackName}
         - Key: kubernetes.io/role/elb
           Value: 1
+        - Key: kubernetes.io/cluster/appmesh-workshop
+          Value: shared
 
   PrivateSubnetOne:
     Type: AWS::EC2::Subnet
@@ -188,6 +194,8 @@ Resources:
           Value: !Sub PrivateOne-${AWS::StackName}
         - Key: kubernetes.io/role/internal-elb
           Value: 1
+        - Key: kubernetes.io/cluster/appmesh-workshop
+          Value: shared
   PrivateSubnetTwo:
     Type: AWS::EC2::Subnet
     Properties:
@@ -202,6 +210,8 @@ Resources:
           Value: !Sub PrivateTwo-${AWS::StackName}
         - Key: kubernetes.io/role/internal-elb
           Value: 1
+        - Key: kubernetes.io/cluster/appmesh-workshop
+          Value: shared
   PrivateSubnetThree:
     Type: AWS::EC2::Subnet
     Properties:
@@ -216,6 +226,8 @@ Resources:
           Value: !Sub PrivateThree-${AWS::StackName}
         - Key: kubernetes.io/role/internal-elb
           Value: 1
+        - Key: kubernetes.io/cluster/appmesh-workshop
+          Value: shared
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
@@ -943,4 +955,5 @@ Outputs:
     Value: !Ref Namespace
   RubyAutoScalingGroupName:
     Value: !Ref RubyAutoScalingGroup
+
 
