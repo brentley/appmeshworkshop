@@ -46,8 +46,10 @@ delete_ecs() {
 delete_cf() {
   # delete cloudformation stacks
   aws cloudformation delete-stack --stack-name eksctl-appmesh-workshop-cluster
+  echo "waiting for eksctl-appmesh-workshop-cluster stack to delete"
   aws cloudformation wait stack-delete-complete --stack-name eksctl-appmesh-workshop-cluster
   aws cloudformation delete-stack --stack-name appmesh-workshop
+  echo "waiting for appmesh-workshop stack to delete"
   aws cloudformation wait stack-delete-complete --stack-name appmesh-workshop
 }
 
