@@ -17,6 +17,13 @@ SPEC=$(cat <<-EOF
           "hostname": "$EXT_LOAD_BALANCER"
         }
       },
+      "backends": [
+        {
+          "virtualService": {
+            "virtualServiceName": "crystal.appmeshworkshop.hosted.local"
+          }
+        }
+      ],      
       "logging": {
         "accessLog": {
           "file": {
@@ -33,7 +40,7 @@ SPEC=$(cat <<-EOF
 EOF
 ); \
 aws appmesh create-virtual-node \
-      --mesh-name AppMesh-Workshop \
+      --mesh-name appmesh-workshop \
       --virtual-node-name frontend-v1 \
       --spec "$SPEC"
 ```
@@ -52,7 +59,7 @@ SPEC=$(cat <<-EOF
 EOF
 ); \
 aws appmesh create-virtual-service \
-      --mesh-name AppMesh-Workshop \
+      --mesh-name appmesh-workshop \
       --virtual-service-name frontend.appmeshworkshop.hosted.local \
       --spec "$SPEC"
 ```

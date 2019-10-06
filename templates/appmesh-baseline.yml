@@ -731,10 +731,8 @@ Resources:
       GroupDescription: Access to the instance
       VpcId: !Ref VPC
       SecurityGroupIngress:
-          - IpProtocol: tcp
-            SourceSecurityGroupId: !Ref ExternalLoadBalancerSecurityGroup
-            FromPort: 3000
-            ToPort: 3000
+          - CidrIp: !FindInMap ['SubnetConfig', 'VPC', 'CIDR']
+            IpProtocol: -1
           - IpProtocol: tcp
             CidrIp: 0.0.0.0/0
             FromPort: 22
@@ -745,7 +743,6 @@ Resources:
     DependsOn: 
       - KeyPair
       - PublicRoute
-#      - RubyService
     Properties:
       LaunchTemplateName: !Sub Ruby-EC2Instance-LaunchTemplate-${AWS::StackName}
       LaunchTemplateData:

@@ -4,10 +4,12 @@ date: 2018-09-18T17:39:30-05:00
 weight: 5
 ---
 
-The following SSM Document, lets you register / deregister EC2 instances belonging to an Auto Scaling Group in Cloud Map service using servicetl.
+The following SSM Document lets you register / deregister EC2 instances belonging to an Auto Scaling Group in Cloud Map service using servicectl.
 
-Create a YAML file named **configure-cloudmap.yml** and copy/paste the following content:
-```yaml
+* Execute the following script to create the SSM document
+
+```bash
+cat <<-"EOF" > /tmp/configure_cloudmap.yml
 ---
 schemaVersion: '2.2'
 description: Configure Cloud Map
@@ -70,13 +72,9 @@ mainSteps:
         
             systemctl enable cloudmap.service
             systemctl start  cloudmap.service
-```
-
-Call the SSM API to create the document
-
-```bash
+EOF
 aws ssm create-document \
-      --name Configure-CloudMap \
+      --name appmesh-workshop-ConfigureCloudMap \
       --document-format YAML \
       --content file://configure-cloudmap.yml \
       --document-type Command

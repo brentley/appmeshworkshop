@@ -4,59 +4,144 @@ date: 2018-09-18T17:40:09-05:00
 weight: 20
 ---
 
-It is time to install the envoy proxy on our EC2 instances. We will use **Systems Manager** to configure the EC2 instances that serve the frontend microservice. SSM uses documents to specify configuration.
+Time to install the envoy proxy. We will use **AWS Systems Manager** (SSM) to configure the EC2 instances that serve the frontend microservice. We will have to create an SSM document to define the actions that SSM will perform on the managed instances. Documents use JavaScript Object Notation (JSON) or YAML.
 
-* Create a file named **configure-instance.yml** in your Cloud9 environment, and copy/paste the following content:
+* Execute the following script in your Cloud9 environment to create the SSM document
 
-```yaml
+```bash
+cat <<-"EOF" > /tmp/install_envoy.yml
 ---
 schemaVersion: '2.2'
-description: Configure instances
+description: Install Envoy Proxy
 parameters: 
       region:
         type: String
       meshName:
         type: String
       vNodeName:
-        type: String         
+        type: String 
+      ignoredUID:
+        type: String
+        default: '1337'
+      proxyIngressPort:
+        type: String
+        default: '15000'
+      proxyEgressPort:
+        type: String
+        default: '15001'
+      appPorts:
+        type: String
+      egressIgnoredIPs:
+        type: String
+        default: '169.254.169.254,169.254.170.2'
+      egressIgnoredPorts:
+        type: String 
+        default: '22'
 mainSteps:
 - action: aws:configureDocker
       name: configureDocker
       inputs:
         action: Install
 - action: aws:runShellScript
-      name: runEnvoy
+      name: installEnvoy
       inputs:
         runCommand: 
           - |
-            #! /bin/bash
-            docker run --detach \ 
-              --env AWS_ACCESS_KEY_ID=$aws_access_key_id \
-              --env AWS_SECRET_ACCESS_KEY=$aws_access_secret_key \
-              --env AWS_SESSION_TOKEN=$aws_session_token \
-              --env APPMESH_VIRTUAL_NODE_NAME=mesh/{{meshName}}/virtualNode/{{vNodeName}} \
-              -u 1337 --network host \ 
-              111345817488.dkr.ecr.{{region}}.amazonaws.com/aws-appmesh-envoy:v1.11.1.1-prod
-```
+            #! /bin/bash -ex
 
-* Call the SSM API to create the document
-```bash
+            sudo yum install -y jq
+
+            EC2_METADATA="http://169.254.169.254/latest"
+            AWS_ROLE=$(curl $EC2_METADATA/meta-data/iam/security-credentials/)
+            AWS_CREDENTIALS=$(curl $EC2_METADATA/meta-data/iam/security-credentials/$AWS_ROLE)
+
+            AWS_ACCESS_KEY_ID=$(echo $AWS_CREDENTIALS | jq -r .AccessKeyId)
+            AWS_ACCESS_SECRET_KEY=$(echo $AWS_CREDENTIALS | jq -r .SecretAccessKey)
+            AWS_SESSION_TOKEN=$(echo $AWS_CREDENTIALS | jq -r .Token)
+
+            $(aws ecr get-login --no-include-email --region {{region}} --registry-ids 111345817488)
+
+            sudo docker run --detach \
+                --env APPMESH_VIRTUAL_NODE_NAME=mesh/{{meshName}}/virtualNode/{{vNodeName}} \
+                --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+                --env AWS_SECRET_ACCESS_KEY=$AWS_ACCESS_SECRET_KEY \
+                --env AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
+                -u 1337 --network host \
+                111345817488.dkr.ecr.{{region}}.amazonaws.com/aws-appmesh-envoy:v1.11.1.1-prod
+- action: aws:runShellScript
+      name: enableRouting
+      inputs:
+        runCommand: 
+          - |
+            #! /bin/bash -ex
+
+            APPMESH_LOCAL_ROUTE_TABLE_ID="100"
+            APPMESH_PACKET_MARK="0x1e7700ce"
+
+            # Initialize chains
+            sudo iptables -t mangle -N APPMESH_INGRESS
+            sudo iptables -t nat -N APPMESH_INGRESS
+            sudo iptables -t nat -N APPMESH_EGRESS
+            sudo ip rule add fwmark "$APPMESH_PACKET_MARK" lookup $APPMESH_LOCAL_ROUTE_TABLE_ID
+            sudo ip route add local default dev lo table $APPMESH_LOCAL_ROUTE_TABLE_ID
+
+            # Enable egress routing
+              # Ignore egress redirect based UID, ports, and IPs
+              sudo iptables -t nat -A APPMESH_EGRESS \
+                      -m owner --uid-owner {{ignoredUID}} \
+                      -j RETURN
+              sudo iptables -t nat -A APPMESH_EGRESS \
+                      -p tcp \
+                      -m multiport --dports "{{egressIgnoredPorts}}" \
+                      -j RETURN
+              sudo iptables -t nat -A APPMESH_EGRESS \
+                      -p tcp \
+                      -d "{{egressIgnoredIPs}}" \
+                      -j RETURN
+              # Redirect everything that is not ignored
+              sudo iptables -t nat -A APPMESH_EGRESS \
+                      -p tcp \
+                      -j REDIRECT --to {{proxyEgressPort}}
+              # Apply APPMESH_EGRESS chain to non-local traffic
+              sudo iptables -t nat -A OUTPUT \
+                      -p tcp \
+                      -m addrtype ! --dst-type LOCAL \
+                      -j APPMESH_EGRESS
+
+            # Enable ingress routing
+              # Route everything arriving at the application port to Envoy
+              sudo iptables -t nat -A APPMESH_INGRESS \
+                      -p tcp \
+                      -m multiport --dports "{{appPorts}}" \
+                      -j REDIRECT --to-port "{{proxyIngressPort}}"
+              # Apply APPMESH_INGRESS chain to non-local traffic
+              sudo iptables -t nat -A PREROUTING \
+                      -p tcp \
+                      -m addrtype ! --src-type LOCAL \
+                      -j APPMESH_INGRESS
+EOF
 aws ssm create-document \
-      --name AppMesh-Workshop-ConfigureInstance \
+      --name appmesh-workshop-InstallEnvoy \
       --document-format YAML \
-      --content file://configure-instance.yml \
+      --content file:///tmp/install_envoy.yml \
       --document-type Command
 ```
 
-* Create an association using State Manager. An association is a binding of the intent (described in the document) to a target specified by either a list of instance IDs or a tag query. Use the following command to create an association. Note that you are specifying a tag query in the target parameter and using the Frontend Auto Scaling group name. **Replace {serviceid} with the service id you wrote down previousy**.
+* Create an association using State Manager. An association is a binding of the intent (described in the document) to a target specified by either a list of instance IDs or a tag query. Use the following command to create an association. Note that you are specifying a tag query in the target parameter and using the Frontend Auto Scaling group name.
 
 ```bash
 AUTOSCALING_GROUP=$(jq < cfn-output.json -r '.RubyAutoScalingGroupName'); \
 aws ssm create-association \
-      --name AppMesh-Workshop-ConfigureInstance \
+      --name appmesh-workshop-InstallEnvoy \
       --targets "Key=tag:aws:autoscaling:groupName,Values=$AUTOSCALING_GROUP" \
-      --schedule-expression "cron(0 0/30 * 1/1 * ? *)" \
+      --schedule-expression "cron(0 0/4 * * ? *)" \
       --max-errors 0 \
       --max-concurrency 50% \
-      --parameters "serviceid={serviceid}"
+      --parameters "region=$AWS_REGION,meshName=appmesh-workshop,vNodeName=frontend-v1,appPorts=3000"
 ```
+
+<!--
+export RBENV_ROOT=/.rbenv
+source /tmp/.bashrc
+rbenv global 2.5.1
+-->
