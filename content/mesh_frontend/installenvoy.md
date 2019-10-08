@@ -56,7 +56,7 @@ mainSteps:
             AWS_CREDENTIALS=$(curl $EC2_METADATA/meta-data/iam/security-credentials/$AWS_ROLE)
 
             AWS_ACCESS_KEY_ID=$(echo $AWS_CREDENTIALS | jq -r .AccessKeyId)
-            AWS_ACCESS_SECRET_KEY=$(echo $AWS_CREDENTIALS | jq -r .SecretAccessKey)
+            AWS_SECRET_ACCESS_KEY=$(echo $AWS_CREDENTIALS | jq -r .SecretAccessKey)
             AWS_SESSION_TOKEN=$(echo $AWS_CREDENTIALS | jq -r .Token)
 
             $(aws ecr get-login --no-include-email --region {{region}} --registry-ids 111345817488)
@@ -64,7 +64,7 @@ mainSteps:
             sudo docker run --detach \
                 --env APPMESH_VIRTUAL_NODE_NAME=mesh/{{meshName}}/virtualNode/{{vNodeName}} \
                 --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
-                --env AWS_SECRET_ACCESS_KEY=$AWS_ACCESS_SECRET_KEY \
+                --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
                 --env AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
                 -u 1337 --network host \
                 111345817488.dkr.ecr.{{region}}.amazonaws.com/aws-appmesh-envoy:v1.11.1.1-prod
@@ -139,9 +139,3 @@ aws ssm create-association \
       --max-concurrency 50% \
       --parameters "region=$AWS_REGION,meshName=appmesh-workshop,vNodeName=frontend-v1,appPorts=3000"
 ```
-
-<!--
-export RBENV_ROOT=/.rbenv
-source /tmp/.bashrc
-rbenv global 2.5.1
--->

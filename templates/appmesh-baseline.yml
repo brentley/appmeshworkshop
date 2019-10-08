@@ -788,9 +788,14 @@ Resources:
                   gem update --system
 
                   # Clone the repo and build the app
+                  export RUBY_ROOT=/tmp/ecsdemo-frontend
                   git clone https://github.com/brentley/ecsdemo-frontend.git /tmp/ecsdemo-frontend
-                  cd /tmp/ecsdemo-frontend
+                  cd $RUBY_ROOT
                   bundle install
+
+                  # Fixing get requests
+                  sed -i -e 's/nodejs_uri.to_s/nodejs_uri.path/g' $RUBY_ROOT/app/controllers/application_controller.rb
+                  sed -i -e 's/crystal_uri.to_s/crystal_uri.path/g' $RUBY_ROOT/app/controllers/application_controller.rb
 
                   # Set environment variables for routing
                   export CRYSTAL_URL='http://crystal.appmeshworkshop.hosted.local:3000/crystal'
