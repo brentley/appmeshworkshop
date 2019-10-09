@@ -6,7 +6,7 @@ weight: 20
 
 Time to install the envoy proxy. We will use **AWS Systems Manager** (SSM) to configure the EC2 instances that serve the frontend microservice. We will have to create an SSM document to define the actions that SSM will perform on the managed instances. Documents use JavaScript Object Notation (JSON) or YAML.
 
-* Execute the following script in your Cloud9 environment to create the SSM document
+* Execute the following script in your Cloud9 environment to create the SSM document.
 
 ```bash
 cat <<-"EOF" > /tmp/install_envoy.yml
@@ -134,7 +134,6 @@ AUTOSCALING_GROUP=$(jq < cfn-output.json -r '.RubyAutoScalingGroupName'); \
 aws ssm create-association \
       --name appmesh-workshop-InstallEnvoy \
       --targets "Key=tag:aws:autoscaling:groupName,Values=$AUTOSCALING_GROUP" \
-      --schedule-expression "cron(0 0/4 * * ? *)" \
       --max-errors 0 \
       --max-concurrency 50% \
       --parameters "region=$AWS_REGION,meshName=appmesh-workshop,vNodeName=frontend-v1,appPorts=3000"

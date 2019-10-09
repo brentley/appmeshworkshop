@@ -4,8 +4,8 @@ date: 2018-09-18T17:40:09-05:00
 weight: 20
 ---
 
-Time to add the envoy sidecar proxy to our Crystal backend service. 
-Since the service is runing in Fargate we will need to create a new revision of the Task Definition.
+Time to add the envoy sidecar proxy to your Crystal backend service. 
+Since the service is runing in Fargate you will need to create a new revision of the Task Definition.
 
 * Register a new task definition with the envoy sidecar proxy.
 
@@ -71,13 +71,13 @@ aws ecs register-task-definition \
       --cli-input-json file:///tmp/$TASK_DEF_FAMILY.json
 ```
 
-* Update the service
+* Update the service.
 
 ```bash
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 TASK_DEF_ARN=$(jq < cfn-output.json -r '.CrystalTaskDefinition');
 aws ecs update-service \
       --cluster $CLUSTER_NAME \
-      --service CrystalService \
+      --service CrystalService-ALB \
       --task-definition "$(echo $TASK_DEF_ARN | awk -F: '{$7=$7+1}1' OFS=:)"
 ```

@@ -8,7 +8,7 @@ weight: 5
 
 Throughout this workshop we will use App Mesh, to gain consistent visibility and network traffic controls on our microservices running in **Amazon EC2, AWS Fargate and Amazon EKS**. 
 
-Let's start creating the service mesh. A service mesh is a logical boundary for network traffic between the services that reside within it.
+Let's start by creating the service mesh. A service mesh is a logical boundary for network traffic between the services that reside within it.
 
 ```bash
 aws appmesh create-mesh \

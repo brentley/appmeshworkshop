@@ -793,10 +793,6 @@ Resources:
                   cd $RUBY_ROOT
                   bundle install
 
-                  # Fixing get requests
-                  # sed -i -e 's/nodejs_uri.to_s/nodejs_uri.path/g' $RUBY_ROOT/app/controllers/application_controller.rb
-                  # sed -i -e 's/crystal_uri.to_s/crystal_uri.path/g' $RUBY_ROOT/app/controllers/application_controller.rb
-
                   # Set environment variables for routing
                   export CRYSTAL_URL='http://crystal.appmeshworkshop.hosted.local:3000/crystal'
                   export NODEJS_URL='http://nodejs.appmeshworkshop.pvt.local:3000'
