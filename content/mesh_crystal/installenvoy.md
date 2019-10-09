@@ -75,9 +75,9 @@ aws ecs register-task-definition \
 
 ```bash
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
-TASK_DEF_ARN=$(jq < cfn-output.json -r '.CrystalTaskDefinition');
+TASK_DEF_ARN=$(aws ecs list-task-definitions | jq --raw-output ' .taskDefinitionArns | last');
 aws ecs update-service \
       --cluster $CLUSTER_NAME \
       --service CrystalService-ALB \
-      --task-definition "$(echo $TASK_DEF_ARN | awk -F: '{$7=$7+1}1' OFS=:)"
+      --task-definition "$(echo $TASK_DEF_ARN)"
 ```

@@ -1,5 +1,5 @@
 ---
-title: "Create a new Crystal service"
+title: "Create a discovery service"
 date: 2018-09-18T17:39:30-05:00
 weight: 10
 ---
@@ -19,28 +19,4 @@ aws servicediscovery create-service \
       --description 'Discovery service for the Crystal service' \
       --namespace-id $NAMESPACE \
       --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=SRV,TTL=60}]'
-```
-
-* Create a new service in ECS. This time use a service registry to register task instances.
-
-```bash
-CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
-TASK_DEF_ARN=$(jq < cfn-output.json -r '.CrystalTaskDefinition');
-PRIVSUB1=$(jq < cfn-output.json -r '.PrivateSubnetOne');
-PRIVSUB2=$(jq < cfn-output.json -r '.PrivateSubnetTwo');
-PRIVSUB3=$(jq < cfn-output.json -r '.PrivateSubnetThree');
-SECGROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup');
-CMAP_SVC_ARN=$(aws servicediscovery list-services \
-      | jq --raw-output '.Services[] | select(.Name == "crystal") | .Arn');
-aws ecs create-service \
-      --cluster $CLUSTER_NAME \
-      --service-name CrystalService-SRV \
-      --task-definition "$(echo $TASK_DEF_ARN | awk -F: '{$7=$7+1}1' OFS=:)" \
-      --desired-count 3 \
-      --platform-version LATEST \
-      --service-registries "registryArn=$CMAP_SVC_ARN,port=3000" \
-      --launch-type FARGATE \
-      --network-configuration \
-          "awsvpcConfiguration={subnets=[$PRIVSUB1,$PRIVSUB2,$PRIVSUB3],
-            securityGroups=[$SECGROUP],assignPublicIp=DISABLED}"
 ```

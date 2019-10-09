@@ -1,7 +1,7 @@
 ---
 title: "Create a virtual router"
 date: 2018-09-18T17:39:30-05:00
-weight: 20
+weight: 40
 ---
 
 Virtual routers handle traffic for one or more virtual services within your mesh. 

@@ -1,7 +1,7 @@
 ---
 title: "Update the virtual service"
 date: 2018-09-18T17:39:30-05:00
-weight: 20
+weight: 50
 ---
 
 * Update the virtual service to use the virtual router provider you just created.
