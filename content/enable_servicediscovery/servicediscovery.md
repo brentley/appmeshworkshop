@@ -10,32 +10,37 @@ Part of the transition to microservices and modern architectures involves having
 
 The Crystal backend service operates behind an internal (dedicated) load balancer. We will  now configure it to use Amazon ECS Service Discovery. Service discovery uses AWS Cloud Map API actions to manage HTTP and DNS namespaces for Amazon ECS services.
 
-* Let's create a new service in Cloud Map
+* Let's create a new service in Cloud Map.
 
 ```bash
 NAMESPACE=$(jq < cfn-output.json -r '.NamespaceId');
 aws servicediscovery create-service \
       --name crystal \
+      --description 'Discovery service for the Crystal service' \
       --namespace-id $NAMESPACE \
       --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=SRV,TTL=60}]'
 ```
 
-* Time to create a new service in ECS
+* Create a new service in ECS. This time use a service registry to register task instances.
 
 ```bash
-CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName')
-TASK_DEF_ARN=$(jq < cfn-output.json -r '.CrystalTaskDefinition')
-PRIVSUB1=$(jq < cfn-output.json -r '.PrivateSubnetOne')
-PRIVSUB2=$(jq < cfn-output.json -r '.PrivateSubnetTwo')
-PRIVSUB3=$(jq < cfn-output.json -r '.PrivateSubnetThree')
-SECGROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup')
+CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
+TASK_DEF_ARN=$(jq < cfn-output.json -r '.CrystalTaskDefinition');
+PRIVSUB1=$(jq < cfn-output.json -r '.PrivateSubnetOne');
+PRIVSUB2=$(jq < cfn-output.json -r '.PrivateSubnetTwo');
+PRIVSUB3=$(jq < cfn-output.json -r '.PrivateSubnetThree');
+SECGROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup');
+CMAP_SVC_ARN=$(aws servicediscovery list-services \
+      | jq --raw-output '.Services[] | select(.Name == "crystal") | .Arn');
 aws ecs create-service \
-  --cluster $CLUSTER_NAME \
-  --service-name CrystalService-SD \
-  --task-definition "$(echo $TASK_DEF_ARN | awk -F: '{$7=$7+1}1' OFS=:)" \
-  --desired-count 3 \
-  --platform-version LATEST \
-  --service-registries \
-  --launch-type FARGATE \
-  --network-configuration "awsvpcConfiguration={subnets=[$PRIVSUB1,$PRIVSUB2,$PRIVSUB3],securityGroups=[$SECGROUP],assignPublicIp=DISABLED}"
+      --cluster $CLUSTER_NAME \
+      --service-name CrystalService-SRV \
+      --task-definition "$(echo $TASK_DEF_ARN | awk -F: '{$7=$7+1}1' OFS=:)" \
+      --desired-count 3 \
+      --platform-version LATEST \
+      --service-registries "registryArn=$CMAP_SVC_ARN,port=3000" \
+      --launch-type FARGATE \
+      --network-configuration \
+          "awsvpcConfiguration={subnets=[$PRIVSUB1,$PRIVSUB2,$PRIVSUB3],
+            securityGroups=[$SECGROUP],assignPublicIp=DISABLED}"
 ```

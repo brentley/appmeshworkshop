@@ -4,26 +4,14 @@ date: 2018-09-18T17:39:30-05:00
 weight: 20
 ---
 
-A virtual service is an abstraction of a real service that is provided by a virtual node in the mesh. Virtual nodes act as a logical pointer to a particular task group, such as an EC2 Auto Scaling Group, an Amazon ECS service or a Kubernetes deployment.
+Virtual routers handle traffic for one or more virtual services within your mesh. 
+We will create a virtual router and associate routes to direct incoming requests to the different virtual node destinations we have for the Crystal backend.
 
-* Start by creating the virtual node
+* Begin by creating the virtual router.
 
 ```bash
-INT_LOAD_BALANCER=$(jq < cfn-output.json -r '.InternalLoadBalancerDNS');
 SPEC=$(cat <<-EOF
     { 
-      "serviceDiscovery": {
-        "dns": { 
-          "hostname": "$INT_LOAD_BALANCER"
-        }
-      },
-      "logging": {
-        "accessLog": {
-          "file": {
-            "path": "/dev/stdout"
-          }
-        }
-      },      
       "listeners": [
         {
           "portMapping": { "port": 3000, "protocol": "http" }
@@ -32,27 +20,41 @@ SPEC=$(cat <<-EOF
     }
 EOF
 ); \
-aws appmesh create-virtual-node \
+aws appmesh create-virtual-router \
       --mesh-name appmesh-workshop \
-      --virtual-node-name crystal-v1 \
+      --virtual-router-name crystal-router \
       --spec "$SPEC"
 ```
 
-* Now, we are ready to create the virtual service
+* Create a route to direct every incomming request to crystal-srv-v1 (weight: 1).
 
 ```bash
 SPEC=$(cat <<-EOF
     { 
-      "provider": {
-        "virtualNode": { 
-          "virtualNodeName": "crystal-v1"
+      "httpRoute": {
+        "action": { 
+          "weightedTargets": [
+            {
+              "virtualNode": "crystal-alb-v1",
+              "weight": 0
+            },
+            {
+              "virtualNode": "crystal-srv-v1",
+              "weight": 1
+            }          
+          ]
+        },
+        "match": {
+          "prefix": "/"
         }
-      }
+      },
+      "priority": 10
     }
 EOF
 ); \
-aws appmesh create-virtual-service \
+aws appmesh create-route \
       --mesh-name appmesh-workshop \
-      --virtual-service-name crystal.appmeshworkshop.hosted.local \
+      --virtual-router-name crystal-router \
+      --route-name crystal-default-route \
       --spec "$SPEC"
 ```
