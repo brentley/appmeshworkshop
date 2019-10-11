@@ -6,7 +6,7 @@ This is how I set up my environment:
 (I am using gitpod.io for editing)
 
 1. fork the repo to your own github account
-2. prepend `gitpod.io#` to the beginning of your github url.
+2. prepend `gitpod.io#` to the beginning of your github url. Mine becomes: `https://gitpod.io#github.com/brentley/appmeshworkshop`
 3. once gitpod has started, in the terminal, run `npm install && npm run theme`
 This will install the dependencies and clone the theme submodule.
 
