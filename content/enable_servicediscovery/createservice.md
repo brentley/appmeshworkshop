@@ -8,7 +8,7 @@ weight: 30
 
 ```bash
 # Define variables #
-TASK_DEF_ARN=$(aws ecs list-task-definitions | jq --r' .taskDefinitionArns | last');
+TASK_DEF_ARN=$(aws ecs list-task-definitions | jq -r ' .taskDefinitionArns | last');
 TASK_DEF_OLD=$(aws ecs describe-task-definition --task-definition $TASK_DEF_ARN);
 TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
       | jq ' .taskDefinition' \
@@ -36,7 +36,7 @@ SUBNET_TWO=$(jq < cfn-output.json -r '.PrivateSubnetTwo');
 SUBNET_THREE=$(jq < cfn-output.json -r '.PrivateSubnetThree');
 SECURITY_GROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup');
 CMAP_SVC_ARN=$(aws servicediscovery list-services | \
-      jq -r '.Services[] | select(.Name == "crystal" | .Arn'); \
+      jq -r '.Services[] | select(.Name == "crystal") | .Arn');
 # Create ecs service #
 aws ecs create-service \
       --cluster $CLUSTER_NAME \

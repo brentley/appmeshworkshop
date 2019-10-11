@@ -20,7 +20,6 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
                   "options": {
                     "awslogs-create-group": "true",
                     "awslogs-region": $AWS_REGION,
-                    "awslogs-stream-prefix": "crystal",
                     "awslogs-group": "appmesh-workshop-crystal-envoy"
                   }
                 }

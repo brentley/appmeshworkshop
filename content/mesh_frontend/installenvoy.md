@@ -70,9 +70,8 @@ mainSteps:
                 --env ENABLE_ENVOY_XRAY_TRACING=1 \
                 --env AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
                 --log-driver="awslogs" \
-                --log-opt awslogs-create-group=true \
                 --log-opt awslogs-region={{region}} \
-                --log-opt awslogs-stream=envoy \
+                --log-opt awslogs-create-group=true \
                 --log-opt awslogs-group=appmesh-workshop-frontend-envoy \
                 -u 1337 --network host \
                 111345817488.dkr.ecr.{{region}}.amazonaws.com/aws-appmesh-envoy:v1.11.1.1-prod
@@ -88,7 +87,7 @@ mainSteps:
 
             # Install and run xray daemon
             sudo curl $XRAY_HOST/$XRAY_PATH -o /tmp/xray.rpm
-            sudo yum install -y /tmp/xray.rpm                
+            sudo yum install -y /tmp/xray.rpm
 - action: aws:runShellScript
       name: enableRouting
       inputs:
