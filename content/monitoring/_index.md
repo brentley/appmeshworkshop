@@ -4,7 +4,7 @@ chapter: true
 weight: 30
 ---
 
-# Monitoring the Example Microservices
+# Add Monitoring and Logging Capabilities
 
 ![microservices](/images/crystal.svg)
 {{% children showhidden="false" %}}

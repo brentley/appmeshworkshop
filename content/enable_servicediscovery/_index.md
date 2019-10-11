@@ -1,5 +1,5 @@
 ---
-title: "Enable service discovery"
+title: "Enable Service Discovery"
 chapter: true
 weight: 30
 ---

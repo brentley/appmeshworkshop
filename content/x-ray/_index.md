@@ -1,10 +1,10 @@
 ---
-title: "Advanced Tracing"
+title: "Distributed Tracing"
 chapter: true
 weight: 35
 ---
 
-# Monitoring the Example Microservices
+# Add End-to-End Tracing Capabilities
 
 ![microservices](/images/crystal.svg)
 {{% children showhidden="false" %}}
