@@ -42,11 +42,6 @@ Resources:
     Properties:
       ClusterName: !Sub Cluster-${AWS::StackName}
 
-  CrystalLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties: 
-      LogGroupName: appmesh-workshop-crystal-service
-
   CrystalTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties: 
@@ -64,12 +59,6 @@ Resources:
           PortMappings:
             - ContainerPort: 3000
               Protocol: http
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref CrystalLogGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: crystal
           Essential: true
 
   ExternalLoadBalancerSecurityGroup:
