@@ -44,6 +44,8 @@ Resources:
 
   CrystalLogGroup:
     Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: appmesh-workshop-crystal-service
 
   CrystalTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -67,7 +69,7 @@ Resources:
             Options:
               awslogs-group: !Ref CrystalLogGroup
               awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: awslogs-crystal-service
+              awslogs-stream-prefix: crystal
           Essential: true
 
   ExternalLoadBalancerSecurityGroup:
