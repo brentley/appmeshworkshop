@@ -9,6 +9,7 @@ Time to install the envoy proxy. We will use **AWS Systems Manager** (SSM) to co
 * Execute the following script in your Cloud9 environment to create the SSM document.
 
 ```bash
+# Create YAML file #
 cat <<-"EOF" > /tmp/install_envoy.yml
 ---
 schemaVersion: '2.2'
@@ -61,11 +62,18 @@ mainSteps:
 
             $(aws ecr get-login --no-include-email --region {{region}} --registry-ids 111345817488)
 
+            # Install and run envoy
             sudo docker run --detach \
                 --env APPMESH_VIRTUAL_NODE_NAME=mesh/{{meshName}}/virtualNode/{{vNodeName}} \
                 --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
                 --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+                --env ENABLE_ENVOY_XRAY_TRACING=1  \                
                 --env AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
+                --log-driver="awslogs" \
+                --log-opt awslogs-create-group=true \
+                --log-opt awslogs-region={{region}} \
+                --log-opt awslogs-stream-prefix=envoy \
+                --log-opt awslogs-group=appmesh-workshop-frontend-envoy \
                 -u 1337 --network host \
                 111345817488.dkr.ecr.{{region}}.amazonaws.com/aws-appmesh-envoy:v1.11.1.1-prod
 - action: aws:runShellScript
@@ -119,7 +127,22 @@ mainSteps:
                       -p tcp \
                       -m addrtype ! --src-type LOCAL \
                       -j APPMESH_INGRESS
+- action: aws:runShellScript
+      name: installXRay
+      inputs:
+        runCommand: 
+          - |
+            #! /bin/bash -ex
+
+            XRAY_HOST=https://s3.dualstack.{{region}}.amazonaws.com
+            XRAY_PATH=aws-xray-assets.{{region}}/xray-daemon/aws-xray-daemon-3.x.rpm
+
+            # Install and run xray daemon
+            curl $XRAY_HOST/$XRAY_PATH -o /tmp/xray.rpm
+            sudo yum install -y /tmp/xray.rpm
+
 EOF
+# Create ssm document #
 aws ssm create-document \
       --name appmesh-workshop-InstallEnvoy \
       --document-format YAML \
@@ -130,11 +153,17 @@ aws ssm create-document \
 * Create an association using State Manager. An association is a binding of the intent (described in the document) to a target specified by either a list of instance IDs or a tag query. Use the following command to create an association. Note that you are specifying a tag query in the target parameter and using the Frontend Auto Scaling group name.
 
 ```bash
+# Define variables #
 AUTOSCALING_GROUP=$(jq < cfn-output.json -r '.RubyAutoScalingGroupName'); \
+# Create ssm association #
 aws ssm create-association \
       --name appmesh-workshop-InstallEnvoy \
       --targets "Key=tag:aws:autoscaling:groupName,Values=$AUTOSCALING_GROUP" \
       --max-errors 0 \
       --max-concurrency 50% \
-      --parameters "region=$AWS_REGION,meshName=appmesh-workshop,vNodeName=frontend-v1,appPorts=3000"
+      --parameters \
+          "region=$AWS_REGION,
+            meshName=appmesh-workshop,v
+            NodeName=frontend-v1,
+            appPorts=3000"
 ```
