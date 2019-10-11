@@ -1,7 +1,7 @@
 ---
 title: "Handling Failures"
 chapter: true
-weight: 45
+weight: 50
 ---
 
 # Monitoring the Example Microservices

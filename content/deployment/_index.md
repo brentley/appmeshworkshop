@@ -1,10 +1,10 @@
 ---
-title: "Mesh the Crystal Service"
+title: "Rolling Backend Updates"
 chapter: true
-weight: 15
+weight: 40
 ---
 
-# Mesh the Crystal Backend Service
+# Monitoring the Example Microservices
 
 ![microservices](/images/crystal.svg)
 {{% children showhidden="false" %}}

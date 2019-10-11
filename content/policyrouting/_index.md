@@ -1,7 +1,7 @@
 ---
 title: "Policy Based Routing"
 chapter: true
-weight: 40
+weight: 45
 ---
 
 # Monitoring the Example Microservices
