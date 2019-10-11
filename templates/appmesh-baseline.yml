@@ -79,6 +79,9 @@ Resources:
       Name: !Sub ExtLB-${AWS::StackName}
       Scheme: internet-facing
       Type: application
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: '30'      
       SecurityGroups:
         - !Ref ExternalLoadBalancerSecurityGroup
       Subnets:
@@ -99,15 +102,23 @@ Resources:
   RubyTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
+      TargetType: instance
       HealthCheckIntervalSeconds: 10
       HealthCheckPath: /health
       HealthCheckProtocol: HTTP
-      HealthyThresholdCount: 3
-      UnhealthyThresholdCount: 3
+      HealthCheckTimeoutSeconds: 5      
+      HealthyThresholdCount: 2
+      Matcher:
+        HttpCode: 200-299      
+      UnhealthyThresholdCount: 10
       Port: 3000
       Protocol: HTTP
       VpcId: !Ref VPC
-      TargetType: instance
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: '5'
+        - Key: slow_start.duration_seconds
+          Value: '60'
 
   VPC:
     Type: AWS::EC2::VPC
