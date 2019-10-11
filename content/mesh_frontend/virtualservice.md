@@ -7,6 +7,7 @@ weight: 10
 * Like you did previously, start by creating a virtual node.
 
 ```bash
+# Define variables #
 EXT_LOAD_BALANCER=$(jq < cfn-output.json -r '.ExternalLoadBalancerDNS');
 SPEC=$(cat <<-EOF
     { 
@@ -37,6 +38,7 @@ SPEC=$(cat <<-EOF
     }
 EOF
 ); \
+# Create app mesh virtual node #
 aws appmesh create-virtual-node \
       --mesh-name appmesh-workshop \
       --virtual-node-name frontend-v1 \
@@ -46,6 +48,7 @@ aws appmesh create-virtual-node \
 * Create the virtual service.
 
 ```bash
+# Define variables #
 SPEC=$(cat <<-EOF
     { 
       "provider": {
@@ -56,6 +59,7 @@ SPEC=$(cat <<-EOF
     }
 EOF
 ); \
+# Create app mesh virtual service #
 aws appmesh create-virtual-service \
       --mesh-name appmesh-workshop \
       --virtual-service-name frontend.appmeshworkshop.hosted.local \

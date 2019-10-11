@@ -10,6 +10,7 @@ We will create a virtual router and associate routes to direct incoming requests
 * Begin by creating the virtual router.
 
 ```bash
+# Define variables #
 SPEC=$(cat <<-EOF
     { 
       "listeners": [
@@ -20,6 +21,7 @@ SPEC=$(cat <<-EOF
     }
 EOF
 ); \
+# Create app mesh virtual router #
 aws appmesh create-virtual-router \
       --mesh-name appmesh-workshop \
       --virtual-router-name crystal-router \
@@ -29,6 +31,7 @@ aws appmesh create-virtual-router \
 * Create a route to direct every incomming request to crystal-srv-v1 (weight: 1).
 
 ```bash
+# Define variables #
 SPEC=$(cat <<-EOF
     { 
       "httpRoute": {
@@ -52,6 +55,7 @@ SPEC=$(cat <<-EOF
     }
 EOF
 ); \
+# Create app mesh route #
 aws appmesh create-route \
       --mesh-name appmesh-workshop \
       --virtual-router-name crystal-router \

@@ -13,10 +13,13 @@ The Crystal backend service operates behind an internal (dedicated) load balance
 * Let's create a new service in Cloud Map.
 
 ```bash
+# Define variables #
 NAMESPACE=$(jq < cfn-output.json -r '.NamespaceId');
+# Create cloud map service #
 aws servicediscovery create-service \
       --name crystal \
       --description 'Discovery service for the Crystal service' \
       --namespace-id $NAMESPACE \
-      --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=SRV,TTL=60}]'
+      --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=SRV,TTL=60}]' \
+      --health-check-custom-config FailureThreshold=1
 ```

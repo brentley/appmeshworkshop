@@ -7,6 +7,7 @@ weight: 20
 * Create a second virtual node for the crystal backend, and use service discovery instead.
 
 ```bash
+# Define variables #
 SPEC=$(cat <<-EOF
     { 
       "serviceDiscovery": {
@@ -30,6 +31,7 @@ SPEC=$(cat <<-EOF
     }
 EOF
 ); \
+# Create app mesh virtual node #
 aws appmesh create-virtual-node \
       --mesh-name appmesh-workshop \
       --virtual-node-name crystal-srv-v1 \

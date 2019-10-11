@@ -7,6 +7,7 @@ weight: 50
 * Update the virtual service to use the virtual router provider you just created.
 
 ```bash
+# Define variables #
 SPEC=$(cat <<-EOF
     { 
       "provider": {
@@ -17,6 +18,7 @@ SPEC=$(cat <<-EOF
     }
 EOF
 ); \
+# Create app mesh virtual service #
 aws appmesh update-virtual-service \
       --mesh-name appmesh-workshop \
       --virtual-service-name crystal.appmeshworkshop.hosted.local \

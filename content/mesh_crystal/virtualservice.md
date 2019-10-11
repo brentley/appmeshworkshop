@@ -9,6 +9,7 @@ A virtual service is an abstraction of a real service that is provided by a virt
 * Start by creating the virtual node.
 
 ```bash
+# Define variables #
 INT_LOAD_BALANCER=$(jq < cfn-output.json -r '.InternalLoadBalancerDNS');
 SPEC=$(cat <<-EOF
     { 
@@ -32,6 +33,7 @@ SPEC=$(cat <<-EOF
     }
 EOF
 ); \
+# Create app mesh virual node #
 aws appmesh create-virtual-node \
       --mesh-name appmesh-workshop \
       --virtual-node-name crystal-alb-v1 \
@@ -41,6 +43,7 @@ aws appmesh create-virtual-node \
 * Now, you are ready to create the virtual service.
 
 ```bash
+# Define variables #
 SPEC=$(cat <<-EOF
     { 
       "provider": {
@@ -51,6 +54,7 @@ SPEC=$(cat <<-EOF
     }
 EOF
 ); \
+# Create app mesh virtual service #
 aws appmesh create-virtual-service \
       --mesh-name appmesh-workshop \
       --virtual-service-name crystal.appmeshworkshop.hosted.local \

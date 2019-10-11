@@ -10,12 +10,13 @@ Since the service is runing in Fargate you will need to create a new revision of
 * Register a new task definition with the envoy sidecar proxy.
 
 ```bash
+# Define variables #
 ENVOY_REGISTRY="111345817488.dkr.ecr.$AWS_REGION.amazonaws.com";
 TASK_DEF_ARN=$(jq < cfn-output.json -r '.CrystalTaskDefinition');
 TASK_DEF_OLD=$(aws ecs describe-task-definition --task-definition $TASK_DEF_ARN);
 TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
-  | jq ' .taskDefinition' \
-  | jq --arg ENVOY_REGISTRY $ENVOY_REGISTRY '.containerDefinitions += 
+      | jq ' .taskDefinition' \
+      | jq --arg ENVOY_REGISTRY $ENVOY_REGISTRY ' .containerDefinitions += 
       [
         {
           "environment": [
@@ -40,7 +41,7 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
           "name": "envoy"
         }
       ]' \
-  | jq ' .containerDefinitions[0] +=
+      | jq ' .containerDefinitions[0] +=
       { 
         "dependsOn": [ 
           { 
@@ -49,7 +50,7 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
           }
         ] 
       }' \
-  | jq ' . += 
+      | jq ' . += 
       { 
         "proxyConfiguration": {
           "type": "APPMESH",
@@ -63,10 +64,12 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
           ]
         }
       }' \
-  | jq ' del( .status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
+      | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
 ); \
+
 TASK_DEF_FAMILY=$(echo $TASK_DEF_ARN | cut -d"/" -f2 | cut -d":" -f1);
 echo $TASK_DEF_NEW > /tmp/$TASK_DEF_FAMILY.json && 
+# Register ecs task definition #
 aws ecs register-task-definition \
       --cli-input-json file:///tmp/$TASK_DEF_FAMILY.json
 ```
@@ -74,8 +77,10 @@ aws ecs register-task-definition \
 * Update the service.
 
 ```bash
+# Define variables #
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
-TASK_DEF_ARN=$(aws ecs list-task-definitions | jq --raw-output ' .taskDefinitionArns | last');
+TASK_DEF_ARN=$(aws ecs list-task-definitions | jq -r ' .taskDefinitionArns | last');
+# Update ecs service #
 aws ecs update-service \
       --cluster $CLUSTER_NAME \
       --service CrystalService-ALB \
