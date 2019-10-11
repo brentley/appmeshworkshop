@@ -1,7 +1,7 @@
 languageCode = "en-us"
 ignoreFiles = [ "\\.files/README.md$",  ]
 defaultContentLanguage = "en"
-title = "Amazon EKS Workshop"
+title = "Amazon App Mesh Workshop"
 theme = "learn"
 uglyurls = false
 googleAnalytics = "UA-44634850-4"
@@ -16,7 +16,7 @@ editURL = "https://github.com/brentley/appmeshworkshop/edit/master/content/"
 themeVariant = "mine"
 showVisitedLinks = false
 author = "Brent Langston"
-description = "Amazon EKS Workshop"
+description = "Amazon App Mesh Workshop"
 disableSearch = false
 disableAssetsBusting = false
 disableLanguageSwitchingButton = true
