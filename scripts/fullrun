@@ -96,6 +96,11 @@ EOF
     --vpc-private-subnets $PRIVSUB1,$PRIVSUB2,$PRIVSUB3 \
     --node-private-networking \
     --ssh-access \
+    --alb-ingress-access \
+    --appmesh-access \
+    --external-dns-access \
+    --full-ecr-access \
+    --asg-access \
     --nodes 3
 
 EOF
@@ -302,7 +307,9 @@ update_ecs_service() {
 deploy_nodejs() {
   cd ~/environment
   yq w ecsdemo-nodejs/kubernetes/deployment.yaml spec.replicas 3 | kubectl apply -f -
-  yq w ecsdemo-nodejs/kubernetes/service.yaml spec.type LoadBalancer | kubectl apply -f -
+  kubectl apply -f appmeshworkshop/templates/alb-ingress-controller.yaml
+  kubectl apply -f appmeshworkshop/templates/externaldns.yaml
+  kubectl apply -f appmeshworkshop/templates/nodeingress.yaml
 }
 
 

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ecsdemo-nodejs
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: foo.bar.baz
+    alb.ingress.kubernetes.io/healthcheck-path: /
+spec:
+  selector:
+    app: 'ecsdemo-nodejs'
+  ports:
+  -  protocol: 'TCP'
+     port: 3000
+     targetPort: 3000
+
