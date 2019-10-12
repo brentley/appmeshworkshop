@@ -6,6 +6,13 @@ CLUSTER=$(jq < ~/environment/cfn-output.json -r '.EcsClusterName')
 
 delete_eks() {
   # clean eks control plane
+  cd ~/environment
+  kubectl delete -f ecsdemo-nodejs/kubernetes/deployment.yaml --wait
+  kubectl delete -f appmeshworkshop/templates/nodeingress.yaml --wait
+  sleep 70 # waiting for alb targets / dns to delete
+  kubectl delete -f appmeshworkshop/templates/alb-ingress-controller.yaml --wait
+  kubectl delete -f appmeshworkshop/templates/externaldns.yaml --wait
+  
   for c in $(aws eks list-clusters | jq -r .clusters[] | grep -io appmesh-workshop); do
     aws eks delete-cluster --name $c
     eksctl delete cluster --name $c
