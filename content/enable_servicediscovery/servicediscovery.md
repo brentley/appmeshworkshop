@@ -20,6 +20,6 @@ aws servicediscovery create-service \
       --name crystal \
       --description 'Discovery service for the Crystal service' \
       --namespace-id $NAMESPACE \
-      --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=SRV,TTL=60}]' \
+      --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=A,TTL=300}]' \
       --health-check-custom-config FailureThreshold=1
 ```

@@ -8,14 +8,15 @@ weight: 30
 
 ```bash
 # Define variables #
-TASK_DEF_ARN=$(aws ecs list-task-definitions | jq -r ' .taskDefinitionArns | last');
+TASK_DEF_ARN=$(aws ecs list-task-definitions | \
+      jq -r ' .taskDefinitionArns[] | select( . | contains("Crystal"))' | tail -1)
 TASK_DEF_OLD=$(aws ecs describe-task-definition --task-definition $TASK_DEF_ARN);
 TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
       | jq ' .taskDefinition' \
       | jq ' .containerDefinitions[].environment |= map(
-          if .name=="APPMESH_VIRTUAL_NODE_NAME" then 
-             .value="mesh/appmesh-workshop/virtualNode/crystal-srv-v1" 
-          else . end) ' \
+            if .name=="APPMESH_VIRTUAL_NODE_NAME" then 
+                  .value="mesh/appmesh-workshop/virtualNode/crystal-srv-v1" 
+            else . end) ' \
       | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
 ); \
 TASK_DEF_FAMILY=$(echo $TASK_DEF_ARN | cut -d"/" -f2 | cut -d":" -f1);
@@ -30,7 +31,8 @@ aws ecs register-task-definition \
 ```bash
 # Define variables #
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
-TASK_DEF_ARN=$(aws ecs list-task-definitions | jq -r ' .taskDefinitionArns | last');
+TASK_DEF_ARN=$(aws ecs list-task-definitions | \
+      jq -r ' .taskDefinitionArns[] | select( . | contains("Crystal"))' | tail -1)
 SUBNET_ONE=$(jq < cfn-output.json -r '.PrivateSubnetOne');
 SUBNET_TWO=$(jq < cfn-output.json -r '.PrivateSubnetTwo');
 SUBNET_THREE=$(jq < cfn-output.json -r '.PrivateSubnetThree');
@@ -44,7 +46,7 @@ aws ecs create-service \
       --task-definition "$(echo $TASK_DEF_ARN)" \
       --desired-count 3 \
       --platform-version LATEST \
-      --service-registries "registryArn=$CMAP_SVC_ARN,port=3000" \
+      --service-registries "registryArn=$CMAP_SVC_ARN" \
       --launch-type FARGATE \
       --network-configuration \
           "awsvpcConfiguration={subnets=[$SUBNET_ONE,$SUBNET_TWO,$SUBNET_THREE],

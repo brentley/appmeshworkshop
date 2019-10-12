@@ -8,25 +8,35 @@ weight: 10
 
 ```bash
 # Define variables #
-TASK_DEF_ARN=$(aws ecs list-task-definitions | jq -r ' .taskDefinitionArns | last');
+TASK_DEF_ARN=$(aws ecs list-task-definitions | \
+      jq -r ' .taskDefinitionArns[] | select( . | contains("Crystal"))' | tail -1)
 TASK_DEF_OLD=$(aws ecs describe-task-definition --task-definition $TASK_DEF_ARN);
 TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
       | jq ' .taskDefinition' \
+      | jq ' .containerDefinitions |= map(
+            if .name == "envoy" then .environment +=
+              [
+                {
+                  "name": "ENABLE_ENVOY_XRAY_TRACING",
+                  "value": "1"
+                }
+              ]
+            else . end) ' \
       | jq ' .containerDefinitions += 
-      [
-        {
-          "image": "amazon/aws-xray-daemon",
-          "essential": true,
-          "name": "xray",
-          "portMappings": [
-            {
-              "hostPort": 2000,
-              "protocol": "udp",
-              "containerPort": 2000
-            }
-          ]
-        }
-      ]' \
+            [
+              {
+                "image": "amazon/aws-xray-daemon",
+                "essential": true,
+                "name": "xray",
+                "portMappings": [
+                  {
+                    "hostPort": 2000,
+                    "protocol": "udp",
+                    "containerPort": 2000
+                  }
+                ]
+              }
+            ]' \
       | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
 ); \
 
@@ -41,7 +51,8 @@ aws ecs register-task-definition \
 
 ```bash
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
-TASK_DEF_ARN=$(aws ecs list-task-definitions | jq -r ' .taskDefinitionArns | last');
+TASK_DEF_ARN=$(aws ecs list-task-definitions | \
+      jq -r ' .taskDefinitionArns[] | select( . | contains("Crystal"))' | tail -1)
 aws ecs update-service \
       --cluster $CLUSTER_NAME \
       --service CrystalService-SRV \
