@@ -811,7 +811,7 @@ Resources:
                   # Set environment variables for routing
                   export MESH_RUN='true'
                   export CRYSTAL_URL='http://crystal.appmeshworkshop.hosted.local:3000/crystal'
-                  export NODEJS_URL='http://nodejs.appmeshworkshop.pvt.local:3000'
+                  export NODEJS_URL='http://nodejs.appmeshworkshop.hosted.local:3000'
 
                   # Run at boot
                   sed -i '$ d' startup.sh && echo 'rails s -e production -b 0.0.0.0' >> startup.sh
