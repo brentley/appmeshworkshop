@@ -69,10 +69,11 @@ mainSteps:
                 --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
                 --env ENABLE_ENVOY_XRAY_TRACING=1 \
                 --env AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
-                --log-driver="awslogs" \
+                --log-driver=awslogs \
                 --log-opt awslogs-region={{region}} \
                 --log-opt awslogs-create-group=true \
                 --log-opt awslogs-group=appmesh-workshop-frontend-envoy \
+                --log-opt tag=ec2/envoy/{{.FullID}} \
                 -u 1337 --network host \
                 111345817488.dkr.ecr.{{region}}.amazonaws.com/aws-appmesh-envoy:v1.11.1.1-prod
 - action: aws:runShellScript
