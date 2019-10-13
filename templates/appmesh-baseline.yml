@@ -60,6 +60,14 @@ Resources:
             - ContainerPort: 3000
               Protocol: http
           Essential: true
+          HealthCheck:
+            Command: 
+              - CMD-SHELL
+              - curl -s http://localhost:3000/health | grep -q Healthy!
+            Interval: 5
+            Retries: 3
+            StartPeriod: 10
+            Timeout: 2
 
   ExternalLoadBalancerSecurityGroup:
     Type: AWS::EC2::SecurityGroup

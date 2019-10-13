@@ -34,11 +34,23 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
                     "protocol": "udp",
                     "containerPort": 2000
                   }
-                ]
+                ],
+                "healthCheck": {
+                  "retries": 3,
+                  "command": [
+                    "CMD-SHELL",
+                    "timeout 1 /bin/bash -c \"</dev/udp/localhost/2000\""
+                  ],
+                  "timeout": 2,
+                  "interval": 5,
+                  "startPeriod": 10
+                }
               }
             ]' \
       | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
 ); \
+
+CMD-SHELL, 
 
 TASK_DEF_FAMILY=$(echo $TASK_DEF_ARN | cut -d"/" -f2 | cut -d":" -f1);
 echo $TASK_DEF_NEW > /tmp/$TASK_DEF_FAMILY.json && 
@@ -55,6 +67,6 @@ TASK_DEF_ARN=$(aws ecs list-task-definitions | \
       jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
 aws ecs update-service \
       --cluster $CLUSTER_NAME \
-      --service crystal-service-sd-v1 \
+      --service crystal-service-lb-v1 \
       --task-definition "$(echo $TASK_DEF_ARN)"
 ```

@@ -27,6 +27,15 @@ SPEC=$(cat <<-EOF
       },      
       "listeners": [
         {
+          "healthCheck": {
+            "healthyThreshold": 3,
+            "intervalMillis": 10000,
+            "path": "/health",
+            "port": 3000,
+            "protocol": "http",
+            "timeoutMillis": 5000,
+            "unhealthyThreshold": 3
+          },
           "portMapping": { "port": 3000, "protocol": "http" }
         }
       ]
