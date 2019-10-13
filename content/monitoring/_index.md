@@ -1,7 +1,7 @@
 ---
 title: "Monitoring & Logging"
 chapter: true
-weight: 30
+weight: 25
 ---
 
 # Add Monitoring and Logging Capabilities

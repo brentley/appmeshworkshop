@@ -1,7 +1,7 @@
 ---
 title: "Distributed Tracing"
 chapter: true
-weight: 35
+weight: 30
 ---
 
 # Add End-to-End Tracing Capabilities

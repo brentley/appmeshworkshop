@@ -1,7 +1,7 @@
 ---
 title: "Enable Service Discovery"
 chapter: true
-weight: 30
+weight: 35
 ---
 
 # Service discovery for Crystal Backend Service
