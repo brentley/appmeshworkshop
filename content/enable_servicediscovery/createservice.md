@@ -4,12 +4,12 @@ date: 2018-09-18T17:39:30-05:00
 weight: 30
 ---
 
-* Register a new task definition pointing to the crystal-sd-v1 virtual node
+* Register a new task definition pointing to the crystal-sd-v1 virtual node.
 
 ```bash
 # Define variables #
 TASK_DEF_ARN=$(aws ecs list-task-definitions | \
-      jq -r ' .taskDefinitionArns[] | select( . | contains("Crystal"))' | tail -1)
+      jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
 TASK_DEF_OLD=$(aws ecs describe-task-definition --task-definition $TASK_DEF_ARN);
 TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
       | jq ' .taskDefinition' \
@@ -32,7 +32,7 @@ aws ecs register-task-definition \
 # Define variables #
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 TASK_DEF_ARN=$(aws ecs list-task-definitions | \
-      jq -r ' .taskDefinitionArns[] | select( . | contains("Crystal"))' | tail -1)
+      jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
 SUBNET_ONE=$(jq < cfn-output.json -r '.PrivateSubnetOne');
 SUBNET_TWO=$(jq < cfn-output.json -r '.PrivateSubnetTwo');
 SUBNET_THREE=$(jq < cfn-output.json -r '.PrivateSubnetThree');

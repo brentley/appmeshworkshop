@@ -80,7 +80,7 @@ aws ecs register-task-definition \
 # Define variables #
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 TASK_DEF_ARN=$(aws ecs list-task-definitions | \
-      jq -r ' .taskDefinitionArns[] | select( . | contains("Crystal"))' | tail -1)
+      jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
 # Update ecs service #
 aws ecs update-service \
       --cluster $CLUSTER_NAME \

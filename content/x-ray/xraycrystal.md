@@ -1,15 +1,15 @@
 ---
-title: "Enable X-Ray for Crystal"
+title: "Enable X-Ray for crystal"
 date: 2018-09-18T16:01:14-05:00
 weight: 10
 ---
 
-* Register a new task definition to add the x-ray container
+* Register a new task definition to add the x-ray container, and enable tracing for the envoy container.
 
 ```bash
 # Define variables #
 TASK_DEF_ARN=$(aws ecs list-task-definitions | \
-      jq -r ' .taskDefinitionArns[] | select( . | contains("Crystal"))' | tail -1)
+      jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
 TASK_DEF_OLD=$(aws ecs describe-task-definition --task-definition $TASK_DEF_ARN);
 TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
       | jq ' .taskDefinition' \
@@ -52,7 +52,7 @@ aws ecs register-task-definition \
 ```bash
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 TASK_DEF_ARN=$(aws ecs list-task-definitions | \
-      jq -r ' .taskDefinitionArns[] | select( . | contains("Crystal"))' | tail -1)
+      jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
 aws ecs update-service \
       --cluster $CLUSTER_NAME \
       --service crystal-service-sd-v1 \
