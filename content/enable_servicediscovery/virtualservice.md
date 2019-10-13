@@ -24,3 +24,5 @@ aws appmesh update-virtual-service \
       --virtual-service-name crystal.appmeshworkshop.hosted.local \
       --spec "$SPEC"
 ```
+
+Finally, after confirming traffic is routing succesfully, we can shift 100% of our traffic over to the new virtual node. This also means deprovisioning the existing internal load balancer, the ECS service and the tasks running behind it.

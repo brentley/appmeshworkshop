@@ -28,7 +28,7 @@ aws appmesh create-virtual-router \
       --spec "$SPEC"
 ```
 
-* Create a route to direct every incomming request to crystal-sd-v1 (weight: 1).
+* Create a route to start shifting traffic to your new virtual node. The traffic will be distributed between the crystal-alb-v1 and crystal-sd-v1 virtual nodes at a 2:1 ratio (i.e., the crystal-sd-v1 node will receive three quarters of the traffic).
 
 ```bash
 # Define variables #
@@ -39,11 +39,11 @@ SPEC=$(cat <<-EOF
           "weightedTargets": [
             {
               "virtualNode": "crystal-lb-v1",
-              "weight": 0
+              "weight": 1
             },
             {
               "virtualNode": "crystal-sd-v1",
-              "weight": 1
+              "weight": 2
             }          
           ]
         },
