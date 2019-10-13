@@ -22,7 +22,7 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
                 "environment": [
                   {
                     "name": "APPMESH_VIRTUAL_NODE_NAME",
-                    "value": "mesh/appmesh-workshop/virtualNode/crystal-alb-v1"
+                    "value": "mesh/appmesh-workshop/virtualNode/crystal-lb-v1"
                   }
                 ],
                 "image": ($ENVOY_REGISTRY + "/aws-appmesh-envoy:v1.11.1.1-prod"),
@@ -84,6 +84,6 @@ TASK_DEF_ARN=$(aws ecs list-task-definitions | \
 # Update ecs service #
 aws ecs update-service \
       --cluster $CLUSTER_NAME \
-      --service CrystalService-ALB \
+      --service crystal-service-lb-v1 \
       --task-definition "$(echo $TASK_DEF_ARN)"
 ```

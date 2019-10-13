@@ -140,7 +140,7 @@ EOF
 
   aws ecs create-service \
     --cluster $CLUSTER \
-    --service-name CrystalService-ALB \
+    --service-name crystal-service-lb-v1 \
     --task-definition $TASK_DEF \
     --load-balancer targetGroupArn=$TARGET_GROUP,containerName=crystal-service,containerPort=3000 \
     --desired-count 3 \
@@ -211,7 +211,7 @@ EOF
   ); \
   aws appmesh create-virtual-node \
         --mesh-name appmesh-workshop \
-        --virtual-node-name crystal-alb-v1 \
+        --virtual-node-name crystal-lb-v1 \
         --spec "$SPEC"
 }
 
@@ -220,7 +220,7 @@ create_virtual_service() {
     { 
       "provider": {
         "virtualNode": { 
-          "virtualNodeName": "crystal-alb-v1"
+          "virtualNodeName": "crystal-lb-v1"
         }
       }
     }
@@ -244,7 +244,7 @@ add_envoy_sidecar() {
             "environment": [
               {
                 "name": "APPMESH_VIRTUAL_NODE_NAME",
-                "value": "mesh/appmesh-workshop/virtualNode/crystal-alb-v1"
+                "value": "mesh/appmesh-workshop/virtualNode/crystal-lb-v1"
               }
             ],
             "image": ($ENVOY_REGISTRY + "/aws-appmesh-envoy:v1.11.1.1-prod"),
@@ -299,7 +299,7 @@ update_ecs_service() {
   TASK_DEF_ARN=$(jq < cfn-output.json -r '.CrystalTaskDefinition');
   aws ecs update-service \
         --cluster $CLUSTER_NAME \
-        --service CrystalService-ALB \
+        --service crystal-service-lb-v1 \
         --task-definition "$(echo $TASK_DEF_ARN | awk -F: '{$7=$7+1}1' OFS=:)"
 
 }

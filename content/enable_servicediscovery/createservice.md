@@ -4,7 +4,7 @@ date: 2018-09-18T17:39:30-05:00
 weight: 30
 ---
 
-* Register a new task definition pointing to the crystal-srv-v1 virtual node
+* Register a new task definition pointing to the crystal-sd-v1 virtual node
 
 ```bash
 # Define variables #
@@ -15,7 +15,7 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
       | jq ' .taskDefinition' \
       | jq ' .containerDefinitions[].environment |= map(
             if .name=="APPMESH_VIRTUAL_NODE_NAME" then 
-                  .value="mesh/appmesh-workshop/virtualNode/crystal-srv-v1" 
+                  .value="mesh/appmesh-workshop/virtualNode/crystal-sd-v1" 
             else . end) ' \
       | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
 ); \
@@ -42,7 +42,7 @@ CMAP_SVC_ARN=$(aws servicediscovery list-services | \
 # Create ecs service #
 aws ecs create-service \
       --cluster $CLUSTER_NAME \
-      --service-name CrystalService-SRV \
+      --service-name crystal-service-sd-v1 \
       --task-definition "$(echo $TASK_DEF_ARN)" \
       --desired-count 3 \
       --platform-version LATEST \

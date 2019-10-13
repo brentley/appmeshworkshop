@@ -40,14 +40,14 @@ Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: !Sub Cluster-${AWS::StackName}
+      ClusterName: !Sub cluster-${AWS::StackName}
 
   CrystalTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties: 
       Cpu: 256
       ExecutionRoleArn: !GetAtt ECSServiceRole.Arn
-      Family: !Sub Crystal-Service-${AWS::StackName} 
+      Family: !Sub crystal-task-${AWS::StackName} 
       Memory: 512
       NetworkMode: awsvpc
       RequiresCompatibilities:
@@ -804,11 +804,12 @@ Resources:
 
                   # Clone the repo and build the app
                   export RUBY_ROOT=/tmp/ecsdemo-frontend
-                  git clone https://github.com/brentley/ecsdemo-frontend.git /tmp/ecsdemo-frontend
+                  git clone https://github.com/ffeijoo/ecsdemo-frontend.git /tmp/ecsdemo-frontend
                   cd $RUBY_ROOT
                   bundle install
 
                   # Set environment variables for routing
+                  export MESH_RUN='true'
                   export CRYSTAL_URL='http://crystal.appmeshworkshop.hosted.local:3000/crystal'
                   export NODEJS_URL='http://nodejs.appmeshworkshop.pvt.local:3000'
 
@@ -924,10 +925,9 @@ Resources:
     Properties: 
       Description: Discovery service for the NodeJS service
       DnsConfig:
-        RoutingPolicy: MULTIVALUE
         DnsRecords:
-          - TTL: 60
-            Type: SRV
+          - TTL: 300
+            Type: A
       HealthCheckCustomConfig: 
         FailureThreshold: 1
       Name: nodejs

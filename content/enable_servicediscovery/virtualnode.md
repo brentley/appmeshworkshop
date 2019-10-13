@@ -34,6 +34,6 @@ EOF
 # Create app mesh virtual node #
 aws appmesh create-virtual-node \
       --mesh-name appmesh-workshop \
-      --virtual-node-name crystal-srv-v1 \
+      --virtual-node-name crystal-sd-v1 \
       --spec "$SPEC"
 ```

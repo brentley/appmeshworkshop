@@ -21,6 +21,11 @@ SPEC=$(cat <<-EOF
           "virtualService": {
             "virtualServiceName": "crystal.appmeshworkshop.hosted.local"
           }
+        },
+        {
+          "virtualService": {
+            "virtualServiceName": "nodejs.appmeshworkshop.pvt.local"
+          }
         }
       ],      
       "logging": {

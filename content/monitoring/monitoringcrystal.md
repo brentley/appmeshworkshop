@@ -44,6 +44,6 @@ TASK_DEF_ARN=$(aws ecs list-task-definitions | \
       jq -r ' .taskDefinitionArns[] | select( . | contains("Crystal"))' | tail -1)
 aws ecs update-service \
       --cluster $CLUSTER_NAME \
-      --service CrystalService-SRV \
+      --service crystal-service-sd-v1 \
       --task-definition "$(echo $TASK_DEF_ARN)"
 ```

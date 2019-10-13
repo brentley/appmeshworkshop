@@ -134,7 +134,7 @@ SECURITY_GROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup')
 
 aws ecs create-service \
   --cluster $CLUSTER \
-  --service-name CrystalService-ALB \
+  --service-name crystal-service-lb-v1 \
   --task-definition $TASK_DEF \
   --load-balancer targetGroupArn=$TARGET_GROUP,containerName=crystal-service,containerPort=3000 \
   --desired-count 3 \
