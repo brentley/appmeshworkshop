@@ -920,19 +920,6 @@ Resources:
       Name: appmeshworkshop.pvt.local
       Vpc: !Ref VPC
 
-  NodeJSService:
-    Type: AWS::ServiceDiscovery::Service
-    Properties: 
-      Description: Discovery service for the NodeJS service
-      DnsConfig:
-        DnsRecords:
-          - TTL: 300
-            Type: A
-      HealthCheckCustomConfig: 
-        FailureThreshold: 1
-      Name: nodejs
-      NamespaceId: !Ref Namespace
-
 Outputs:
   InternalLoadBalancerDNS:
     Description: The DNS for the internal load balancer
