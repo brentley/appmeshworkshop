@@ -12,8 +12,8 @@ TASK_DEF_ARN=$(aws ecs list-task-definitions | \
       jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
 TASK_DEF_OLD=$(aws ecs describe-task-definition --task-definition $TASK_DEF_ARN);
 TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
-  | jq ' .taskDefinition' \
-  | jq --arg AWS_REGION $AWS_REGION ' .containerDefinitions |= map(
+      | jq ' .taskDefinition' \
+      | jq --arg AWS_REGION $AWS_REGION ' .containerDefinitions |= map(
             if .name == "envoy" then . +=
               {
                 "logConfiguration": {
@@ -27,7 +27,7 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
                 }
               }
             else . end) ' \
-  | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
+      | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
 ); \
 TASK_DEF_FAMILY=$(echo $TASK_DEF_ARN | cut -d"/" -f2 | cut -d":" -f1);
 echo $TASK_DEF_NEW > /tmp/$TASK_DEF_FAMILY.json && 
@@ -46,4 +46,34 @@ aws ecs update-service \
       --cluster $CLUSTER_NAME \
       --service crystal-service-lb-v1 \
       --task-definition "$(echo $TASK_DEF_ARN)"
+```
+
+* Wait for the service tasks to be in a running state.
+
+```bash
+# Define variables #
+CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
+TASK_DEF_ARN=$(aws ecs list-task-definitions | \
+      jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1);
+# Get task state #
+_list_tasks() {
+      aws ecs list-tasks \
+            --cluster $CLUSTER_NAME \
+            --service crystal-service-lb-v1 | \
+      jq -r ' .taskArns | @text' | \
+            while read taskArns; do 
+              aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;
+            done | \
+      jq -r --arg TASK_DEF_ARN $TASK_DEF_ARN \
+            ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN) 
+                            and (.lastStatus == "RUNNING" ))] | length'
+}
+until [ $(_list_tasks) -lt "3" ]; do
+      echo "Tasks are starting ..."
+      sleep 10s
+      if [ $(_list_tasks) == "3" ]; then
+        echo "Tasks started"
+        break
+      fi
+done
 ```

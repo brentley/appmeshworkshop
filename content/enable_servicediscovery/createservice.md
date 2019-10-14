@@ -53,3 +53,25 @@ aws ecs create-service \
             securityGroups=[$SECURITY_GROUP],
             assignPublicIp=DISABLED}"
 ```
+
+* Wait for the instances to become healthy.
+
+```bash
+# Define variables #
+CMAP_SVC_ID=$(aws servicediscovery list-services | \
+      jq -r '.Services[] | select(.Name == "crystal") | .Id');
+# Get instances health status #
+_list_instances() {
+      aws servicediscovery get-instances-health-status \
+        --service-id $CMAP_SVC_ID | \
+      jq ' [.Status | to_entries[] | select( .value == "HEALTHY")] | length'
+}
+until [ $(_list_instances) -lt "3" ]; do
+      echo "Instances are registering ..."
+      sleep 10s
+      if [ $(_list_instances) == "3" ]; then
+        echo "Instances registered"
+        break
+      fi
+done
+ ```

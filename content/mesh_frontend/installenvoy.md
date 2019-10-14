@@ -144,7 +144,7 @@ mainSteps:
 EOF
 # Create ssm document #
 aws ssm create-document \
-      --name appmesh-workshop-InstallEnvoy \
+      --name appmesh-workshop-installenvoy \
       --document-format YAML \
       --content file:///tmp/install_envoy.yml \
       --document-type Command
@@ -157,7 +157,8 @@ aws ssm create-document \
 AUTOSCALING_GROUP=$(jq < cfn-output.json -r '.RubyAutoScalingGroupName'); \
 # Create ssm association #
 aws ssm create-association \
-      --name appmesh-workshop-InstallEnvoy \
+      --name appmesh-workshop-installenvoy \
+      --association-name appmesh-workshop-state \
       --targets "Key=tag:aws:autoscaling:groupName,Values=$AUTOSCALING_GROUP" \
       --max-errors 0 \
       --max-concurrency 50% \
@@ -166,4 +167,24 @@ aws ssm create-association \
             meshName=appmesh-workshop,
             vNodeName=frontend-v1,
             appPorts=3000"
+```
+
+* Wait for association to complete.
+
+```bash
+# Check association status #
+_list_association() {
+      aws ssm list-associations \
+        --association-filter key="AssociationName",value="appmesh-workshop-state" | \
+      jq -r ' .Associations[].Overview.Status'
+}
+until [ $(_list_association) != "Pending" ]; do
+      echo "Association is pending ..."
+      sleep 10s
+      ASSOCIATION_STATUS=$(_list_association)
+      if [ $ASSOCIATION_STATUS != "Pending" ]; then
+        echo "Association $ASSOCIATION_STATUS"
+        break
+      fi
+done
 ```
