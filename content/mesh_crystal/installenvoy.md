@@ -22,7 +22,7 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
                 "environment": [
                   {
                     "name": "APPMESH_VIRTUAL_NODE_NAME",
-                    "value": "mesh/appmesh-workshop/virtualNode/crystal-lb-v1"
+                    "value": "mesh/appmesh-workshop/virtualNode/crystal-lb-blue"
                   }
                 ],
                 "image": ($ENVOY_REGISTRY + "/aws-appmesh-envoy:v1.11.1.1-prod"),

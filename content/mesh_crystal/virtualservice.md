@@ -45,7 +45,7 @@ EOF
 # Create app mesh virual node #
 aws appmesh create-virtual-node \
       --mesh-name appmesh-workshop \
-      --virtual-node-name crystal-lb-v1 \
+      --virtual-node-name crystal-lb-blue \
       --spec "$SPEC"
 ```
 
@@ -57,7 +57,7 @@ SPEC=$(cat <<-EOF
     { 
       "provider": {
         "virtualNode": { 
-          "virtualNodeName": "crystal-lb-v1"
+          "virtualNodeName": "crystal-lb-blue"
         }
       }
     }

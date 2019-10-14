@@ -38,11 +38,11 @@ SPEC=$(cat <<-EOF
         "action": { 
           "weightedTargets": [
             {
-              "virtualNode": "crystal-lb-v1",
+              "virtualNode": "crystal-lb-blue",
               "weight": 1
             },
             {
-              "virtualNode": "crystal-sd-v1",
+              "virtualNode": "crystal-sd-blue",
               "weight": 2
             }          
           ]
