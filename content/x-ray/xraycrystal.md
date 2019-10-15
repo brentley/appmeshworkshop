@@ -64,7 +64,7 @@ TASK_DEF_ARN=$(aws ecs list-task-definitions | \
       jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
 aws ecs update-service \
       --cluster $CLUSTER_NAME \
-      --service crystal-service-lb-v1 \
+      --service crystal-service-lb-blue \
       --task-definition "$(echo $TASK_DEF_ARN)"
 ```
 
@@ -79,7 +79,7 @@ TASK_DEF_ARN=$(aws ecs list-task-definitions | \
 _list_tasks() {
       aws ecs list-tasks \
             --cluster $CLUSTER_NAME \
-            --service crystal-service-lb-v1 | \
+            --service crystal-service-lb-blue | \
       jq -r ' .taskArns | @text' | \
             while read taskArns; do 
               aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;
@@ -88,7 +88,7 @@ _list_tasks() {
             ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN) 
                             and (.lastStatus == "RUNNING" ))] | length'
 }
-until [ $(_list_tasks) -lt "3" ]; do
+until [ $(_list_tasks) == "3" ]; do
       echo "Tasks are starting ..."
       sleep 10s
       if [ $(_list_tasks) == "3" ]; then
