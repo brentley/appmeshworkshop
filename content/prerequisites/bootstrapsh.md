@@ -113,9 +113,6 @@ docker build -t crystal-service ecsdemo-crystal
 docker tag crystal-service:latest $CRYSTAL_ECR_REPO:blue
 docker push $CRYSTAL_ECR_REPO:blue
 
-docker tag crystal-service:latest $CRYSTAL_ECR_REPO:latest
-docker push $CRYSTAL_ECR_REPO:latest
-
 docker build -t nodejs-service ecsdemo-nodejs
 docker tag nodejs-service:latest $NODEJS_ECR_REPO:latest
 docker push $NODEJS_ECR_REPO:latest

@@ -14,11 +14,20 @@ Remember, in App Mesh, every version of a service is ultimately backed by actual
 
 Additionaly, there is the physical deployment of the application itself to a compute environment. Both crystal deployments will run on ECS using the Fargate launch type. Our goal is to test with a portion of traffic going to the new version, ultimately increasing to 100% of traffic.
 
-* On your Cloud9 environment open the **ecsdemo-crystal** project
+* Update code_hash.txt in **ecsdemo-crystal** project
 
 ```bash
-# Create mesh #
-aws appmesh create-mesh \
-  --mesh-name appmesh-workshop \
-  --spec egressFilter={type=DROP_ALL}
+echo "CANARY" > ecsdemo-crystal/code_hash.txt
+```
+
+* Build the container
+
+```bash
+CRYSTAL_ECR_REPO=$(jq < cfn-output.json -r '.CrystalEcrRepo')
+
+$(aws ecr get-login --no-include-email)
+
+docker build -t crystal-service ecsdemo-crystal
+docker tag crystal-service:latest $CRYSTAL_ECR_REPO:green
+docker push $CRYSTAL_ECR_REPO:green
 ```
