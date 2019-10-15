@@ -4,7 +4,7 @@ date: 2018-09-18T16:01:14-05:00
 weight: 5
 ---
 
-* Enable container insights
+* Enable container insights.
 
 ```bash
 # Define variables #
