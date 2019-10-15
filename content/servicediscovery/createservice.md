@@ -54,6 +54,36 @@ aws ecs create-service \
             assignPublicIp=DISABLED}"
 ```
 
+* Wait for the service tasks to be in a running state.
+
+```bash
+# Define variables #
+CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
+TASK_DEF_ARN=$(aws ecs list-task-definitions | \
+      jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1);
+# Get task state #
+_list_tasks() {
+      aws ecs list-tasks \
+            --cluster $CLUSTER_NAME \
+            --service crystal-service-sd-blue | \
+      jq -r ' .taskArns | @text' | \
+            while read taskArns; do 
+              aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;
+            done | \
+      jq -r --arg TASK_DEF_ARN $TASK_DEF_ARN \
+            ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN) 
+                            and (.lastStatus == "RUNNING" ))] | length'
+}
+until [ $(_list_tasks) == "3" ]; do
+      echo "Tasks are starting ..."
+      sleep 10s
+      if [ $(_list_tasks) == "3" ]; then
+        echo "Tasks started"
+        break
+      fi
+done
+```
+
 * Wait for the instances to become healthy.
 
 ```bash
@@ -66,7 +96,7 @@ _list_instances() {
         --service-id $CMAP_SVC_ID | \
       jq ' [.Status | to_entries[] | select( .value == "HEALTHY")] | length'
 }
-until [ $(_list_instances) -lt "3" ]; do
+until [ $(_list_instances) == "3" ]; do
       echo "Instances are registering ..."
       sleep 10s
       if [ $(_list_instances) == "3" ]; then
