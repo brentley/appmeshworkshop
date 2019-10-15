@@ -25,4 +25,4 @@ aws appmesh update-virtual-service \
       --spec "$SPEC"
 ```
 
-Finally, after confirming traffic is routing succesfully, we can shift 100% of our traffic over to the new virtual node. This also means deprovisioning the existing internal load balancer, the ECS service and the tasks running behind it. The CNAME record crystal.appmeshworkshop.hosted.local can reference crystal.appmeshworkshop.pvt.local.
+Finally, after confirming traffic is routing succesfully, we can shift 100% of our traffic over to the new virtual node. This also means deprovisioning the existing internal load balancer, the ECS service and the tasks running behind it. The CNAME record crystal.appmeshworkshop.hosted.local can now reference crystal.appmeshworkshop.pvt.local.

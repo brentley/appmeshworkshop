@@ -17,7 +17,7 @@ The Crystal backend service operates behind an internal (dedicated) load balance
 NAMESPACE=$(jq < cfn-output.json -r '.NamespaceId');
 # Create cloud map service #
 aws servicediscovery create-service \
-      --name crystal \
+      --name crystal-blue \
       --description 'Discovery service for the Crystal service' \
       --namespace-id $NAMESPACE \
       --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=A,TTL=300}]' \

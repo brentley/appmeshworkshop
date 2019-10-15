@@ -13,7 +13,7 @@ SPEC=$(cat <<-EOF
       "serviceDiscovery": {
         "awsCloudMap": {
           "namespaceName": "appmeshworkshop.pvt.local",
-          "serviceName": "crystal"
+          "serviceName": "crystal-blue"
         }
       },
       "logging": {
@@ -43,6 +43,6 @@ EOF
 # Create app mesh virtual node #
 aws appmesh create-virtual-node \
       --mesh-name appmesh-workshop \
-      --virtual-node-name crystal-sd-v1 \
+      --virtual-node-name crystal-sd-blue \
       --spec "$SPEC"
 ```

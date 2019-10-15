@@ -4,7 +4,7 @@ date: 2018-09-18T17:39:30-05:00
 weight: 30
 ---
 
-* Register a new task definition pointing to the crystal-sd-v1 virtual node.
+* Register a new task definition pointing to the crystal-sd-blue virtual node.
 
 ```bash
 # Define variables #
@@ -15,7 +15,7 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
       | jq ' .taskDefinition' \
       | jq ' .containerDefinitions[].environment |= map(
             if .name=="APPMESH_VIRTUAL_NODE_NAME" then 
-                  .value="mesh/appmesh-workshop/virtualNode/crystal-sd-v1" 
+                  .value="mesh/appmesh-workshop/virtualNode/crystal-sd-blue" 
             else . end) ' \
       | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
 ); \
@@ -38,11 +38,11 @@ SUBNET_TWO=$(jq < cfn-output.json -r '.PrivateSubnetTwo');
 SUBNET_THREE=$(jq < cfn-output.json -r '.PrivateSubnetThree');
 SECURITY_GROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup');
 CMAP_SVC_ARN=$(aws servicediscovery list-services | \
-      jq -r '.Services[] | select(.Name == "crystal") | .Arn');
+      jq -r '.Services[] | select(.Name == "crystal-blue") | .Arn');
 # Create ecs service #
 aws ecs create-service \
       --cluster $CLUSTER_NAME \
-      --service-name crystal-service-sd-v1 \
+      --service-name crystal-service-sd-blue \
       --task-definition "$(echo $TASK_DEF_ARN)" \
       --desired-count 3 \
       --platform-version LATEST \
@@ -59,7 +59,7 @@ aws ecs create-service \
 ```bash
 # Define variables #
 CMAP_SVC_ID=$(aws servicediscovery list-services | \
-      jq -r '.Services[] | select(.Name == "crystal") | .Id');
+      jq -r '.Services[] | select(.Name == "crystal-blue") | .Id');
 # Get instances health status #
 _list_instances() {
       aws servicediscovery get-instances-health-status \
