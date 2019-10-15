@@ -1,10 +1,10 @@
 ---
-title: "Rolling Backend Updates"
+title: "Deployment Strategies"
 chapter: true
 weight: 40
 ---
 
-# Monitoring the Example Microservices
+# Roll out updates to the example microservices
 
 ![microservices](/images/crystal.svg)
 {{% children showhidden="false" %}}
