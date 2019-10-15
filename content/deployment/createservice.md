@@ -67,7 +67,7 @@ _list_instances() {
         --service-id $CMAP_SVC_ID | \
       jq ' [.Status | to_entries[] | select( .value == "HEALTHY")] | length'
 }
-until [ $(_list_instances) == "3" ]; do
+until [ $(_list_instances) -lt "3" ]; do
       echo "Instances are registering ..."
       sleep 10s
       if [ $(_list_instances) == "3" ]; then
