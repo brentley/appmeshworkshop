@@ -54,13 +54,15 @@ aws ecs create-service \
             assignPublicIp=DISABLED}"
 ```
 
-* Wait for the service tasks to be in a running state.
+* Wait for the service tasks to be in a running state and marked healthy for service discovery.
 
 ```bash
 # Define variables #
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 TASK_DEF_ARN=$(aws ecs list-task-definitions | \
       jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1);
+CMAP_SVC_ID=$(aws servicediscovery list-services | \
+      jq -r '.Services[] | select(.Name == "crystal-blue") | .Id');
 # Get task state #
 _list_tasks() {
       aws ecs list-tasks \
@@ -74,6 +76,12 @@ _list_tasks() {
             ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN) 
                             and (.lastStatus == "RUNNING" ))] | length'
 }
+# Get instances health status #
+_list_instances() {
+      aws servicediscovery get-instances-health-status \
+        --service-id $CMAP_SVC_ID | \
+      jq ' [.Status | to_entries[] | select( .value == "HEALTHY")] | length'
+}
 until [ $(_list_tasks) == "3" ]; do
       echo "Tasks are starting ..."
       sleep 10s
@@ -82,20 +90,6 @@ until [ $(_list_tasks) == "3" ]; do
         break
       fi
 done
-```
-
-* Wait for the instances to become healthy.
-
-```bash
-# Define variables #
-CMAP_SVC_ID=$(aws servicediscovery list-services | \
-      jq -r '.Services[] | select(.Name == "crystal-blue") | .Id');
-# Get instances health status #
-_list_instances() {
-      aws servicediscovery get-instances-health-status \
-        --service-id $CMAP_SVC_ID | \
-      jq ' [.Status | to_entries[] | select( .value == "HEALTHY")] | length'
-}
 until [ $(_list_instances) == "3" ]; do
       echo "Instances are registering ..."
       sleep 10s
@@ -104,4 +98,4 @@ until [ $(_list_instances) == "3" ]; do
         break
       fi
 done
- ```
+```
