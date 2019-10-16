@@ -44,7 +44,7 @@ SPEC=$(cat <<-EOF
             {
               "virtualNode": "crystal-sd-blue",
               "weight": 2
-            }          
+            }
           ]
         },
         "match": {

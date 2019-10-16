@@ -10,7 +10,7 @@ Part of the transition to microservices and modern architectures involves having
 
 The Crystal backend service operates behind an internal (dedicated) load balancer. We will  now configure it to use Amazon ECS Service Discovery. Service discovery uses AWS Cloud Map API actions to manage HTTP and DNS namespaces for Amazon ECS services.
 
-* Let's create a new service in Cloud Map.
+* Create a new service in Cloud Map.
 
 ```bash
 # Define variables #
