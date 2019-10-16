@@ -18,7 +18,7 @@ NAMESPACE=$(jq < cfn-output.json -r '.NamespaceId');
 # Create cloud map service #
 aws servicediscovery create-service \
       --name crystal-blue \
-      --description 'Discovery service for the Crystal service' \
+      --description 'Discovery service for the Crystal service (blue)' \
       --namespace-id $NAMESPACE \
       --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=A,TTL=300}]' \
       --health-check-custom-config FailureThreshold=1

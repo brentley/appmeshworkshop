@@ -37,6 +37,6 @@ EOF
 aws appmesh create-route \
       --mesh-name appmesh-workshop \
       --virtual-router-name crystal-router \
-      --route-name crystal-default-route \
+      --route-name crystal-canary-route \
       --spec "$SPEC"
 ```
