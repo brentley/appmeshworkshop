@@ -233,7 +233,7 @@ EOF
 }
 
 add_envoy_sidecar() {
-  ENVOY_REGISTRY="111345817488.dkr.ecr.$AWS_REGION.amazonaws.com";
+  ENVOY_REGISTRY="840364872350.dkr.ecr.$AWS_REGION.amazonaws.com";
   TASK_DEF_ARN=$(jq < cfn-output.json -r '.CrystalTaskDefinition');
   TASK_DEF_OLD=$(aws ecs describe-task-definition --task-definition $TASK_DEF_ARN);
   TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
@@ -247,7 +247,7 @@ add_envoy_sidecar() {
                 "value": "mesh/appmesh-workshop/virtualNode/crystal-lb-blue"
               }
             ],
-            "image": ($ENVOY_REGISTRY + "/aws-appmesh-envoy:v1.11.1.1-prod"),
+            "image": ($ENVOY_REGISTRY + "/aws-appmesh-envoy:v1.11.2.0-prod"),
             "healthCheck": {
               "retries": 3,
               "command": [

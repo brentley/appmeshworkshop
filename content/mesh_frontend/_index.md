@@ -4,7 +4,7 @@ chapter: true
 weight: 20
 ---
 
-# Mesh the Ruby Frontend Service
+# Mesh the Frontend Ruby Service
 
 ![microservices](/images/crystal.svg)
 {{% children showhidden="false" %}}

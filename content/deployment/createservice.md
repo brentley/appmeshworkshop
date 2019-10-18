@@ -1,5 +1,5 @@
 ---
-title: "Create a new crystal service"
+title: "Create a new ECS service"
 date: 2018-09-18T17:39:30-05:00
 weight: 30
 ---

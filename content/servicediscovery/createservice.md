@@ -1,7 +1,7 @@
 ---
-title: "Create a new crystal service"
+title: "Create a new ECS service"
 date: 2018-09-18T17:39:30-05:00
-weight: 30
+weight: 50
 ---
 
 * Register a new task definition pointing to the crystal-sd-blue virtual node.
@@ -99,3 +99,5 @@ until [ $(_list_instances) == "3" ]; do
       fi
 done
 ```
+
+After confirming traffic is routing succesfully, we can shift 100% of our traffic over to the new virtual node. This also means deprovisioning the existing internal load balancer, the ECS service and the tasks running behind it. The CNAME record crystal.appmeshworkshop.hosted.local can now reference crystal.appmeshworkshop.pvt.local.

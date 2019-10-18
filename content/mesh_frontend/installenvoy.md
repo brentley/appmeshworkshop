@@ -52,30 +52,19 @@ mainSteps:
 
             sudo yum install -y jq
 
-            EC2_METADATA="http://169.254.169.254/latest"
-            AWS_ROLE=$(curl $EC2_METADATA/meta-data/iam/security-credentials/)
-            AWS_CREDENTIALS=$(curl $EC2_METADATA/meta-data/iam/security-credentials/$AWS_ROLE)
-
-            AWS_ACCESS_KEY_ID=$(echo $AWS_CREDENTIALS | jq -r .AccessKeyId)
-            AWS_SECRET_ACCESS_KEY=$(echo $AWS_CREDENTIALS | jq -r .SecretAccessKey)
-            AWS_SESSION_TOKEN=$(echo $AWS_CREDENTIALS | jq -r .Token)
-
             $(aws ecr get-login --no-include-email --region {{region}} --registry-ids 111345817488)
 
             # Install and run envoy
             sudo docker run --detach \
                 --env APPMESH_VIRTUAL_NODE_NAME=mesh/{{meshName}}/virtualNode/{{vNodeName}} \
-                --env AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
-                --env AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
                 --env ENABLE_ENVOY_XRAY_TRACING=1 \
-                --env AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
                 --log-driver=awslogs \
                 --log-opt awslogs-region={{region}} \
                 --log-opt awslogs-create-group=true \
                 --log-opt awslogs-group=appmesh-workshop-frontend-envoy \
                 --log-opt tag=ec2/envoy/{{.FullID}} \
                 -u 1337 --network host \
-                111345817488.dkr.ecr.{{region}}.amazonaws.com/aws-appmesh-envoy:v1.11.1.1-prod
+                840364872350.dkr.ecr.{{region}}.amazonaws.com/aws-appmesh-envoy:v1.11.2.0-prod
 - action: aws:runShellScript
       name: installXRay
       inputs:

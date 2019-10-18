@@ -4,7 +4,13 @@ date: 2018-09-18T17:39:30-05:00
 weight: 10
 ---
 
-A virtual service is an abstraction of a real service that is provided by a virtual node in the mesh. Virtual nodes act as a logical pointer to a particular task group, such as an EC2 Auto Scaling Group, an Amazon ECS service or a Kubernetes deployment.
+In the previous section, we created the service mesh. Lets now add a representation of the Crystal ECS Service. We will do so by creating the following two artifacts in App Mesh, a virtual node and a virtual service.
+
+A **virtual service** is an abstraction of a real service that is provided by a **virtual node** in the mesh. Virtual nodes act as a logical pointer to a particular task group, such as an EC2 Auto Scaling Group, an Amazon ECS service or a Kubernetes deployment. Remember our Crystal service is running as a Amazon ECS (Fargate) service.
+
+Virtual nodes have friendly names. We will name this virtual node **crystal-lb-blue**. Inside a Virtual nodes  you will also define the service discovery mechanism for your service. It support both DNS and Cloud Map based service discovery. We will start by using DNS and most specifically we will leverage the DNS name given to the internal ALB that is already fronting our ECS Service.
+
+The Crystal service is running as a service on ECS Fargate and is reachable via an internal Application Loal Balander. Lets use the DNS name given to it by AWS as part of the CloudFormation  template run in section Start the Workshop.
 
 * Start by creating the virtual node.
 
@@ -49,7 +55,13 @@ aws appmesh create-virtual-node \
       --spec "$SPEC"
 ```
 
-* Now, you are ready to create the virtual service.
+Now that we have our virtual node in place, we are ready to create the virtual service.
+
+We will supply two important pieces of information to the definition of the virtual service. First, we will select the virtual node named **crystal-lb-blue** created above as the provider of the virtual service. Second, we will give it a service name. The name of a service is a FQDN and is the name used by clients interested in contacting the service. In our example, the Ruby Frontend will issue HTTP requests to  **crystal.appmeshworkshop.hosted.local** in order to interact with the Crystal service. 
+
+In Route53, we have already created a private hosted zone named **appmeshworkshop.hosted.local** and inside, an A ALIAS record named **crystal** with value the FQDN of the internal ALB.
+
+* Create the virtual service.
 
 ```bash
 # Define variables #

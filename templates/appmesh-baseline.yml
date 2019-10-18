@@ -920,13 +920,6 @@ Resources:
       HostedZoneId: !Ref DnsHostedZone
       Name: crystal.appmeshworkshop.hosted.local
       Type: A
-          
-  Namespace:
-    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
-    Properties:
-      Description: App Mesh Workshop private DNS namespace
-      Name: appmeshworkshop.pvt.local
-      Vpc: !Ref VPC
 
 Outputs:
   InternalLoadBalancerDNS:
@@ -934,7 +927,9 @@ Outputs:
     Value: !GetAtt InternalLoadBalancer.DNSName
   ExternalLoadBalancerDNS:
     Description: The DNS for the external load balancer
-    Value: !GetAtt ExternalLoadBalancer.DNSName    
+    Value: !GetAtt ExternalLoadBalancer.DNSName
+  VpcId:
+    Value: !Ref VPC
   PrivateSubnetOne:
     Value: !Ref PrivateSubnetOne
   PrivateSubnetTwo:
@@ -957,7 +952,5 @@ Outputs:
     Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Crystal}
   NodeJSEcrRepo:
     Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${NodeJS}
-  NamespaceId:
-    Value: !Ref Namespace
   RubyAutoScalingGroupName:
     Value: !Ref RubyAutoScalingGroup

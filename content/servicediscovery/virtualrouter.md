@@ -1,7 +1,7 @@
 ---
 title: "Create a virtual router"
 date: 2018-09-18T17:39:30-05:00
-weight: 40
+weight: 30
 ---
 
 Virtual routers handle traffic for one or more virtual services within your mesh. 
@@ -28,7 +28,7 @@ aws appmesh create-virtual-router \
       --spec "$SPEC"
 ```
 
-* Create a route to start shifting traffic to your new virtual node. The traffic will be distributed between the crystal-alb-blue and crystal-sd-blue virtual nodes at a 2:1 ratio (i.e., the crystal-sd-blue node will receive two thirds of the traffic).
+* Create a route to start shifting traffic to your new virtual node. The traffic will be distributed between the crystal-lb-blue and crystal-sd-blue virtual nodes at a 2:1 ratio (i.e., the crystal-sd-blue node will receive two thirds of the traffic).
 
 ```bash
 # Define variables #

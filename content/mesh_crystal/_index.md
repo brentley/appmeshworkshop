@@ -4,7 +4,7 @@ chapter: true
 weight: 15
 ---
 
-# Mesh the Crystal Backend Service
+# Mesh the Backend Crystal Service
 
 ![microservices](/images/crystal.svg)
 {{% children showhidden="false" %}}
