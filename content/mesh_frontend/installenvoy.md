@@ -52,7 +52,7 @@ mainSteps:
 
             sudo yum install -y jq
 
-            $(aws ecr get-login --no-include-email --region {{region}} --registry-ids 111345817488)
+            $(aws ecr get-login --no-include-email --region {{region}} --registry-ids 840364872350)
 
             # Install and run envoy
             sudo docker run --detach \
