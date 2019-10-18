@@ -33,12 +33,15 @@ aws servicediscovery create-private-dns-namespace \
       --vpc $VPC_ID
 ```
 
+**TODO: Add script to wait for creation**
+
 * Let's create a new service in Cloud Map in the namespace we just created. We will name it **crystal** so it's FQDN will become **crystal.appmeshworkshop.pvt.local**
 
-**TODO: Finish writing script**
 ```bash
 # Define variables #
-NAMESPACE=
+NAMESPACE=$(aws servicediscovery list-namespaces | \
+      jq -r ' .Namespaces[] | 
+        select ( .Properties.HttpProperties.HttpName == "appmeshworkshop.pvt.local" ) | .Id ');
 # Create cloud map service #
 aws servicediscovery create-service \
       --name crystal-blue \

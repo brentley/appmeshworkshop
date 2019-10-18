@@ -91,6 +91,7 @@ until [ $(_list_tasks) == "3" ]; do
         break
       fi
 done
+sleep 10s
 until [ $(_list_instances) == "3" ]; do
       echo "Instances are registering ..."
       sleep 10s

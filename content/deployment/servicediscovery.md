@@ -8,7 +8,9 @@ weight: 10
 
 ```bash
 # Define variables #
-NAMESPACE=$(jq < cfn-output.json -r '.NamespaceId');
+NAMESPACE=$(aws servicediscovery list-namespaces | \
+      jq -r ' .Namespaces[] | 
+        select ( .Properties.HttpProperties.HttpName == "appmeshworkshop.pvt.local" ) | .Id ');
 # Create cloud map service #
 aws servicediscovery create-service \
       --name crystal-green \

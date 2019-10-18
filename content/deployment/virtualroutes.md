@@ -69,7 +69,7 @@ SPEC=$(cat <<-EOF
 EOF
 ); \
 # Update app mesh route #
-aws appmesh create-route \
+aws appmesh update-route \
       --mesh-name appmesh-workshop \
       --virtual-router-name crystal-router \
       --route-name crystal-canary-route \
