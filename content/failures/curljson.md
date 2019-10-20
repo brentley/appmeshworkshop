@@ -1,10 +1,10 @@
 ---
 title: "Check results"
 date: 2018-09-18T17:39:30-05:00
-weight: 10
+weight: 20
 ---
 
-* Run the following script to check if you are consistently getting a canary response from crystal. You can compare these results with the random results from the web interface.
+* Run the following script to check if you are always getting responses from crystal. You can compare these results with the random results from the web interface.
 
 ```bash
 # Define variables #
