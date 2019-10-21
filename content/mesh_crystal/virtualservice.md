@@ -18,41 +18,41 @@ The Crystal service is running as a service on ECS Fargate and is reachable via 
 # Define variables #
 INT_LOAD_BALANCER=$(jq < cfn-output.json -r '.InternalLoadBalancerDNS');
 SPEC=$(cat <<-EOF
-    { 
-      "serviceDiscovery": {
-        "dns": { 
-          "hostname": "$INT_LOAD_BALANCER"
+  { 
+    "serviceDiscovery": {
+      "dns": { 
+        "hostname": "$INT_LOAD_BALANCER"
+      }
+    },
+    "logging": {
+      "accessLog": {
+        "file": {
+          "path": "/dev/stdout"
         }
-      },
-      "logging": {
-        "accessLog": {
-          "file": {
-            "path": "/dev/stdout"
-          }
-        }
-      },      
-      "listeners": [
-        {
-          "healthCheck": {
-            "healthyThreshold": 3,
-            "intervalMillis": 10000,
-            "path": "/health",
-            "port": 3000,
-            "protocol": "http",
-            "timeoutMillis": 5000,
-            "unhealthyThreshold": 3
-          },
-          "portMapping": { "port": 3000, "protocol": "http" }
-        }
-      ]
-    }
+      }
+    },      
+    "listeners": [
+      {
+        "healthCheck": {
+          "healthyThreshold": 3,
+          "intervalMillis": 10000,
+          "path": "/health",
+          "port": 3000,
+          "protocol": "http",
+          "timeoutMillis": 5000,
+          "unhealthyThreshold": 3
+        },
+        "portMapping": { "port": 3000, "protocol": "http" }
+      }
+    ]
+  }
 EOF
 ); \
 # Create app mesh virual node #
 aws appmesh create-virtual-node \
-      --mesh-name appmesh-workshop \
-      --virtual-node-name crystal-lb-blue \
-      --spec "$SPEC"
+  --mesh-name appmesh-workshop \
+  --virtual-node-name crystal-lb-blue \
+  --spec "$SPEC"
 ```
 
 Now that we have our virtual node in place, we are ready to create the virtual service.
@@ -66,18 +66,18 @@ In Route53, we have already created a private hosted zone named **appmeshworksho
 ```bash
 # Define variables #
 SPEC=$(cat <<-EOF
-    { 
-      "provider": {
-        "virtualNode": { 
-          "virtualNodeName": "crystal-lb-blue"
-        }
+  { 
+    "provider": {
+      "virtualNode": { 
+        "virtualNodeName": "crystal-lb-blue"
       }
     }
+  }
 EOF
 ); \
 # Create app mesh virtual service #
 aws appmesh create-virtual-service \
-      --mesh-name appmesh-workshop \
-      --virtual-service-name crystal.appmeshworkshop.hosted.local \
-      --spec "$SPEC"
+  --mesh-name appmesh-workshop \
+  --virtual-service-name crystal.appmeshworkshop.hosted.local \
+  --spec "$SPEC"
 ```

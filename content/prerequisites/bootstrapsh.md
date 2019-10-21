@@ -87,15 +87,15 @@ PRIVSUB1=$(jq < cfn-output.json -r '.PrivateSubnetOne')
 PRIVSUB2=$(jq < cfn-output.json -r '.PrivateSubnetTwo')
 PRIVSUB3=$(jq < cfn-output.json -r '.PrivateSubnetThree')
 eksctl create cluster -n $STACK_NAME \
-    --vpc-private-subnets $PRIVSUB1,$PRIVSUB2,$PRIVSUB3 \
-    --node-private-networking \
-    --ssh-access \
-    --alb-ingress-access \
-    --appmesh-access \
-    --external-dns-access \
-    --full-ecr-access \
-    --asg-access \
-    --nodes 3
+  --vpc-private-subnets $PRIVSUB1,$PRIVSUB2,$PRIVSUB3 \
+  --node-private-networking \
+  --ssh-access \
+  --alb-ingress-access \
+  --appmesh-access \
+  --external-dns-access \
+  --full-ecr-access \
+  --asg-access \
+  --nodes 3
 
 EOF
 

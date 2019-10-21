@@ -11,6 +11,6 @@ weight: 5
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 # Update ecs cluster settings #
 aws ecs update-cluster-settings \
-      --cluster $CLUSTER_NAME \
-      --settings name=containerInsights,value=enabled
+  --cluster $CLUSTER_NAME \
+  --settings name=containerInsights,value=enabled
 ```

@@ -14,68 +14,68 @@ cat <<-"EOF" > /tmp/configure_cloudmap.yml
 schemaVersion: '2.2'
 description: Configure Cloud Map
 parameters: 
-      serviceId:
-        type: String
-      instancePort:
-        type: String
+  serviceId:
+    type: String
+  instancePort:
+    type: String
 mainSteps:
 - action: aws:runShellScript
-      name: configureCloudMap
-      inputs:
-        runCommand: 
-          - |
-            #! /bin/bash
-          
-            EC2_METADATA=http://169.254.169.254/latest
-            REGION=$(curl -s $EC2_METADATA/dynamic/instance-identity/document | jq -r '.region')
-            INSTANCE_ID=$(curl -s $EC2_METADATA/meta-data/instance-id);
-            INSTANCE_IP=$(curl -s $EC2_METADATA/latest/meta-data/local-ipv4);
+  name: configureCloudMap
+  inputs:
+    runCommand: 
+      - |
+        #! /bin/bash
+      
+        EC2_METADATA=http://169.254.169.254/latest
+        REGION=$(curl -s $EC2_METADATA/dynamic/instance-identity/document | jq -r '.region')
+        INSTANCE_ID=$(curl -s $EC2_METADATA/meta-data/instance-id);
+        INSTANCE_IP=$(curl -s $EC2_METADATA/latest/meta-data/local-ipv4);
 
-            cat > /etc/init.d/cloudmap-register <<-EOF
-            #! /bin/bash -ex
-            aws servicediscovery register-instance \
-              --region $REGION \
-              --service-id {{serviceId}} \
-              --instance-id $INSTANCE_ID \
-              --attributes AWS_INSTANCE_IPV4=$INSTANCE_IP,AWS_INSTANCE_PORT={{instancePort}}
-            exit 0
-            EOF
-            chmod a+x /etc/init.d/cloudmap-register
-        
-            cat > /etc/init.d/cloudmap-deregister <<-EOF
-            #! /bin/bash -ex
-            aws servicediscovery deregister-instance \
-              --region $REGION \
-              --service-id {{serviceid}} \
-              --instance-id $INSTANCE_ID
-            exit 0
-            EOF
-            chmod a+x /etc/init.d/cloudmap-deregister
-        
-            cat > /usr/lib/systemd/system/cloudmap.service <<-EOF
-            [Unit]
-            Description=Run CloudMap service
-            Requires=network-online.target network.target
-            DefaultDependencies=no
-            Before=shutdown.target reboot.target halt.target
+        cat > /etc/init.d/cloudmap-register <<-EOF
+        #! /bin/bash -ex
+        aws servicediscovery register-instance \
+          --region $REGION \
+          --service-id {{serviceId}} \
+          --instance-id $INSTANCE_ID \
+          --attributes AWS_INSTANCE_IPV4=$INSTANCE_IP,AWS_INSTANCE_PORT={{instancePort}}
+        exit 0
+        EOF
+        chmod a+x /etc/init.d/cloudmap-register
 
-            [Service]
-            Type=oneshot
-            KillMode=none
-            RemainAfterExit=yes
-            ExecStart=/etc/init.d/cloudmap-register
-            ExecStop=/etc/init.d/cloudmap-deregister
-        
-            [Install]
-            WantedBy=multi-user.target
-            EOF
-        
-            systemctl enable cloudmap.service
-            systemctl start  cloudmap.service
+        cat > /etc/init.d/cloudmap-deregister <<-EOF
+        #! /bin/bash -ex
+        aws servicediscovery deregister-instance \
+          --region $REGION \
+          --service-id {{serviceid}} \
+          --instance-id $INSTANCE_ID
+        exit 0
+        EOF
+        chmod a+x /etc/init.d/cloudmap-deregister
+
+        cat > /usr/lib/systemd/system/cloudmap.service <<-EOF
+        [Unit]
+        Description=Run CloudMap service
+        Requires=network-online.target network.target
+        DefaultDependencies=no
+        Before=shutdown.target reboot.target halt.target
+
+        [Service]
+        Type=oneshot
+        KillMode=none
+        RemainAfterExit=yes
+        ExecStart=/etc/init.d/cloudmap-register
+        ExecStop=/etc/init.d/cloudmap-deregister
+
+        [Install]
+        WantedBy=multi-user.target
+        EOF
+
+        systemctl enable cloudmap.service
+        systemctl start  cloudmap.service
 EOF
 aws ssm create-document \
-      --name appmesh-workshop-ConfigureCloudMap \
-      --document-format YAML \
-      --content file://configure-cloudmap.yml \
-      --document-type Command
+  --name appmesh-workshop-ConfigureCloudMap \
+  --document-format YAML \
+  --content file://configure-cloudmap.yml \
+  --document-type Command
 ```

@@ -12,20 +12,20 @@ We will create a virtual router and associate routes to direct incoming requests
 ```bash
 # Define variables #
 SPEC=$(cat <<-EOF
-    { 
-      "listeners": [
-        {
-          "portMapping": { "port": 3000, "protocol": "http" }
-        }
-      ]
-    }
+  { 
+    "listeners": [
+      {
+        "portMapping": { "port": 3000, "protocol": "http" }
+      }
+    ]
+  }
 EOF
 ); \
 # Create app mesh virtual router #
 aws appmesh create-virtual-router \
-      --mesh-name appmesh-workshop \
-      --virtual-router-name crystal-router \
-      --spec "$SPEC"
+  --mesh-name appmesh-workshop \
+  --virtual-router-name crystal-router \
+  --spec "$SPEC"
 ```
 
 * Create a route to start shifting traffic to your new virtual node. The traffic will be distributed between the crystal-lb-blue and crystal-sd-blue virtual nodes at a 2:1 ratio (i.e., the crystal-sd-blue node will receive two thirds of the traffic).
@@ -33,32 +33,32 @@ aws appmesh create-virtual-router \
 ```bash
 # Define variables #
 SPEC=$(cat <<-EOF
-    { 
-      "httpRoute": {
-        "action": { 
-          "weightedTargets": [
-            {
-              "virtualNode": "crystal-lb-blue",
-              "weight": 1
-            },
-            {
-              "virtualNode": "crystal-sd-blue",
-              "weight": 2
-            }
-          ]
-        },
-        "match": {
-          "prefix": "/"
-        }
+  { 
+    "httpRoute": {
+      "action": { 
+        "weightedTargets": [
+          {
+            "virtualNode": "crystal-lb-blue",
+            "weight": 1
+          },
+          {
+            "virtualNode": "crystal-sd-blue",
+            "weight": 2
+          }
+        ]
       },
-      "priority": 10
-    }
+      "match": {
+        "prefix": "/"
+      }
+    },
+    "priority": 10
+  }
 EOF
 ); \
 # Create app mesh route #
 aws appmesh create-route \
-      --mesh-name appmesh-workshop \
-      --virtual-router-name crystal-router \
-      --route-name crystal-traffic-route \
-      --spec "$SPEC"
+  --mesh-name appmesh-workshop \
+  --virtual-router-name crystal-router \
+  --route-name crystal-traffic-route \
+  --spec "$SPEC"
 ```

@@ -40,15 +40,15 @@ aws servicediscovery create-private-dns-namespace \
 ```bash
 # Define variables #
 NAMESPACE=$(aws servicediscovery list-namespaces | \
-      jq -r ' .Namespaces[] | 
-        select ( .Properties.HttpProperties.HttpName == "appmeshworkshop.pvt.local" ) | .Id ');
+  jq -r ' .Namespaces[] | 
+    select ( .Properties.HttpProperties.HttpName == "appmeshworkshop.pvt.local" ) | .Id ');
 # Create cloud map service #
 aws servicediscovery create-service \
-      --name crystal-blue \
-      --description 'Discovery service for the Crystal service (blue)' \
-      --namespace-id $NAMESPACE \
-      --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=A,TTL=300}]' \
-      --health-check-custom-config FailureThreshold=1
+  --name crystal-blue \
+  --description 'Discovery service for the Crystal service (blue)' \
+  --namespace-id $NAMESPACE \
+  --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=A,TTL=300}]' \
+  --health-check-custom-config FailureThreshold=1
 ```
 
 Go back to the AWS Admin console and locate the Cloud Map service. Expand the left hand side section and click on the namespace with Name  **appmeshworkshop.pvt.local**

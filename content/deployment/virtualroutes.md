@@ -11,32 +11,32 @@ We will  try sending 30% of the traffic over to our canary. If our monitoring in
 ```bash
 # Define variables #
 SPEC=$(cat <<-EOF
-    { 
-      "httpRoute": {
-        "action": { 
-          "weightedTargets": [
-            {
-              "virtualNode": "crystal-sd-blue",
-              "weight": 2
-            },
-            {
-              "virtualNode": "crystal-sd-green",
-              "weight": 1
-            }
-          ]
-        },
-        "match": {
-          "prefix": "/"
-        }
+  { 
+    "httpRoute": {
+      "action": { 
+        "weightedTargets": [
+          {
+            "virtualNode": "crystal-sd-blue",
+            "weight": 2
+          },
+          {
+            "virtualNode": "crystal-sd-green",
+            "weight": 1
+          }
+        ]
       },
-      "priority": 5
-    }
+      "match": {
+        "prefix": "/"
+      }
+    },
+    "priority": 5
+  }
 EOF
 ); \
 # Create app mesh route #
 aws appmesh create-route \
-      --mesh-name appmesh-workshop \
-      --virtual-router-name crystal-router \
-      --route-name crystal-random-route \
-      --spec "$SPEC"
+  --mesh-name appmesh-workshop \
+  --virtual-router-name crystal-router \
+  --route-name crystal-random-route \
+  --spec "$SPEC"
 ```

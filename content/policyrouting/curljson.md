@@ -11,8 +11,8 @@ weight: 10
 URL=$(jq < cfn-output.json -r '.ExternalLoadBalancerDNS');
 # Execute curl #
 for ((i=1;i<=15;i++)); do
-      curl --location --silent --header "canary_fleet: true" $URL/json | jq ' .';
-      sleep 2s
+  curl --location --silent --header "canary_fleet: true" $URL/json | jq ' .';
+  sleep 2s
 done
 ```
 
@@ -23,7 +23,7 @@ done
 URL=$(jq < cfn-output.json -r '.ExternalLoadBalancerDNS');
 # Execute curl #
 for ((i=1;i<=15;i++)); do
-      curl --location --silent $URL/json | jq ' .';
-      sleep 2s
+  curl --location --silent $URL/json | jq ' .';
+  sleep 2s
 done
 ```

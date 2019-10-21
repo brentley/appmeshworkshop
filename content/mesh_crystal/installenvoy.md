@@ -21,63 +21,63 @@ ENVOY_REGISTRY="840364872350.dkr.ecr.$AWS_REGION.amazonaws.com";
 TASK_DEF_ARN=$(jq < cfn-output.json -r '.CrystalTaskDefinition');
 TASK_DEF_OLD=$(aws ecs describe-task-definition --task-definition $TASK_DEF_ARN);
 TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
-      | jq ' .taskDefinition' \
-      | jq --arg ENVOY_REGISTRY $ENVOY_REGISTRY ' .containerDefinitions += 
-            [
+  | jq ' .taskDefinition' \
+  | jq --arg ENVOY_REGISTRY $ENVOY_REGISTRY ' .containerDefinitions += 
+        [
+          {
+            "environment": [
               {
-                "environment": [
-                  {
-                    "name": "APPMESH_VIRTUAL_NODE_NAME",
-                    "value": "mesh/appmesh-workshop/virtualNode/crystal-lb-blue"
-                  }
-                ],
-                "image": ($ENVOY_REGISTRY + "/aws-appmesh-envoy:v1.11.2.0-prod"),
-                "healthCheck": {
-                  "retries": 3,
-                  "command": [
-                    "CMD-SHELL",
-                    "curl -s http://localhost:9901/server_info | grep state | grep -q LIVE"
-                  ],
-                  "timeout": 2,
-                  "interval": 5,
-                  "startPeriod": 10
-                },
-                "essential": true,
-                "user": "1337",
-                "name": "envoy"
+                "name": "APPMESH_VIRTUAL_NODE_NAME",
+                "value": "mesh/appmesh-workshop/virtualNode/crystal-lb-blue"
               }
-            ]' \
-      | jq ' .containerDefinitions[0] +=
+            ],
+            "image": ($ENVOY_REGISTRY + "/aws-appmesh-envoy:v1.11.2.0-prod"),
+            "healthCheck": {
+              "retries": 3,
+              "command": [
+                "CMD-SHELL",
+                "curl -s http://localhost:9901/server_info | grep state | grep -q LIVE"
+              ],
+              "timeout": 2,
+              "interval": 5,
+              "startPeriod": 10
+            },
+            "essential": true,
+            "user": "1337",
+            "name": "envoy"
+          }
+        ]' \
+  | jq ' .containerDefinitions[0] +=
+        { 
+          "dependsOn": [ 
             { 
-              "dependsOn": [ 
-                { 
-                  "containerName": "envoy",
-                  "condition": "HEALTHY" 
-                }
-              ] 
-            }' \
-      | jq ' . += 
-            { 
-              "proxyConfiguration": {
-                "type": "APPMESH",
-                "containerName": "envoy",
-                "properties": [
-                  { "name": "IgnoredUID", "value": "1337"},
-                  { "name": "ProxyIngressPort", "value": "15000"},
-                  { "name": "ProxyEgressPort", "value": "15001"},
-                  { "name": "AppPorts", "value": "3000"},
-                  { "name": "EgressIgnoredIPs", "value": "169.254.170.2,169.254.169.254"}
-                ]
-              }
-            }' \
-      | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
+              "containerName": "envoy",
+              "condition": "HEALTHY" 
+            }
+          ] 
+        }' \
+  | jq ' . += 
+        { 
+          "proxyConfiguration": {
+            "type": "APPMESH",
+            "containerName": "envoy",
+            "properties": [
+              { "name": "IgnoredUID", "value": "1337"},
+              { "name": "ProxyIngressPort", "value": "15000"},
+              { "name": "ProxyEgressPort", "value": "15001"},
+              { "name": "AppPorts", "value": "3000"},
+              { "name": "EgressIgnoredIPs", "value": "169.254.170.2,169.254.169.254"}
+            ]
+          }
+        }' \
+  | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
 ); \
 
 TASK_DEF_FAMILY=$(echo $TASK_DEF_ARN | cut -d"/" -f2 | cut -d":" -f1);
 echo $TASK_DEF_NEW > /tmp/$TASK_DEF_FAMILY.json && 
 # Register ecs task definition #
 aws ecs register-task-definition \
-      --cli-input-json file:///tmp/$TASK_DEF_FAMILY.json
+  --cli-input-json file:///tmp/$TASK_DEF_FAMILY.json
 ```
 
 * Update the service.
@@ -86,12 +86,12 @@ aws ecs register-task-definition \
 # Define variables #
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 TASK_DEF_ARN=$(aws ecs list-task-definitions | \
-      jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1);
+  jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1);
 # Update ecs service #
 aws ecs update-service \
-      --cluster $CLUSTER_NAME \
-      --service crystal-service-lb-blue \
-      --task-definition "$(echo $TASK_DEF_ARN)"
+  --cluster $CLUSTER_NAME \
+  --service crystal-service-lb-blue \
+  --task-definition "$(echo $TASK_DEF_ARN)"
 ```
 
 * Wait for the service tasks to be in a running state.
@@ -100,26 +100,26 @@ aws ecs update-service \
 # Define variables #
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 TASK_DEF_ARN=$(aws ecs list-task-definitions | \
-      jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1);
+  jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1);
 # Get task state #
 _list_tasks() {
-      aws ecs list-tasks \
-            --cluster $CLUSTER_NAME \
-            --service crystal-service-lb-blue | \
-      jq -r ' .taskArns | @text' | \
-            while read taskArns; do 
-              aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;
-            done | \
-      jq -r --arg TASK_DEF_ARN $TASK_DEF_ARN \
-            ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN) 
-                            and (.lastStatus == "RUNNING" ))] | length'
+  aws ecs list-tasks \
+        --cluster $CLUSTER_NAME \
+        --service crystal-service-lb-blue | \
+  jq -r ' .taskArns | @text' | \
+        while read taskArns; do 
+          aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;
+        done | \
+  jq -r --arg TASK_DEF_ARN $TASK_DEF_ARN \
+        ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN) 
+                        and (.lastStatus == "RUNNING" ))] | length'
 }
 until [ $(_list_tasks) == "3" ]; do
-      echo "Tasks are starting ..."
-      sleep 10s
-      if [ $(_list_tasks) == "3" ]; then
-        echo "Tasks started"
-        break
-      fi
+  echo "Tasks are starting ..."
+  sleep 10s
+  if [ $(_list_tasks) == "3" ]; then
+    echo "Tasks started"
+    break
+  fi
 done
 ```

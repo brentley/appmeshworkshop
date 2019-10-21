@@ -9,40 +9,40 @@ weight: 20
 ```bash
 # Define variables #
 SPEC=$(cat <<-EOF
-    { 
-      "serviceDiscovery": {
-        "awsCloudMap": {
-          "namespaceName": "appmeshworkshop.pvt.local",
-          "serviceName": "crystal-green"
+  { 
+    "serviceDiscovery": {
+      "awsCloudMap": {
+        "namespaceName": "appmeshworkshop.pvt.local",
+        "serviceName": "crystal-green"
+      }
+    },
+    "logging": {
+      "accessLog": {
+        "file": {
+          "path": "/dev/stdout"
         }
-      },
-      "logging": {
-        "accessLog": {
-          "file": {
-            "path": "/dev/stdout"
-          }
-        }
-      },      
-      "listeners": [
-        {
-          "healthCheck": {
-            "healthyThreshold": 3,
-            "intervalMillis": 10000,
-            "path": "/health",
-            "port": 3000,
-            "protocol": "http",
-            "timeoutMillis": 5000,
-            "unhealthyThreshold": 3
-          },
-          "portMapping": { "port": 3000, "protocol": "http" }
-        }
-      ]
-    }
+      }
+    },      
+    "listeners": [
+      {
+        "healthCheck": {
+          "healthyThreshold": 3,
+          "intervalMillis": 10000,
+          "path": "/health",
+          "port": 3000,
+          "protocol": "http",
+          "timeoutMillis": 5000,
+          "unhealthyThreshold": 3
+        },
+        "portMapping": { "port": 3000, "protocol": "http" }
+      }
+    ]
+  }
 EOF
 ); \
 # Create app mesh virtual node #
 aws appmesh create-virtual-node \
-      --mesh-name appmesh-workshop \
-      --virtual-node-name crystal-sd-green \
-      --spec "$SPEC"
+  --mesh-name appmesh-workshop \
+  --virtual-node-name crystal-sd-green \
+  --spec "$SPEC"
 ```

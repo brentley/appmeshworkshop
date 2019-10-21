@@ -9,13 +9,13 @@ weight: 10
 ```bash
 # Define variables #
 NAMESPACE=$(aws servicediscovery list-namespaces | \
-      jq -r ' .Namespaces[] | 
-        select ( .Properties.HttpProperties.HttpName == "appmeshworkshop.pvt.local" ) | .Id ');
+  jq -r ' .Namespaces[] | 
+    select ( .Properties.HttpProperties.HttpName == "appmeshworkshop.pvt.local" ) | .Id ');
 # Create cloud map service #
 aws servicediscovery create-service \
-      --name crystal-green \
-      --description 'Discovery service for the Crystal service (green)' \
-      --namespace-id $NAMESPACE \
-      --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=A,TTL=300}]' \
-      --health-check-custom-config FailureThreshold=1
+  --name crystal-green \
+  --description 'Discovery service for the Crystal service (green)' \
+  --namespace-id $NAMESPACE \
+  --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=A,TTL=300}]' \
+  --health-check-custom-config FailureThreshold=1
 ```

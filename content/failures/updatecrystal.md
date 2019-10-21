@@ -22,17 +22,17 @@ Date:
 Subject: [PATCH] add service unavailable error if req < 1sec
 
 ---
-     src/server.cr | 11 +++++++++--
-     1 file changed, 9 insertions(+), 2 deletions(-)
+ src/server.cr | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
 diff --git a/src/server.cr b/src/server.cr
 index b08ae32..b6875b5 100644
 --- a/src/server.cr
 +++ b/src/server.cr
 @@ -26,8 +26,15 @@ server = HTTP::Server.new(
-         ]) do |context|
-           if context.request.path == "/crystal" || context.request.path == "/crystal/"
-             epoch_ms = Time.now.epoch_ms
+     ]) do |context|
+       if context.request.path == "/crystal" || context.request.path == "/crystal/"
+         epoch_ms = Time.now.epoch_ms
 -        context.response.content_type = "text/plain"
 -        context.response.print "Crystal backend: Hello! from #{az_message} commit #{code_hash} at #{epoch_ms}"
 +        req_epoch_ms = context.request.headers["epoch_ms"].to_i64
@@ -44,9 +44,9 @@ index b08ae32..b6875b5 100644
 +          context.response.headers["Content-Type"] = "text/plain"
 +          context.response.puts "The server cannot handle the request"
 +        end
-           elsif context.request.path == "/health"
-             context.response.content_type = "text/plain"
-             context.response.print "Healthy!"
+       elsif context.request.path == "/health"
+         context.response.content_type = "text/plain"
+         context.response.print "Healthy!"
 -- 
 2.22.0
 

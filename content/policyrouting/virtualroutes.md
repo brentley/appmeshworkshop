@@ -9,36 +9,36 @@ weight: 5
 ```bash
 # Define variables #
 SPEC=$(cat <<-EOF
-    { 
-      "httpRoute": {
-        "action": { 
-          "weightedTargets": [
-            {
-              "virtualNode": "crystal-sd-green",
-              "weight": 1
-            }
-          ]
-        },
-        "match": {
-          "prefix": "/",
-          "headers": [
-            {
-              "name": "canary_fleet",
-              "match": {
-                "exact": "true"
-              }
-            }
-          ]
-        }
+  { 
+    "httpRoute": {
+      "action": { 
+        "weightedTargets": [
+          {
+            "virtualNode": "crystal-sd-green",
+            "weight": 1
+          }
+        ]
       },
-      "priority": 1
-    }
+      "match": {
+        "prefix": "/",
+        "headers": [
+          {
+            "name": "canary_fleet",
+            "match": {
+              "exact": "true"
+            }
+          }
+        ]
+      }
+    },
+    "priority": 1
+  }
 EOF
 ); \
 # Create app mesh route #
 aws appmesh create-route \
-      --mesh-name appmesh-workshop \
-      --virtual-router-name crystal-router \
-      --route-name crystal-header-route \
-      --spec "$SPEC"
+  --mesh-name appmesh-workshop \
+  --virtual-router-name crystal-router \
+  --route-name crystal-header-route \
+  --spec "$SPEC"
 ```

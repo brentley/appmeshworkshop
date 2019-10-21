@@ -10,53 +10,53 @@ weight: 10
 # Define variables #
 EXT_LOAD_BALANCER=$(jq < cfn-output.json -r '.ExternalLoadBalancerDNS');
 SPEC=$(cat <<-EOF
-    { 
-      "serviceDiscovery": {
-        "dns": { 
-          "hostname": "$EXT_LOAD_BALANCER"
+  { 
+    "serviceDiscovery": {
+      "dns": { 
+        "hostname": "$EXT_LOAD_BALANCER"
+      }
+    },
+    "backends": [
+      {
+        "virtualService": {
+          "virtualServiceName": "crystal.appmeshworkshop.hosted.local"
         }
       },
-      "backends": [
-        {
-          "virtualService": {
-            "virtualServiceName": "crystal.appmeshworkshop.hosted.local"
-          }
+      {
+        "virtualService": {
+          "virtualServiceName": "nodejs.appmeshworkshop.hosted.local"
+        }
+      }
+    ],      
+    "logging": {
+      "accessLog": {
+        "file": {
+          "path": "/dev/stdout"
+        }
+      }
+    },      
+    "listeners": [
+      {
+        "healthCheck": {
+          "healthyThreshold": 3,
+          "intervalMillis": 10000,
+          "path": "/health",
+          "port": 3000,
+          "protocol": "http",
+          "timeoutMillis": 5000,
+          "unhealthyThreshold": 3
         },
-        {
-          "virtualService": {
-            "virtualServiceName": "nodejs.appmeshworkshop.hosted.local"
-          }
-        }
-      ],      
-      "logging": {
-        "accessLog": {
-          "file": {
-            "path": "/dev/stdout"
-          }
-        }
-      },      
-      "listeners": [
-        {
-          "healthCheck": {
-            "healthyThreshold": 3,
-            "intervalMillis": 10000,
-            "path": "/health",
-            "port": 3000,
-            "protocol": "http",
-            "timeoutMillis": 5000,
-            "unhealthyThreshold": 3
-          },
-          "portMapping": { "port": 3000, "protocol": "http" }
-        }
-      ]
-    }
+        "portMapping": { "port": 3000, "protocol": "http" }
+      }
+    ]
+  }
 EOF
 ); \
 # Create app mesh virtual node #
 aws appmesh create-virtual-node \
-      --mesh-name appmesh-workshop \
-      --virtual-node-name frontend-v1 \
-      --spec "$SPEC"
+  --mesh-name appmesh-workshop \
+  --virtual-node-name frontend-v1 \
+  --spec "$SPEC"
 ```
 
 * Create the virtual service.
@@ -64,18 +64,18 @@ aws appmesh create-virtual-node \
 ```bash
 # Define variables #
 SPEC=$(cat <<-EOF
-    { 
-      "provider": {
-        "virtualNode": { 
-          "virtualNodeName": "frontend-v1"
-        }
+  { 
+    "provider": {
+      "virtualNode": { 
+        "virtualNodeName": "frontend-v1"
       }
     }
+  }
 EOF
 ); \
 # Create app mesh virtual service #
 aws appmesh create-virtual-service \
-      --mesh-name appmesh-workshop \
-      --virtual-service-name frontend.appmeshworkshop.hosted.local \
-      --spec "$SPEC"
+  --mesh-name appmesh-workshop \
+  --virtual-service-name frontend.appmeshworkshop.hosted.local \
+  --spec "$SPEC"
 ```
