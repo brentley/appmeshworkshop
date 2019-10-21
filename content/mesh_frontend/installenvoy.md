@@ -56,15 +56,15 @@ mainSteps:
 
         # Install and run envoy
         sudo docker run --detach \
-            --env APPMESH_VIRTUAL_NODE_NAME=mesh/{{meshName}}/virtualNode/{{vNodeName}} \
-            --env ENABLE_ENVOY_XRAY_TRACING=1 \
-            --log-driver=awslogs \
-            --log-opt awslogs-region={{region}} \
-            --log-opt awslogs-create-group=true \
-            --log-opt awslogs-group=appmesh-workshop-frontend-envoy \
-            --log-opt tag=ec2/envoy/{{.FullID}} \
-            -u 1337 --network host \
-            840364872350.dkr.ecr.{{region}}.amazonaws.com/aws-appmesh-envoy:v1.11.2.0-prod
+          --env APPMESH_VIRTUAL_NODE_NAME=mesh/{{meshName}}/virtualNode/{{vNodeName}} \
+          --env ENABLE_ENVOY_XRAY_TRACING=1 \
+          --log-driver=awslogs \
+          --log-opt awslogs-region={{region}} \
+          --log-opt awslogs-create-group=true \
+          --log-opt awslogs-group=appmesh-workshop-frontend-envoy \
+          --log-opt tag=ec2/envoy/{{.FullID}} \
+          -u 1337 --network host \
+          840364872350.dkr.ecr.{{region}}.amazonaws.com/aws-appmesh-envoy:v1.11.2.0-prod
 - action: aws:runShellScript
   name: installXRay
   inputs:
@@ -98,37 +98,37 @@ mainSteps:
         # Enable egress routing
           # Ignore egress redirect based UID, ports, and IPs
           sudo iptables -t nat -A APPMESH_EGRESS \
-                  -m owner --uid-owner {{ignoredUID}} \
-                  -j RETURN
+            -m owner --uid-owner {{ignoredUID}} \
+            -j RETURN
           sudo iptables -t nat -A APPMESH_EGRESS \
-                  -p tcp \
-                  -m multiport --dports "{{egressIgnoredPorts}}" \
-                  -j RETURN
+            -p tcp \
+            -m multiport --dports "{{egressIgnoredPorts}}" \
+            -j RETURN
           sudo iptables -t nat -A APPMESH_EGRESS \
-                  -p tcp \
-                  -d "{{egressIgnoredIPs}}" \
-                  -j RETURN
+            -p tcp \
+            -d "{{egressIgnoredIPs}}" \
+            -j RETURN
           # Redirect everything that is not ignored
           sudo iptables -t nat -A APPMESH_EGRESS \
-                  -p tcp \
-                  -j REDIRECT --to {{proxyEgressPort}}
+            -p tcp \
+            -j REDIRECT --to {{proxyEgressPort}}
           # Apply APPMESH_EGRESS chain to non-local traffic
           sudo iptables -t nat -A OUTPUT \
-                  -p tcp \
-                  -m addrtype ! --dst-type LOCAL \
-                  -j APPMESH_EGRESS
+            -p tcp \
+            -m addrtype ! --dst-type LOCAL \
+            -j APPMESH_EGRESS
 
         # Enable ingress routing
           # Route everything arriving at the application port to Envoy
           sudo iptables -t nat -A APPMESH_INGRESS \
-                  -p tcp \
-                  -m multiport --dports "{{appPorts}}" \
-                  -j REDIRECT --to-port "{{proxyIngressPort}}"
+            -p tcp \
+            -m multiport --dports "{{appPorts}}" \
+            -j REDIRECT --to-port "{{proxyIngressPort}}"
           # Apply APPMESH_INGRESS chain to non-local traffic
           sudo iptables -t nat -A PREROUTING \
-                  -p tcp \
-                  -m addrtype ! --src-type LOCAL \
-                  -j APPMESH_INGRESS
+            -p tcp \
+            -m addrtype ! --src-type LOCAL \
+            -j APPMESH_INGRESS
 
 EOF
 # Create ssm document #
