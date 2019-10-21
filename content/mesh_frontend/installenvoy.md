@@ -133,10 +133,10 @@ mainSteps:
 EOF
 # Create ssm document #
 aws ssm create-document \
-      --name appmesh-workshop-installenvoy \
-      --document-format YAML \
-      --content file:///tmp/install_envoy.yml \
-      --document-type Command
+  --name appmesh-workshop-installenvoy \
+  --document-format YAML \
+  --content file:///tmp/install_envoy.yml \
+  --document-type Command
 ```
 
 * Create an association using State Manager. An association is a binding of the intent (described in the document) to a target specified by either a list of instance IDs or a tag query. Use the following command to create an association. Note that you are specifying a tag query in the target parameter and using the Frontend Auto Scaling group name.

@@ -28,9 +28,9 @@ Finally we will create a new service in ECS for the Crystal backend.
 VPC_ID=$(jq < cfn-output.json -r '.VpcId');
 # Create cloud map service #
 aws servicediscovery create-private-dns-namespace \
-      --name appmeshworkshop.pvt.local \
-      --description 'App Mesh Workshop private DNS namespace' \
-      --vpc $VPC_ID
+  --name appmeshworkshop.pvt.local \
+  --description 'App Mesh Workshop private DNS namespace' \
+  --vpc $VPC_ID
 ```
 
 **TODO: Add script to wait for creation**

@@ -58,15 +58,15 @@ TASK_DEF_ARN=$(aws ecs list-task-definitions | \
 # Get task state #
 _list_tasks() {
   aws ecs list-tasks \
-        --cluster $CLUSTER_NAME \
-        --service crystal-service-lb-blue | \
+    --cluster $CLUSTER_NAME \
+    --service crystal-service-lb-blue | \
   jq -r ' .taskArns | @text' | \
-        while read taskArns; do 
-          aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;
-        done | \
+    while read taskArns; do 
+      aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;
+    done | \
   jq -r --arg TASK_DEF_ARN $TASK_DEF_ARN \
-        ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN) 
-                        and (.lastStatus == "RUNNING" ))] | length'
+    ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN) 
+                    and (.lastStatus == "RUNNING" ))] | length'
 }
 until [ $(_list_tasks) == "3" ]; do
   echo "Tasks are starting ..."

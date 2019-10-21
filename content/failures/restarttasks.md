@@ -31,15 +31,15 @@ CMAP_SVC_ID=$(aws servicediscovery list-services | \
 # Get task state #
 _list_tasks() {
   aws ecs list-tasks \
-        --cluster $CLUSTER_NAME \
-        --service crystal-service-sd-green | \
+    --cluster $CLUSTER_NAME \
+    --service crystal-service-sd-green | \
   jq -r ' .taskArns | @text' | \
-        while read taskArns; do 
-          aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;
-        done | \
+    while read taskArns; do 
+      aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;
+    done | \
   jq -r --arg TASK_DEF_ARN $TASK_DEF_ARN \
-        ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN) 
-                        and (.lastStatus == "RUNNING" ))] | length'
+    ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN) 
+                    and (.lastStatus == "RUNNING" ))] | length'
 }
 # Get instances health status #
 _list_instances() {
