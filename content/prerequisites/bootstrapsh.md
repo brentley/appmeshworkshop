@@ -154,7 +154,7 @@ chmod +x scripts/*
 cd ~/environment && scripts/bootstrap
 ```
 
-Take a moment to familiarize with the resources that were just created. At this point our microservices should be reacheable via Internet. You can get the External Load Balancer DNS and paste it in a browser to access the frontend service using the following command:
+Take a moment to familiarize with the resources that were just created. At this point our microservices should be reacheable via Internet. You can get the External Load Balancer URL and paste it in a browser to access the frontend service using the following command:
 
 ```bash
 echo "http://$(jq -r '.ExternalLoadBalancerDNS' cfn-output.json)/"
