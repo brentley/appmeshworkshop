@@ -12,7 +12,7 @@ CloudWatch Container Insights is a fully managed service that collects, aggregat
 * Network Rx/Tx
 * Container instance counts for clusters, services, and tasks
 
-* Enable container insights.
+To enable container insights, execute the following script
 
 ```bash
 # Define variables #
