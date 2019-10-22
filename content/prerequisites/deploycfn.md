@@ -13,10 +13,13 @@ curl -s https://raw.githubusercontent.com/brentley/appmeshworkshop/master/templa
 
 #### Deploy the CloudFormation stack:
 ```bash
+IAM_ROLE=$(curl -s 169.254.169.254/latest/meta-data/iam/info | \
+  jq -r '.InstanceProfileArn' | cut -d'/' -f2)
 aws cloudformation deploy \
   --template-file appmesh-baseline.yml \
   --stack-name appmesh-workshop \
-  --capabilities CAPABILITY_IAM 
+  --capabilities CAPABILITY_IAM \
+  --parameter-overrides Cloud9IAMRole=$IAM_ROLE
 ```
 
 The CloudFormation template will launch the following:

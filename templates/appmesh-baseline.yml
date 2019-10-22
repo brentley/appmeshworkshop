@@ -3,6 +3,12 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: This stack deploys the baseline infrastructure
              to be used in the App Mesh Workshop.
 
+Parameters:
+
+  Cloud9IAMRole: 
+    Type: String
+    Default: AppMesh-Workshop-Admin
+
 Mappings:
 
   SubnetConfig:
@@ -679,7 +685,7 @@ Resources:
             Principal:          
               AWS: 
                 - !GetAtt KeyPairHelperExecutionRole.Arn
-                - !Sub arn:aws:iam::${AWS::AccountId}:role/AppMesh-Workshop-Admin
+                - !Sub arn:aws:iam::${AWS::AccountId}:role/${Cloud9IAMRole}
             Action:
               - 'kms:Encrypt'
               - 'kms:Decrypt'
