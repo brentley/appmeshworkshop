@@ -27,13 +27,25 @@ Finally we will create a new service in ECS for the Crystal backend.
 # Define variables #
 VPC_ID=$(jq < cfn-output.json -r '.VpcId');
 # Create cloud map service #
-aws servicediscovery create-private-dns-namespace \
-  --name appmeshworkshop.pvt.local \
-  --description 'App Mesh Workshop private DNS namespace' \
-  --vpc $VPC_ID
+OPERATION_ID=$(aws servicediscovery create-private-dns-namespace \
+    --name appmeshworkshop.pvt.local \
+    --description 'App Mesh Workshop private DNS namespace' \
+    --vpc $VPC_ID | \
+  jq -r ' .OperationId ')
+_operation_status() {
+  aws servicediscovery get-operation \
+    --operation-id $OPERATION_ID | \
+  jq -r '.Operation.Status '
+}
+until [ $(_operation_status) != "PENDING" ]; do
+  echo "Namespace is creating ..."
+  sleep 10s
+  if [ $(_operation_status) == "SUCCESS" ]; then
+    echo "Namespace created"
+    break
+  fi
+done
 ```
-
-**TODO: Add script to wait for creation**
 
 * Let's create a new service in Cloud Map in the namespace we just created. We will name it **crystal** so it's FQDN will become **crystal.appmeshworkshop.pvt.local**
 
