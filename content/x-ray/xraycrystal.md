@@ -4,6 +4,8 @@ date: 2018-09-18T16:01:14-05:00
 weight: 10
 ---
 
+AWS X-Ray integrates with AWS App Mesh to manage Envoy proxies for micro-services. App Mesh provides a version of Envoy that you can configure to send trace data to the X-Ray daemon running in a container of the same task. The AWS X-Ray daemon is a software application that listens for traffic on UDP port 2000, gathers raw segment data, and relays it to the AWS X-Ray API. The daemon works in conjunction with the AWS X-Ray SDKs and must be running so that data sent by the SDKs can reach the X-Ray service.
+
 * Register a new task definition to add the x-ray container, and enable tracing for the envoy container.
 
 ```bash
@@ -97,3 +99,9 @@ until [ $(_list_tasks) == "3" ]; do
   fi
 done
 ```
+
+Access the ECS console and find the latest revision of your crystal task definition. Notice there are 3 containers declared, one for the crystal microservice, one for the envoy proxy and a third one for the X-Ray deamon.
+
+Now access the AWS Admin console and go to the X-Ray service. Once in the X-Ray section of the console, select **Service Map** from the left hand side menu. Wait a few seconds for the service map to render. 
+
+When you select a node or edge on an AWS X-Ray service map, the X-Ray console shows a latency distribution histogram. Latency is the amount of time between when a request starts and when it completes. A histogram shows a distribution of latencies. It shows duration on the x-axis, and the percentage of requests that match each duration on the y-axis.
