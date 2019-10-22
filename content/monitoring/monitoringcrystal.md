@@ -4,7 +4,10 @@ date: 2018-09-18T16:01:14-05:00
 weight: 10
 ---
 
-* Register a new task definition to add logging to the envoy container.
+You will create a new task definition that adds logging to the Envoy container. Once you have enabled it, you will access CloudWatch Logs to consume the logs produced by the Envoy proxy. By default, Envoy will produce application and access logs intermingled in the same CloudWatch Log file. Make sure you configured your Virtual Node representing your application to send logs to /dev/stdout
+
+
+* Register a new task definition to add logging to the Envoy container.
 
 ```bash
 # Define variables #
@@ -77,3 +80,5 @@ until [ $(_list_tasks) == "3" ]; do
   fi
 done
 ```
+
+Access CloudWatch Logs and find the log group named **appmesh-workshop-crystal-envoy**. Take a few minutes to review the logging details produced by the Envoy container.
