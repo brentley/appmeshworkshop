@@ -6,6 +6,16 @@ weight: 5
 
 * Enable container insights.
 
+CloudWatch Container Insights is a fully managed service that collects, aggregates, and summarizes Amazon ECS metrics and logs. The CloudWatch Container Insights dashboard gives you access to the following information:
+
+* CPU and memory utilization
+* Task and service counts
+* Read/write storage
+* Network Rx/Tx
+* Container instance counts for clusters, services, and tasks
+
+Read and follow the instructions provided at [https://aws.amazon.com/blogs/mt/introducing-container-insights-for-amazon-ecs/](https://aws.amazon.com/blogs/mt/introducing-container-insights-for-amazon-ecs/) 
+
 ```bash
 # Define variables #
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
