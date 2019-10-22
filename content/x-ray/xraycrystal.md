@@ -102,6 +102,6 @@ done
 
 Access the ECS console and find the latest revision of your crystal task definition. Notice there are 3 containers declared, one for the crystal microservice, one for the envoy proxy and a third one for the X-Ray deamon.
 
-Now access the AWS Admin console and go to the X-Ray service.  head to [https://portal.awsworkshop.io/](https://portal.awsworkshop.io/). Once in the X-Ray section of the console, select **Service Map** from the left hand side menu. Wait a few seconds for the service map to render. 
+Now access the AWS Admin console and go to the X-Ray service. Once in the X-Ray section of the console, select **Service Map** from the left hand side menu. Wait a few seconds for the service map to render. 
 
 When you select a node or edge on an AWS X-Ray service map, the X-Ray console shows a latency distribution histogram. Latency is the amount of time between when a request starts and when it completes. A histogram shows a distribution of latencies. It shows duration on the x-axis, and the percentage of requests that match each duration on the y-axis.
