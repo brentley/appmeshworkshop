@@ -15,7 +15,7 @@ Initially without retry in place this error will be thrown consistently. After w
 * Create the following patch in your **ecsdemo-crystal** project. 
 
 ```bash
-cat <<-'EOF' > ecsdemo-crystal/add_server_error.patch
+cat <<-'EOF' > ~/environment/ecsdemo-crystal/add_server_error.patch
 From 48f89f671650e1827fbac5f7bb3c8ff3a06d9c73 Mon Sep 17 00:00:00 2001
 From:
 Date:
@@ -63,7 +63,7 @@ git apply --stat ecsdemo-crystal/add_server_error.patch
 * Run **git apply** to apply the patch.
 
 ```bash
-sh -c 'cd ecsdemo-crystal && git apply add_server_error.patch'
+sh -c 'cd ~/environment/ecsdemo-crystal && git apply add_server_error.patch'
 ```
 
 * Build the container

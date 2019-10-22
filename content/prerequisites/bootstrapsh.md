@@ -13,8 +13,7 @@ The following bootstrap scripts will do the following:
 
 #### Create the bootstrap scripts
 ```bash
-cd ~/environment
-mkdir scripts
+cd ~/environment && mkdir scripts
 
 # bootstrap script
 cat > scripts/bootstrap <<-"EOF"
@@ -152,13 +151,14 @@ chmod +x scripts/*
 
 #### Run them!
 ```bash
-cd ~/environment
-scripts/bootstrap
+cd ~/environment && scripts/bootstrap
 ```
 
-Take a moment to familiarize with the resources that were just created. At this point our microservices should be reacheable via Internet. Locate the key ExternalLoadBalancerDNS entry in the cfn_outputs.json file and replace the URL below with its value:
+Take a moment to familiarize with the resources that were just created. At this point our microservices should be reacheable via Internet. You can get the External Load Balancer DNS and paste it in a browser to access the frontend service using the following command:
 
-http://\<ExternalLoadBalancerDNS\>/
+```bash
+echo "http://$(jq -r '.ExternalLoadBalancerDNS' cfn-output.json)/"
+```
 
 What's going on?
 

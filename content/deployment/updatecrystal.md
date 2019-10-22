@@ -17,7 +17,7 @@ Additionaly, there is the physical deployment of the application itself to a com
 * Create the following patch in your **ecsdemo-crystal** project.
 
 ```bash
-cat <<-'EOF' > ecsdemo-crystal/add_time_ms.patch
+cat <<-'EOF' > ~/environment/ecsdemo-crystal/add_time_ms.patch
 From beb964253b921a0a34ed45bac0ab052667523441 Mon Sep 17 00:00:00 2001
 From:
 Date:
@@ -85,7 +85,7 @@ git apply --stat ecsdemo-crystal/add_time_ms.patch
 * Run **git apply** to apply the patch.
 
 ```bash
-sh -c 'cd ecsdemo-crystal && git apply add_time_ms.patch'
+sh -c 'cd ~/environment/ecsdemo-crystal && git apply add_time_ms.patch'
 ```
 
 * Build the container
