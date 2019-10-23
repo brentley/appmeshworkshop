@@ -47,7 +47,7 @@ until [ $(_operation_status) != "PENDING" ]; do
 done
 ```
 
-* Let's create a new service in Cloud Map in the namespace we just created. We will name it **crystal** so it's FQDN will become **crystal.appmeshworkshop.pvt.local**
+* Still in Cloud Map, create a service inside the namespace you created in the step above. Name it **crystal**. The service's FQDN is **crystal.appmeshworkshop.pvt.local**
 
 ```bash
 # Define variables #
@@ -63,6 +63,6 @@ aws servicediscovery create-service \
   --health-check-custom-config FailureThreshold=1
 ```
 
-Go back to the AWS Admin console and locate the Cloud Map service. Expand the left hand side section and click on the namespace with Name  **appmeshworkshop.pvt.local**
+Go back to the AWS Admin console and locate the Cloud Map service. Expand the left hand side section and click on the namespace with nbame  **appmeshworkshop.pvt.local**. Take a look at the service definition.
 
-We are ready to start using the service we just defined in Cloud Map. Let's leverage ECS integration with Cloud Map to configure
+You can start referencing the Cloud Map service in ECS.
