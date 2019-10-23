@@ -26,7 +26,7 @@ Given the dependencies between Cloud Map, ECS and App Mesh, you will proceed in 
 ```bash
 # Define variables #
 VPC_ID=$(jq < cfn-output.json -r '.VpcId');
-# Create cloud map service #
+# Create cloud map namespace #
 OPERATION_ID=$(aws servicediscovery create-private-dns-namespace \
     --name appmeshworkshop.pvt.local \
     --description 'App Mesh Workshop private DNS namespace' \
