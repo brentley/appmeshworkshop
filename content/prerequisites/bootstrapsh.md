@@ -4,13 +4,10 @@ chapter: false
 weight: 23
 ---
 
-The following bootstrap scripts will do the following:
+The following bootstrap scripts will (1) build the Docker images, (2) push them to the ECR repository, and (3) create the ECS services.
 
- - Build the Docker images
- - Push them to the ECR repository
- - Create the ECS services
+* Create the bootstrap scripts
 
-#### Create the bootstrap scripts
 ```bash
 
 # bootstrap script
@@ -34,7 +31,9 @@ cat > ~/environment/scripts/fetch-outputs <<-"EOF"
 
 STACK_NAME="$(echo $C9_PROJECT | sed 's/^Project-//' | tr 'A-Z' 'a-z')"
 aws cloudformation describe-stacks \
-  --stack-name "$STACK_NAME" | jq -r '[.Stacks[0].Outputs[] | {key: .OutputKey, value: .OutputValue}] | from_entries' > cfn-output.json
+  --stack-name "$STACK_NAME" | \
+jq -r '[.Stacks[0].Outputs[] | 
+    {key: .OutputKey, value: .OutputValue}] | from_entries' > cfn-output.json
 
 EOF
 
@@ -123,10 +122,13 @@ EOF
 chmod +x ~/environment/scripts/*
 ```
 
-#### Run them!
+* Run them!
+
 ```bash
 ~/environment/scripts/bootstrap
 ```
+
+___
 
 Take a moment to familiarize with the resources that were just created. At this point our microservices should be reacheable via Internet. You can get the External Load Balancer DNS and paste it in a browser to access the frontend service using the following command:
 
