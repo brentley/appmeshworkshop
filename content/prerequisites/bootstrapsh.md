@@ -1,27 +1,23 @@
 ---
 title: "Run the bootstrap scripts"
 chapter: false
-weight: 22
+weight: 23
 ---
 
 The following bootstrap scripts will do the following:
 
- - Install the required tools (kubectl, jq and gettext)
  - Build the Docker images
  - Push them to the ECR repository
  - Create the ECS services
 
 #### Create the bootstrap scripts
 ```bash
-cd ~/environment && mkdir scripts
 
 # bootstrap script
-cat > scripts/bootstrap <<-"EOF"
+cat > ~/environment/scripts/bootstrap <<-"EOF"
 
 #!/bin/bash -ex
 
-echo 'Installing tools'
-~/environment/scripts/install-tools
 echo 'Fetching CloudFormation outputs'
 ~/environment/scripts/fetch-outputs
 echo 'Building Docker Containers'
@@ -31,30 +27,8 @@ echo 'Creating the ECS Services'
 
 EOF
 
-# tools script
-cat > scripts/install-tools <<-"EOF"
-
-#!/bin/bash -ex
-
-sudo yum install -y jq gettext
-
-sudo wget -O /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/2.4.0/yq_linux_amd64
-sudo chmod +x /usr/local/bin/yq
-sudo curl --silent --location -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.13.7/bin/linux/amd64/kubectl
-sudo chmod +x /usr/local/bin/kubectl
-
-curl --silent --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-sudo mv -v /tmp/eksctl /usr/local/bin
-
-if ! [ -x "$(command -v jq)" ] || ! [ -x "$(command -v envsubst)" ] || ! [ -x "$(command -v kubectl)" ] || ! [ -x "$(command -v eksctl)" ]; then
-  echo 'ERROR: tools not installed.' >&2
-  exit 1
-fi
-
-EOF
-
 # fetch-outputs script
-cat > scripts/fetch-outputs <<-"EOF"
+cat > ~/environment/scripts/fetch-outputs <<-"EOF"
 
 #!/bin/bash -ex
 
@@ -65,7 +39,7 @@ aws cloudformation describe-stacks \
 EOF
 
 # build eks script
-cat > scripts/build-eks <<-"EOF"
+cat > ~/environment/scripts/build-eks <<-"EOF"
 
 
 #!/bin/bash
@@ -99,7 +73,7 @@ eksctl create cluster -n $STACK_NAME \
 EOF
 
 # build-containers script
-cat > scripts/build-containers <<-"EOF"
+cat > ~/environment/scripts/build-containers <<-"EOF"
 
 #!/bin/bash -ex
 
@@ -119,7 +93,7 @@ docker push $NODEJS_ECR_REPO:latest
 EOF
 
 # create-ecs-service script
-cat > scripts/create-ecs-service <<-"EOF"
+cat > ~/environment/scripts/create-ecs-service <<-"EOF"
 
 #!/bin/bash -ex
 
@@ -146,15 +120,15 @@ aws ecs create-service \
 
 EOF
 
-chmod +x scripts/*
+chmod +x ~/environment/scripts/*
 ```
 
 #### Run them!
 ```bash
-cd ~/environment && scripts/bootstrap
+~/environment/scripts/bootstrap
 ```
 
-Take a moment to familiarize with the resources that were just created. At this point our microservices should be reacheable via Internet. You can get the External Load Balancer URL and paste it in a browser to access the frontend service using the following command:
+Take a moment to familiarize with the resources that were just created. At this point our microservices should be reacheable via Internet. You can get the External Load Balancer DNS and paste it in a browser to access the frontend service using the following command:
 
 ```bash
 echo "http://$(jq -r '.ExternalLoadBalancerDNS' cfn-output.json)/"
@@ -165,7 +139,7 @@ What's going on?
 Here is what's happening. You have deployed the following components:
 
 * External Application Load Balancer. The ALB is forwarding the HTTP requests it receives to a group of EC2 instances in a target group.
-Inside the EC2 instances, there is an Ruby app running on port 3000 across 3 public subnets. 
+Inside the EC2 instances, there is an Ruby app running on port 3000 across 3 public subnets.
 
 * Ruby Frontend. The Ruby microservice is responsible for assembling the UI. It runs on a group of EC2 instances that are configured in a target group and receive requests from the ALB mentioned above. To assemble the UI, the Ruby app requires some help from other microservices, which we will call the Crystal and the NodeJS backends and we will describe below.
 
