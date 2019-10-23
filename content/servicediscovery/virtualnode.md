@@ -4,7 +4,7 @@ date: 2018-09-18T17:39:30-05:00
 weight: 20
 ---
 
-* Create a second virtual node for the crystal backend, and use service discovery instead.
+* Create a second virtual node for the crystal backend, and declare Cloud Map as the service discovery mechanism (instead of DNS).
 
 ```bash
 # Define variables #
