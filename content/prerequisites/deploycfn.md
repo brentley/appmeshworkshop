@@ -5,12 +5,14 @@ weight: 21
 ---
 
 * Download the CloudFormation template:
+
 ```bash
 cd ~/environment
 curl -s https://raw.githubusercontent.com/brentley/appmeshworkshop/master/templates/appmesh-baseline.yml -o appmesh-baseline.yml
 ```
 
 * Deploy the CloudFormation stack:
+
 ```bash
 IAM_ROLE=$(curl -s 169.254.169.254/latest/meta-data/iam/info | \
   jq -r '.InstanceProfileArn' | cut -d'/' -f2)
