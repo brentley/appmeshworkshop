@@ -3,11 +3,6 @@ title: "Create a discovery service"
 date: 2018-09-18T17:39:30-05:00
 weight: 10
 ---
-
-**AWS Cloud Map** is a cloud resource discovery service. Cloud Map enables you to name your application resources with custom names, and it automatically updates the locations of these dynamically changing resources.
-
-Part of the transition to microservices and modern architectures involves having dynamic, autoscaling, and robust services that can respond quickly to failures and changing loads. A modern architectural best practice is to loosely couple these services by allowing them to specify their own dependencies. Compared to dedicated load balancing, service discovery (client side load balancing) can help improve resiliency, and convenience in dynamic and large micrsoervice environments.
-
 The Crystal backend service operates behind an internal (dedicated) load balancer. We will now configure it to use Amazon ECS Service Discovery. Service discovery uses AWS Cloud Map API actions to manage HTTP and DNS namespaces for Amazon ECS services.
 
 {{% notice info %}}
@@ -17,9 +12,9 @@ In ECS, Service Discovery can **only** be enabled at service creation time. In o
 
 Given the dependencies between Cloud Map, ECS and App Mesh, you will proceed in the following order to enable Service Discovery:
 
-1. Configure a namespace and a service in Cloud Map. 
-2. Create the App Mesh resources needed to represent the new version of the ECS-based Crystal service. 
-3. Create a new service in ECS for the Crystal backend.
+1. We will start of by configuring a namespace and a service in Cloud Map.
+2. We will then create the App Mesh resources needed to represent the new version of our ECS-based Crystal service.
+3. Finally we will create a new service in ECS for the Crystal backend.
 
 * Let's create a namespace in Cloud Map to hold the service. Name it **appmeshworkshop.pvt.local**  
 
@@ -52,7 +47,7 @@ done
 ```bash
 # Define variables #
 NAMESPACE=$(aws servicediscovery list-namespaces | \
-  jq -r ' .Namespaces[] | 
+  jq -r ' .Namespaces[] |
     select ( .Properties.HttpProperties.HttpName == "appmeshworkshop.pvt.local" ) | .Id ');
 # Create cloud map service #
 aws servicediscovery create-service \
@@ -65,4 +60,4 @@ aws servicediscovery create-service \
 
 Go back to the AWS Admin console and locate the Cloud Map service. Expand the left hand side section and click on the namespace  **appmeshworkshop.pvt.local**. Take a look at the service definition.
 
-You can start referencing the Cloud Map service in ECS.
+We are ready to start using the service we just defined in Cloud Map. Let's leverage ECS integration with Cloud Map to configure it.

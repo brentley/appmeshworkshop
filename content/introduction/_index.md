@@ -15,7 +15,7 @@ Welcome to the AWS AppMesh Workshop!
 
 The intent of this workshop is to educate users about the features and usage of AWS AppMesh.
 
-Background in EKS, Kubernetes, Docker, and container workflows are not required, but they are recommended.
+Background in ECS, EKS, Docker, and container workflows are not required, but they are recommended.
 
 This chapter will introduce you to the basic workings of AppMesh, laying the foundation for the hands-on portion of the workshop.
 

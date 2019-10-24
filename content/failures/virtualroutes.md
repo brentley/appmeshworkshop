@@ -4,14 +4,14 @@ date: 2018-09-18T17:39:30-05:00
 weight: 10
 ---
 
-* Add a retry policy so that if a request to crystal-sd-green resulted in any server error status codes as “500 or 503”, a retry attempt would be made with a max limit of 10 retries.
+Since we know that the Crystal application will start replying requests with `503` error messages, we need to to add a retry policy in the route, so that if a request to crystal-sd-green resulted in any server error status codes as “500 or 503”, a retry attempt would be made with a max limit of 10 retries:
 
 ```bash
 # Define variables #
 SPEC=$(cat <<-EOF
-  { 
+  {
     "httpRoute": {
-      "action": { 
+      "action": {
         "weightedTargets": [
           {
             "virtualNode": "crystal-sd-green",

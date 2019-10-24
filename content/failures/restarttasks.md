@@ -4,7 +4,7 @@ date: 2018-09-18T17:39:30-05:00
 weight: 15
 ---
 
-* Re-start the ECS tasks to update the container images.
+To get everything working, we need to force a new deployment of the `crystal-service-sd-green` service in ECS. To get the updated container images (that we just created), let's re-start the ECS Tasks:
 
 ```bash
 # Define variables #
@@ -14,7 +14,7 @@ aws ecs list-tasks \
   --cluster $CLUSTER_NAME \
   --service crystal-service-sd-green | \
 jq -r ' .taskArns[] | [.] | @tsv' | \
-  while IFS=$'\t' read -r taskArn; do 
+  while IFS=$'\t' read -r taskArn; do
     aws ecs stop-task --cluster $CLUSTER_NAME --task $taskArn;
   done
 ```
@@ -34,11 +34,11 @@ _list_tasks() {
     --cluster $CLUSTER_NAME \
     --service crystal-service-sd-green | \
   jq -r ' .taskArns | @text' | \
-    while read taskArns; do 
+    while read taskArns; do
       aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;
     done | \
   jq -r --arg TASK_DEF_ARN $TASK_DEF_ARN \
-    ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN) 
+    ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN)
                     and (.lastStatus == "RUNNING" ))] | length'
 }
 # Get instances health status #
