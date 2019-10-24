@@ -932,7 +932,7 @@ Outputs:
     Description: The DNS for the internal load balancer
     Value: !GetAtt InternalLoadBalancer.DNSName
   InternalLoadBalancerArn:
-    Description: The name for the internal load balancer
+    Description: The ARN for the internal load balancer
     Value: !Ref InternalLoadBalancer
   ExternalLoadBalancerDNS:
     Description: The DNS for the external load balancer
