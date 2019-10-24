@@ -5,7 +5,7 @@ weight: 30
 ---
 
 Virtual routers handle traffic for one or more virtual services within your mesh. 
-We will create a virtual router and associate routes to direct incoming requests to the different virtual node destinations we have for the Crystal backend.
+We will create a virtual router and associate routes to direct incoming requests to the different virtual node destinations we have for the Crystal backend. 
 
 * Begin by creating the virtual router.
 
@@ -28,7 +28,7 @@ aws appmesh create-virtual-router \
   --spec "$SPEC"
 ```
 
-* Create a route to start shifting traffic to your new virtual node. The traffic will be distributed between the crystal-lb-blue and crystal-sd-blue virtual nodes at a 2:1 ratio (i.e., the crystal-sd-blue node will receive two thirds of the traffic).
+* Create a route to start shifting a portion of the traffic to the new virtual node. The traffic will be distributed between the crystal-lb-blue and crystal-sd-blue virtual nodes at a 2:1 ratio (i.e., the crystal-sd-blue node will receive two thirds of the traffic).
 
 ```bash
 # Define variables #
