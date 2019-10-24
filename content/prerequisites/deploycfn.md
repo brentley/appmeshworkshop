@@ -31,3 +31,7 @@ The CloudFormation template will launch the following:
 - A Launch Template and an Auto Scaling Group for your EC2 based services
 - Two Application Load Balancers to front internal and external services
 - A Private Hosted Zone for service discovery
+
+This is the detailed application architecture:
+
+![Detailed Architecture](/images/app_mesh_architecture/AppMeshWorkshop.png)

@@ -6,7 +6,7 @@ weight: 40
 
 # Roll out updates to the example microservices
 
-![microservices](/images/crystal.svg)
+![deployment](/images/app_mesh_architecture/AppMeshWorkshopCloudMap.png)
 
 **Canary release** is a software development strategy in which a new version of a service (as well as other software) is deployed as a canary release for testing purposes, and the base version remains deployed as a production release for normal operations.
 

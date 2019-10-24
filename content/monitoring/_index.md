@@ -6,7 +6,7 @@ weight: 25
 
 # Add Monitoring and Logging Capabilities
 
-![microservices](/images/crystal.svg)
+![monitoring](/images/app_mesh_architecture/AppMeshWorkshopCloudWatch.png)
 
 One of the main benefits of implementing AppMesh is the ability to have *visibility* around your microservices and it's communications.
 
