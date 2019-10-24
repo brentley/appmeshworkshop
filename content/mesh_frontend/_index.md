@@ -6,7 +6,7 @@ weight: 20
 
 # Mesh the Frontend Ruby Service
 
-![microservices](/images/crystal.svg)
+![mesh frontend](/images/app_mesh_architecture/AppMeshWorkshopFrontend.png)
 
 Now that we already have the AppMesh taking care of our backend network traffic, it's time to put our frontend application inside the Mesh.
 

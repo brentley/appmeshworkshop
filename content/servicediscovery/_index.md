@@ -6,7 +6,7 @@ weight: 35
 
 # Use Cloud Map based service discovery 
 
-![microservices](/images/crystal.svg)
+![monitoring](/images/app_mesh_architecture/AppMeshWorkshopCloudMap.png)
 
 Until now, the way our frontend application running in the EC2 instances was talking to the backend Crystal service running in the ECS Cluster by using a dedicated Load Balancer.
 

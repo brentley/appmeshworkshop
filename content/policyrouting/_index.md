@@ -6,7 +6,7 @@ weight: 45
 
 # Routing to specific microservices
 
-![microservices](/images/crystal.svg)
+![routing](/images/app_mesh_architecture/AppMeshWorkshopCloudMap.png)
 
 AWS AppMesh allows you to implement advanced routing capabilities between your microservices. One of the ways to achieve this is to working with **Header based routing**.
 
