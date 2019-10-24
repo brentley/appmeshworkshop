@@ -928,6 +928,9 @@ Resources:
       Type: A
 
 Outputs:
+  InternalLoadBalancerDNS:
+    Description: The DNS for the internal load balancer
+    Value: !GetAtt InternalLoadBalancer.DNSName
   InternalLoadBalancerArn:
     Description: The name for the internal load balancer
     Value: !Ref InternalLoadBalancer
