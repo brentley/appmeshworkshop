@@ -123,3 +123,32 @@ until [ $(_list_tasks) == "3" ]; do
   fi
 done
 ```
+
+Next you will validate Envoy is actually proxing the requests in its way in and out of the crystal microservice. To do so,  issue a curl command to the IP address of any of the 3 tasks running as part of the crystal service as follows:
+
+curl -v ip:3000/crystal
+
+
+```
+h-4.2$ curl 10.0.101.45:3000/crystal -v
+*   Trying 10.0.101.45...
+* TCP_NODELAY set
+* Connected to 10.0.101.45 (10.0.101.45) port 3000 (#0)
+> GET /crystal HTTP/1.1
+> Host: 10.0.101.45:3000
+> User-Agent: curl/7.61.1
+> Accept: */*
+>
+< HTTP/1.1 200 OK
+< content-type: text/plain
+< content-length: 63
+< x-envoy-upstream-service-time: 0
+< date: Wed, 23 Oct 2019 17:53:01 GMT
+< server: envoy
+<
+Crystal backend: Hello! from 10.0.101.45 in AZ-b commit NOHASH
+* Connection #0 to host 10.0.101.45 left intact
+```
+
+Notice the presence of the **server** header. This is in its own a confirmation that Envoy is proxing requests.
+

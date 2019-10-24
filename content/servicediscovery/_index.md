@@ -4,7 +4,7 @@ chapter: true
 weight: 35
 ---
 
-# Use service discovery in the microservices
+# Use Cloud Map based service discovery 
 
 ![monitoring](/images/app_mesh_architecture/AppMeshWorkshopCloudMap.png)
 

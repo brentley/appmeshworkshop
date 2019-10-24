@@ -170,9 +170,8 @@ _list_association() {
 until [ $(_list_association) != "Pending" ]; do
   echo "Association is pending ..."
   sleep 10s
-  ASSOCIATION_STATUS=$(_list_association)
-  if [ $ASSOCIATION_STATUS != "Pending" ]; then
-    echo "Association $ASSOCIATION_STATUS"
+  if [ $(_list_association) == "Success" ]; then
+    echo "Association created"
     break
   fi
 done
