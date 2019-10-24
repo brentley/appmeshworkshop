@@ -4,10 +4,6 @@ date: 2018-09-18T16:01:14-05:00
 weight: 5
 ---
 
-Our strategy will be to deploy a new version of the crystal service and begin shifting traffic to it. If all goes well, then we will continue to shift more traffic to the new version until it is serving 100% of all requests. 
-
-**Canary release** is a software development strategy in which a new version of a service (as well as other software) is deployed as a canary release for testing purposes, and the base version remains deployed as a production release for normal operations.
-
 In a canary release deployment, total traffic is separated at random into a production release and a canary release with a pre-configured ratio. Typically, the canary release receives a small percentage of the traffic and the production release takes up the rest. The updated service features are only visible to the traffic through the canary. You can adjust the canary traffic percentage to optimize test coverage or performance.
 
 Remember, in App Mesh, every version of a service is ultimately backed by actual running code somewhere (Fargate tasks in the case of crystal), so each service will have it's own virtual node representation in the mesh that provides this conduit.
@@ -34,7 +30,7 @@ index a7c041f..dbd1857 100644
 @@ -1 +1 @@
 -NOHASH
 +CANARY
--- 
+--
 2.22.0
 
 
@@ -55,7 +51,7 @@ index 2fad0ea..b08ae32 100644
  require "logger"
  require "http/server"
 +require "time"
- 
+
  log = Logger.new(STDOUT)
  log.level = Logger::DEBUG
 @@ -24,8 +25,9 @@ server = HTTP::Server.new(
@@ -69,7 +65,7 @@ index 2fad0ea..b08ae32 100644
        elsif context.request.path == "/health"
          context.response.content_type = "text/plain"
          context.response.print "Healthy!"
--- 
+--
 2.22.0
 
 
