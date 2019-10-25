@@ -1,13 +1,12 @@
 ---
 title: "Remove internal Load Balancer"
 date: 2018-09-18T17:39:30-05:00
-weight: 60
+weight: 70
 ---
 
 Now that we could see that the Crystal backend service is working without using the Load Balancer, we can shift 100% of the traffic to it and delete the old service and the internal LB.
 
 To do so, let's start shifting 100% of the traffic to the virtual node with the Cloud Map integration:
-
 
 ```bash
 # Define variables #
