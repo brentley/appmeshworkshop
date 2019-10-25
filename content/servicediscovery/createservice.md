@@ -100,5 +100,3 @@ until [ $(_list_instances) == "3" ]; do
   fi
 done
 ```
-
-After confirming traffic is routing succesfully, we can shift 100% of our traffic over to the new virtual node. This also means deprovisioning the existing internal load balancer, the ECS service and the tasks running behind it. The CNAME record crystal.appmeshworkshop.hosted.local can now reference crystal.appmeshworkshop.pvt.local.

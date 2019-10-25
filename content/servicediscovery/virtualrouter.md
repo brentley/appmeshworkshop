@@ -28,7 +28,7 @@ aws appmesh create-virtual-router \
   --spec "$SPEC"
 ```
 
-* Create a route to start shifting a portion of the traffic to the new virtual node. The traffic will be distributed between the crystal-lb-blue and crystal-sd-blue virtual nodes at a 2:1 ratio (i.e., the crystal-sd-blue node will receive two thirds of the traffic).
+* Create a route to shift the traffic to the new virtual node. For now, all traffic will be sent to the crystal-lb-blue virtual node. Once the crystal-sd-blue virutal node is fully operational, we will distribute between them at a 2:1 ratio (i.e., the crystal-sd-blue node will receive two thirds of the traffic).
 
 ```bash
 # Define variables #
@@ -43,7 +43,7 @@ SPEC=$(cat <<-EOF
           },
           {
             "virtualNode": "crystal-sd-blue",
-            "weight": 2
+            "weight": 0
           }
         ]
       },
