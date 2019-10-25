@@ -8,7 +8,7 @@ weight: 45
 
 ![routing](/images/app_mesh_architecture/AppMeshWorkshopCloudMap.png)
 
-AWS AppMesh allows you to implement advanced routing capabilities between your microservices. One of the ways to achieve this is to working with **Header based routing**.
+AWS App Mesh allows you to implement advanced routing capabilities between your microservices. One of the ways to achieve this is to working with **Header based routing**.
 
 Using header-based routing, you can create patterns such as session persistence (sticky sessions) or an enhanced experience using "state". HTTP header-based routing enables using HTTP header information as a basis to determine how to route a request. This might be a standard header, like Accept or Cookie, or it might be a custom header, like my-own-header-key-value.
 

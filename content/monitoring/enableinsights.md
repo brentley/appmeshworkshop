@@ -23,4 +23,4 @@ aws ecs update-cluster-settings \
   --settings name=containerInsights,value=enabled
 ```
 
-Read and follow the instructions provided at [https://aws.amazon.com/blogs/mt/introducing-container-insights-for-amazon-ecs/](https://aws.amazon.com/blogs/mt/introducing-container-insights-for-amazon-ecs/) to access metrics collected by CloudWatch Container Insights.
+Read and follow the instructions provided at [Introducing Container Insights for Amazon ECS](https://aws.amazon.com/blogs/mt/introducing-container-insights-for-amazon-ecs/) to access metrics collected by CloudWatch Container Insights.

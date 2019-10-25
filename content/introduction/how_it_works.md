@@ -8,11 +8,11 @@ weight: 60
 
 Communications and monitoring are manually configured for every service.
 
-![Before AppMesh](/images/introduction/before_appmesh.png)
+![Before App Mesh](/images/introduction/before_appmesh.png)
 
 
 #### After App Mesh
 
 App Mesh configures communications and monitoring for all services.
 
-![After AppMesh](/images/introduction/after_appmesh.png)
+![After App Mesh](/images/introduction/after_appmesh.png)

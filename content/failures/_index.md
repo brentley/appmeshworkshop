@@ -18,6 +18,6 @@ In this chapter, the first thing we will do is to change the Crystal backend app
 
 Initially without retry in place this error will be thrown consistently. After we introduce retries, we will begin to see the time of the original request and the current time will eventually be greater than 1 second (depending on the retry policy configuration you want to set but the example configuration will work once the route is updated during the walkthrough). At this point the Crystal backend service will return a 200 and send back the response.
 
-Follow these steps to implement the error responses in the Crystal backend application and the Retry logic in AppMesh:
+Follow these steps to implement the error responses in the Crystal backend application and the Retry logic in App Mesh:
 
 {{% children showhidden="false" %}}

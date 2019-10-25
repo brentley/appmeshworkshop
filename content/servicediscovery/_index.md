@@ -14,7 +14,7 @@ Part of the transition to microservices and modern architectures involves having
 
 [AWS Cloud Map](https://aws.amazon.com/cloud-map/) is a cloud resource discovery service. Cloud Map enables you to name your application resources with custom names, and it automatically updates the locations of these dynamically changing resources.
 
-The objective of this chapter is to change the way as the Frontend application talks to the Crystal Backend application by configuring the integration between AWS AppMesh and AWS CloudMap.
+The objective of this chapter is to change the way as the Frontend application talks to the Crystal Backend application by configuring the integration between AWS App Mesh and AWS Cloud Map.
 
 
 {{% children showhidden="false" %}}

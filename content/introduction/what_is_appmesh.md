@@ -16,4 +16,4 @@ AWS App Mesh makes it easy to run services by providing consistent visibility an
 You can use App Mesh with AWS Fargate, Amazon EC2, Amazon ECS, Amazon EKS, and Kubernetes running on AWS, to better run your application at scale. App Mesh uses the open source Envoy proxy, making it compatible with a wide range of AWS partner and open source tools.
 
 
-More information on what AppMesh is all about can be found on the official [AppMesh documentation page](https://docs.aws.amazon.com/app-mesh/latest/userguide/what-is-app-mesh.html).
+More information on what App Mesh is all about can be found on the official [App Mesh documentation page](https://docs.aws.amazon.com/app-mesh/latest/userguide/what-is-app-mesh.html).
