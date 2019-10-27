@@ -32,7 +32,7 @@ sudo chmod +x /usr/local/bin/kubectl
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
 sudo mv -v /tmp/eksctl /usr/local/bin
 
-if ! [ -x "$(command -v jq)" ] || ! [ -x "$(command -v envsubst)" ] || ! [ -x "$(command -v kubectl)" ] || ! [ -x "$(command -v eksctl)" || ! [ -x "$(command -v ssm-cli)" ]; then
+if ! [ -x "$(command -v jq)" ] || ! [ -x "$(command -v envsubst)" ] || ! [ -x "$(command -v kubectl)" ] || ! [ -x "$(command -v eksctl)" ] || ! [ -x "$(command -v ssm-cli)" ]; then
   echo 'ERROR: tools not installed.' >&2
   exit 1
 fi
