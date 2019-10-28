@@ -6,7 +6,7 @@ weight: 20
 
 Time to add the envoy sidecar proxy to your Crystal backend service. 
 Since the service is runing in Fargate you will need to create a new revision of the Task Definition.
-The  task definition you are about to create will include a new container for the Envoy proxy that will run alongside (hence the term sidecar) the existing containerized Crystal micro service. 
+The  task definition you are about to create will include a new container for the Envoy proxy that will run alongside (hence the term sidecar) the existing containerized Crystal microservice. 
 
 At this point you may be wondering how is it possible for Envoy to actually intercept and process all the traffic that is sent to the Crystal container.
 
@@ -143,10 +143,10 @@ TARGET_IP=$(dig +short crystal.appmeshworkshop.hosted.local | head -1)
 curl -v $TARGET_IP:3000/crystal
 ```
 
+Notice the presence of the **server** header. This is in its own a confirmation that Envoy is proxing requests.
+
 * Terminate the session.
 
 ```bash
 exit 
 ```
-
-Notice the presence of the **server** header. This is in its own a confirmation that Envoy is proxing requests.
