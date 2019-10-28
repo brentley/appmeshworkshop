@@ -140,13 +140,12 @@ What's going on?
 
 Here is what's happening. You have deployed the following components:
 
-* External Application Load Balancer. The ALB is forwarding the HTTP requests it receives to a group of EC2 instances in a target group.
-Inside the EC2 instances, there is an Ruby app running on port 3000 across 3 public subnets.
+* _External Application Load Balancer_ - The ALB is forwarding the HTTP requests it receives to a group of EC2 instances in a target group. Inside the EC2 instances, there is an Ruby app running on port 3000 across 3 public subnets.
 
-* Ruby Frontend. The Ruby microservice is responsible for assembling the UI. It runs on a group of EC2 instances that are configured in a target group and receive requests from the ALB mentioned above. To assemble the UI, the Ruby app requires some help from other microservices, which we will call the Crystal and the NodeJS backends and we will describe below.
+* _Ruby Frontend_ - The Ruby microservice is responsible for assembling the UI. It runs on a group of EC2 instances that are configured in a target group and receive requests from the ALB mentioned above. To assemble the UI, the Ruby app has a dependency on two backend microservices (described below).
 
-* Internal Application Load Balancer. This ALB is configured as part of a service running on ECS Fargate. Additionally, there is an A Alias record in a private hosted zone in Route53 whose key is crystal.appmeshworkshop.hosted.local pointing to the ALB FQDN assigned by AWS while creating the load balancer. This allows the Ruby app to connect to crystal.appmeshworkshop.hosted.local regardless of the **TODO: Finish writing content**
+* _Internal Application Load Balancer_ - This ALB is configured as part of a service running on ECS Fargate. Additionally, there is an A Alias record in a private hosted zone in Route53 whose key is crystal.appmeshworkshop.hosted.local pointing to the ALB FQDN assigned by AWS while creating the load balancer. This allows the Ruby app to connect to crystal.appmeshworkshop.hosted.local regardless of the supporting traffic distribution mechanism. 
 
-* Crystal / NodeJS backends - The backend microservices run on ECS Fargate and EKS respectively. They listen on port 3000 and provide clients with some internal metadata, like IP address and AZ where they are currently running.
+* _Crystal / NodeJS Backends_ - These backend microservices run on ECS Fargate and EKS respectively. They listen on port 3000 and provide clients with some internal metadata, like IP address and AZ where they are currently running on.
 
-There is a client side script running on the web app that reloads the page every fes seconds. The diagram shows a graphical representation of the flow of each request, as it traverses all the components of the solution, that is an external ALB fronting a target group of EC2 instances running the microservice implemented in Ruby. This microservice has a dependency on the microservice sitting behing the FQDN.
+There is a client side script running on the web app that reloads the page every few seconds. The diagram shows a graphical representation of the flow of each request, as it traverses all the components of the solution.
