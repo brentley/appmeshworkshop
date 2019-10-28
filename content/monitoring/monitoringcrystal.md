@@ -1,5 +1,5 @@
 ---
-title: "Enable CloudWatch for crystal"
+title: "Enable CloudWatch for Crystal"
 date: 2018-09-18T16:01:14-05:00
 weight: 10
 ---

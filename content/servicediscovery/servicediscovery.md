@@ -7,7 +7,7 @@ The Crystal backend service operates behind an internal (dedicated) load balance
 
 {{% notice info %}}
 
-In ECS, Service Discovery can **only** be enabled at service creation time. In other words, you can't update an existing service to use service discovery. Given the crystal service was not enabled for service discovery at creation time, you will create a new version which does indeed leverages ECS's support for service discovery.
+In ECS, Service Discovery can **only** be enabled at service creation time. In other words, you can't update an existing service to use service discovery. Given the Crystal service was not enabled for service discovery at creation time, you will create a new version which does indeed leverages ECS's support for service discovery.
 {{% /notice  %}}
 
 Given the dependencies between Cloud Map, ECS and App Mesh, you will proceed in the following order to enable Service Discovery:

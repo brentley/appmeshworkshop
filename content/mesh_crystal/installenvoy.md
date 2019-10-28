@@ -1,10 +1,10 @@
 ---
-title: "Add the envoy sidecar proxy"
+title: "Add the Envoy sidecar proxy"
 date: 2018-09-18T17:40:09-05:00
 weight: 20
 ---
 
-Time to add the envoy sidecar proxy to your Crystal backend service. 
+Time to add the Envoy sidecar proxy to your Crystal backend service. 
 Since the service is runing in Fargate you will need to create a new revision of the Task Definition.
 The  task definition you are about to create will include a new container for the Envoy proxy that will run alongside (hence the term sidecar) the existing containerized Crystal microservice. 
 
@@ -13,7 +13,7 @@ At this point you may be wondering how is it possible for Envoy to actually inte
 The ECS integration for AWS App Mesh leverages iptables provided by the Linux OS. Whenever you launch an ECS service based on a task definition that includes the Envoy proxy, it will apply a set of iptables rules such that all the ingress traffic targetted at the Crystal container port (3000 in our case) gets intercepted and sent instead to port 15000 where the Envoy Proxy listens for ingress traffic.
 After processing its rules, the Envoy proxy establishes an HTTP connection to the app on port 3000 and forward the request. Once the Crystal app is done processing the request it send its response back to the Envoy process over the same HTTP connection. Finally the Envoy process takes the response sent by the app and replies to the client. 
 
-* Register a new task definition with the envoy sidecar proxy.
+* Register a new task definition with the Envoy sidecar proxy.
 
 ```bash
 # Define variables #
@@ -124,7 +124,7 @@ until [ $(_list_tasks) == "3" ]; do
 done
 ```
 
-Next, you will validate Envoy is actually proxing the requests in its way in and out of the crystal microservice. To do so, we will issue a curl command to the IP address of any of the 3 tasks running as part of the crystal service.
+Next, you will validate Envoy is actually proxing the requests in its way in and out of the Crystal microservice. To do so, we will issue a curl command to the IP address of any of the 3 tasks running as part of the Crystal service.
 
 * Start a Session Manager session with any of the EC2 instances.
 

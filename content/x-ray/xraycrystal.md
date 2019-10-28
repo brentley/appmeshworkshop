@@ -1,12 +1,12 @@
 ---
-title: "Enable X-Ray for crystal"
+title: "Enable X-Ray for Crystal"
 date: 2018-09-18T16:01:14-05:00
 weight: 10
 ---
 
 The AWS X-Ray daemon is a software application that listens for traffic on UDP port 2000, gathers raw segment data, and relays it to the AWS X-Ray API. The daemon works in conjunction with the AWS X-Ray SDKs and must be running so that data sent by the SDKs can reach the X-Ray service.
 
-* Register a new task definition to add the x-ray container, and enable tracing for the envoy container.
+* Register a new task definition to add the x-ray container, and enable tracing for the Envoy container.
 
 ```bash
 # Define variables #
@@ -100,7 +100,7 @@ until [ $(_list_tasks) == "3" ]; do
 done
 ```
 
-Access the ECS console and find the latest revision of your crystal task definition. Notice there are 3 containers declared, one for the crystal microservice, one for the envoy proxy and a third one for the X-Ray deamon.
+Access the ECS console and find the latest revision of your Crystal task definition. Notice there are 3 containers declared, one for the Crystal microservice, one for the Envoy proxy and a third one for the X-Ray deamon.
 
 Now access the AWS Admin console and go to the X-Ray service. Once in the X-Ray section of the console, select **Service Map** from the left hand side menu. Wait a few seconds for the service map to render.
 

@@ -1,14 +1,14 @@
 ---
-title: "Update the crystal code"
+title: "Update the Crystal code"
 date: 2018-09-18T16:01:14-05:00
 weight: 5
 ---
 
 In a canary release deployment, total traffic is separated at random into a production release and a canary release with a pre-configured ratio. Typically, the canary release receives a small percentage of the traffic and the production release takes up the rest. The updated service features are only visible to the traffic through the canary. You can adjust the canary traffic percentage to optimize test coverage or performance.
 
-Remember, in App Mesh, every version of a service is ultimately backed by actual running code somewhere (Fargate tasks in the case of crystal), so each service will have it's own virtual node representation in the mesh that provides this conduit.
+Remember, in App Mesh, every version of a service is ultimately backed by actual running code somewhere (Fargate tasks in the case of Crystal), so each service will have it's own virtual node representation in the mesh that provides this conduit.
 
-Additionaly, there is the physical deployment of the application itself to a compute environment. Both crystal deployments will run on ECS using the Fargate launch type. Our goal is to test with a portion of traffic going to the new version, ultimately increasing to 100% of traffic.
+Additionaly, there is the physical deployment of the application itself to a compute environment. Both Crystal deployments will run on ECS using the Fargate launch type. Our goal is to test with a portion of traffic going to the new version, ultimately increasing to 100% of traffic.
 
 * Create the following patch in your **ecsdemo-crystal** project.
 

@@ -4,7 +4,7 @@ date: 2018-09-18T17:39:30-05:00
 weight: 20
 ---
 
-* Create a new virtual node for our crystal backend. This time, the virtual node will reference our canary version.
+* Create a new virtual node for our Crystal backend. This time, the virtual node will reference our canary version.
 
 ```bash
 # Define variables #
