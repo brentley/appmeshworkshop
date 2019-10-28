@@ -26,7 +26,8 @@ We should configure our aws cli with our current region as default:
 
 ```bash
 export ACCOUNT_ID=$(aws sts get-caller-identity --output text --query Account)
-export AWS_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
+export AWS_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | \
+  grep region | cut -d\" -f4)
 
 echo "export ACCOUNT_ID=${ACCOUNT_ID}" >> ~/.bash_profile
 echo "export AWS_REGION=${AWS_REGION}" >> ~/.bash_profile
