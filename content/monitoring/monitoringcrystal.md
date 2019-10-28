@@ -80,5 +80,3 @@ until [ $(_list_tasks) == "3" ]; do
   fi
 done
 ```
-
-Access CloudWatch Logs and find the log group named **appmesh-workshop-crystal-envoy**. Take a few minutes to review the logging details produced by the Envoy container.

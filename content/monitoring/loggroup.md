@@ -16,7 +16,7 @@ Let's query the log group using CloudWatch Insights.
 
 * Select CloudWatch Insights.
 
-![log group](/images/monitoring/insights_1.png)
+![log group](/images/monitoring/insights_1.png?height=400px)
 
 * Select the **appmesh-workshop-crystal-envoy** log group.
 
@@ -33,4 +33,4 @@ parse @message '[*] "* * *" * * * * * * "*" "*" "*" "*" "*"' as startTime, metho
 
 * This query will parse the Envoy access logs, and count the number of response codes per request path. Run the query to get your results.
 
-![log group](/images/monitoring/insights_3.png)
+![log group](/images/monitoring/insights_4.png)
