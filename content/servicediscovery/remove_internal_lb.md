@@ -1,5 +1,5 @@
 ---
-title: "Remove internal Load Balancer"
+title: "Remove internal load balancer"
 date: 2018-09-18T17:39:30-05:00
 weight: 70
 ---
