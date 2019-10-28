@@ -1,7 +1,7 @@
 ---
 title: "Review CloudWatch log groups"
 date: 2018-09-18T16:01:14-05:00
-weight: 15
+weight: 20
 ---
 
 * Access CloudWatch Logs to check the existence of the **appmesh-workshop-frontrend-envoy** and **appmesh-workshop-crystal-envoy** log groups.
