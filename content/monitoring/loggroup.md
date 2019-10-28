@@ -12,9 +12,7 @@ weight: 15
 
 ![log group](/images/monitoring/log_stream.png)
 
-Let's query the log group using CloudWatch Insights.
-
-* Select CloudWatch Insights.
+* Let's query the log group using CloudWatch Insights. Select CloudWatch Insights.
 
 ![log group](/images/monitoring/insights_1.png?height=400px)
 
