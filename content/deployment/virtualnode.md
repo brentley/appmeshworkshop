@@ -13,7 +13,13 @@ SPEC=$(cat <<-EOF
     "serviceDiscovery": {
       "awsCloudMap": {
         "namespaceName": "appmeshworkshop.pvt.local",
-        "serviceName": "crystal-green"
+        "serviceName": "crystal-green",
+        "attributes": [
+          {
+            "key": "ECS_TASK_SET_EXTERNAL_ID",
+            "value": "epoch-task-set"
+          }
+        ]       
       }
     },
     "logging": {

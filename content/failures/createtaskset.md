@@ -43,27 +43,14 @@ aws ecs create-task-set \
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 SERVICE_ARN=$(aws ecs list-services --cluster $CLUSTER_NAME | \
   jq -r ' .serviceArns[] | select( . | contains("sd"))' | tail -1)
-TASK_DEF_ARN=$(aws ecs list-task-definitions | \
-  jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
-SUBNET_ONE=$(jq < cfn-output.json -r '.PrivateSubnetOne');
-SUBNET_TWO=$(jq < cfn-output.json -r '.PrivateSubnetTwo');
-SUBNET_THREE=$(jq < cfn-output.json -r '.PrivateSubnetThree');
-SECURITY_GROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup');
-CMAP_SVC_ARN=$(aws servicediscovery list-services | \
-  jq -r '.Services[] | select(.Name == "crystal-blue") | .Arn');
-# Create ecs task set #
-aws ecs create-task-set \
+TASK_SET_ARN=$(aws ecs describe-task-sets --cluster $CLUSTER_NAME | \
+  jq -r ' .serviceArns[] | select( . | contains("sd"))' | tail -1)
+# Update ecs task set #
+aws ecs update-task-set \
   --service $SERVICE_ARN \
   --cluster $CLUSTER_NAME \
-  --external-id epoch-task-set \
-  --task-definition "$(echo $TASK_DEF_ARN)" \
-  --service-registries "registryArn=$CMAP_SVC_ARN" \
-  --launch-type FARGATE \
-  --scale value=50,unit=PERCENT \
-  --network-configuration \
-      "awsvpcConfiguration={subnets=[$SUBNET_ONE,$SUBNET_TWO,$SUBNET_THREE],
-        securityGroups=[$SECURITY_GROUP],
-        assignPublicIp=DISABLED}"
+  --task-set epoch-task-set \
+  --scale value=50,unit=PERCENT
 ```
 
 
