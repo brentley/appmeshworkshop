@@ -20,7 +20,7 @@ SUBNET_TWO=$(jq < cfn-output.json -r '.PrivateSubnetTwo');
 SUBNET_THREE=$(jq < cfn-output.json -r '.PrivateSubnetThree');
 SECURITY_GROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup');
 CMAP_SVC_ARN=$(aws servicediscovery list-services | \
-  jq -r '.Services[] | select(.Name == "crystal-blue") | .Arn');
+  jq -r '.Services[] | select(.Name == "crystal-green") | .Arn');
 # Create ecs task set #
 aws ecs create-task-set \
   --service $SERVICE_ARN \
