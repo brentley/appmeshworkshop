@@ -211,7 +211,7 @@ EOF
   ); \
   aws appmesh create-virtual-node \
         --mesh-name appmesh-workshop \
-        --virtual-node-name crystal-lb-blue \
+        --virtual-node-name crystal-lb-vanilla \
         --spec "$SPEC"
 }
 
@@ -220,7 +220,7 @@ create_virtual_service() {
     { 
       "provider": {
         "virtualNode": { 
-          "virtualNodeName": "crystal-lb-blue"
+          "virtualNodeName": "crystal-lb-vanilla"
         }
       }
     }
@@ -244,7 +244,7 @@ add_envoy_sidecar() {
             "environment": [
               {
                 "name": "APPMESH_VIRTUAL_NODE_NAME",
-                "value": "mesh/appmesh-workshop/virtualNode/crystal-lb-blue"
+                "value": "mesh/appmesh-workshop/virtualNode/crystal-lb-vanilla"
               }
             ],
             "image": ($ENVOY_REGISTRY + "/aws-appmesh-envoy:v1.11.2.0-prod"),

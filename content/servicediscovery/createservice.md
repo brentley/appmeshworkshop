@@ -12,7 +12,7 @@ This time, instead of using the rolling update (ECS) deployment controller, we w
 In ECS, Service Discovery can only be enabled at service creation time if the deployment controller is of type ECS. Since the crystal-service-lb-blue was created using the default deployment controller, and was not enabled for service discovery at creation time, you will need to create a new version which does indeed leverages ECS's support for service discovery.
 -->
 
-* Register a new task definition pointing to the crystal-sd-blue virtual node.
+* Register a new task definition pointing to the crystal-sd-vanilla virtual node.
 
 ```bash
 # Define variables #
@@ -23,7 +23,7 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
   | jq ' .taskDefinition' \
   | jq ' .containerDefinitions[].environment |= map(
         if .name=="APPMESH_VIRTUAL_NODE_NAME" then 
-              .value="mesh/appmesh-workshop/virtualNode/crystal-sd-blue" 
+              .value="mesh/appmesh-workshop/virtualNode/crystal-sd-vanilla" 
         else . end) ' \
   | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
 ); \
@@ -61,7 +61,7 @@ SUBNET_TWO=$(jq < cfn-output.json -r '.PrivateSubnetTwo');
 SUBNET_THREE=$(jq < cfn-output.json -r '.PrivateSubnetThree');
 SECURITY_GROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup');
 CMAP_SVC_ARN=$(aws servicediscovery list-services | \
-  jq -r '.Services[] | select(.Name == "crystal-blue") | .Arn');
+  jq -r '.Services[] | select(.Name == "crystal") | .Arn');
 # Create ecs task set #
 aws ecs create-task-set \
   --service $SERVICE_ARN \
@@ -85,7 +85,7 @@ CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 TASK_DEF_ARN=$(aws ecs list-task-definitions | \
   jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1);
 CMAP_SVC_ID=$(aws servicediscovery list-services | \
-  jq -r '.Services[] | select(.Name == "crystal-blue") | .Id');
+  jq -r '.Services[] | select(.Name == "crystal") | .Id');
 # Get task state #
 _list_tasks() {
   aws ecs list-tasks \

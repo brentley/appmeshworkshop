@@ -4,7 +4,28 @@ date: 2018-09-18T17:39:30-05:00
 weight: 15
 ---
 
-To get everything working, and deploy the updated container images, we need to create a new task set within the existing `crystal-service-sd` service ECS.
+* Register a new task definition using our error container, and pointing to the crystal-sd-error virtual node.
+
+```bash
+# Define variables #
+TASK_DEF_ARN=$(aws ecs list-task-definitions | \
+  jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
+TASK_DEF_OLD=$(aws ecs describe-task-definition --task-definition $TASK_DEF_ARN);
+TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
+  | jq ' .taskDefinition' \
+  | jq ' .containerDefinitions[0].image |= sub("epoch"; "error") ' \
+  | jq ' .containerDefinitions[].environment |= map(
+        if .name=="APPMESH_VIRTUAL_NODE_NAME" then 
+              .value="mesh/appmesh-workshop/virtualNode/crystal-sd-error" 
+        else . end) ' \
+  | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
+); \
+TASK_DEF_FAMILY=$(echo $TASK_DEF_ARN | cut -d"/" -f2 | cut -d":" -f1);
+echo $TASK_DEF_NEW > /tmp/$TASK_DEF_FAMILY.json && 
+# Register ecs task definition #
+aws ecs register-task-definition \
+  --cli-input-json file:///tmp/$TASK_DEF_FAMILY.json
+```
 
 * Create a new task set.
 
@@ -20,7 +41,7 @@ SUBNET_TWO=$(jq < cfn-output.json -r '.PrivateSubnetTwo');
 SUBNET_THREE=$(jq < cfn-output.json -r '.PrivateSubnetThree');
 SECURITY_GROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup');
 CMAP_SVC_ARN=$(aws servicediscovery list-services | \
-  jq -r '.Services[] | select(.Name == "crystal-green") | .Arn');
+  jq -r '.Services[] | select(.Name == "crystal") | .Arn');
 # Create ecs task set #
 aws ecs create-task-set \
   --service $SERVICE_ARN \
@@ -62,7 +83,7 @@ CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 TASK_DEF_ARN=$(aws ecs list-task-definitions | \
   jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1);
 CMAP_SVC_ID=$(aws servicediscovery list-services | \
-  jq -r '.Services[] | select(.Name == "crystal-green") | .Id');
+  jq -r '.Services[] | select(.Name == "crystal") | .Id');
 # Get task state #
 _list_tasks() {
   aws ecs list-tasks \

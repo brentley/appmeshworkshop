@@ -66,6 +66,6 @@ CRYSTAL_ECR_REPO=$(jq < cfn-output.json -r '.CrystalEcrRepo')
 $(aws ecr get-login --no-include-email)
 
 docker build -t crystal-service ecsdemo-crystal
-docker tag crystal-service:latest $CRYSTAL_ECR_REPO:green
-docker push $CRYSTAL_ECR_REPO:green
+docker tag crystal-service:latest $CRYSTAL_ECR_REPO:retry
+docker push $CRYSTAL_ECR_REPO:retry
 ```

@@ -14,7 +14,7 @@ Using header-based routing, you can create patterns such as session persistence 
 
 Header-based routing can also be used to enable use cases such as A/B testing (e.g.: custom headers using any string), canary or blue/green deployments, delivering different pages or user experiences based on categories of devices. (e.g.: using regex in header), handling traffic from different browsers differently (e.g. using user-agent) or configuring access restrictions based on IP address or CDN. (e.g. using X-Forwarded-for).  
 
-In this step, let's configure a route that checks if the header `canary_fleet` is equals true. If so, the requests will be send to the `crystal-sd-green` version of the Crystal backend service.
+In this step, let's configure a route that checks if the header `canary_fleet` is equals true. If so, the requests will be send to the `crystal-sd-epoch` version of the Crystal backend service.
 
 
 

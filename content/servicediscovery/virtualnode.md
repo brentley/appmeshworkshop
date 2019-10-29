@@ -13,7 +13,13 @@ SPEC=$(cat <<-EOF
     "serviceDiscovery": {
       "awsCloudMap": {
         "namespaceName": "appmeshworkshop.pvt.local",
-        "serviceName": "crystal-blue"
+        "serviceName": "crystal",
+        "attributes": [
+          {
+            "key": "ECS_TASK_SET_EXTERNAL_ID",
+            "value": "vanilla-task-set"
+          }
+        ]
       }
     },
     "logging": {
@@ -43,6 +49,6 @@ EOF
 # Create app mesh virtual node #
 aws appmesh create-virtual-node \
   --mesh-name appmesh-workshop \
-  --virtual-node-name crystal-sd-blue \
+  --virtual-node-name crystal-sd-vanilla \
   --spec "$SPEC"
 ```

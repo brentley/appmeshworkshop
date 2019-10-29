@@ -37,7 +37,7 @@ until [ $(_operation_status) != "PENDING" ]; do
 done
 ```
 
-* Create a service inside the namespace created in the step above. Name it **crystal-blue**. The service's FQDN becomes **crystal-blue.appmeshworkshop.pvt.local**
+* Create a service inside the namespace created in the step above. Name it **crystal**. The service's FQDN becomes **crystal.appmeshworkshop.pvt.local**
 
 ```bash
 # Define variables #
@@ -46,7 +46,7 @@ NAMESPACE=$(aws servicediscovery list-namespaces | \
     select ( .Properties.HttpProperties.HttpName == "appmeshworkshop.pvt.local" ) | .Id ');
 # Create cloud map service #
 aws servicediscovery create-service \
-  --name crystal-blue \
+  --name crystal \
   --description 'Discovery service for the Crystal service (blue)' \
   --namespace-id $NAMESPACE \
   --dns-config 'RoutingPolicy=MULTIVALUE,DnsRecords=[{Type=A,TTL=300}]' \
