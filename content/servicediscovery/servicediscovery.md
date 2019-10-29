@@ -5,10 +5,6 @@ weight: 10
 ---
 The Crystal backend service operates behind an internal (dedicated) load balancer. We will now configure it to use Amazon ECS Service Discovery. Service discovery uses AWS Cloud Map API actions to manage HTTP and DNS namespaces for Amazon ECS services.
 
-{{% notice info %}}
-In ECS, Service Discovery can only be enabled at service creation time if the deployment controller is of type ECS. Since the crystal-service-lb-blue was created using the default deployment controller, and was not enabled for service discovery at creation time, you will need to create a new version which does indeed leverages ECS's support for service discovery.
-{{% /notice  %}}
-
 Given the dependencies between Cloud Map, ECS and App Mesh, you will proceed in the following order to enable Service Discovery:
 
 1. We will start of by configuring a namespace and a service in Cloud Map.
