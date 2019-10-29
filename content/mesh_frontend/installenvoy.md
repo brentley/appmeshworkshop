@@ -154,7 +154,7 @@ aws ssm create-association \
   --parameters \
       "region=$AWS_REGION,
         meshName=appmesh-workshop,
-        vNodeName=frontend-v1,
+        vNodeName=frontend,
         appPorts=3000"
 ```
 
