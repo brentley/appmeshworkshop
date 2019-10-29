@@ -90,7 +90,7 @@ TASK_DEF_ARN=$(aws ecs list-task-definitions | \
 # Update ecs service #
 aws ecs update-service \
   --cluster $CLUSTER_NAME \
-  --service crystal-service-lb-blue \
+  --service crystal-service-lb \
   --task-definition "$(echo $TASK_DEF_ARN)"
 ```
 
@@ -105,7 +105,7 @@ TASK_DEF_ARN=$(aws ecs list-task-definitions | \
 _list_tasks() {
   aws ecs list-tasks \
     --cluster $CLUSTER_NAME \
-    --service crystal-service-lb-blue | \
+    --service crystal-service-lb | \
   jq -r ' .taskArns | @text' | \
     while read taskArns; do 
       aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;

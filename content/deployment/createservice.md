@@ -1,5 +1,5 @@
 ---
-title: "Create a new ECS service"
+title: "Create a new ECS task set"
 date: 2018-09-18T17:39:30-05:00
 weight: 30
 ---
@@ -27,28 +27,30 @@ aws ecs register-task-definition \
   --cli-input-json file:///tmp/$TASK_DEF_FAMILY.json
 ```
 
-* Create a new service in ECS to hold our canary tasks.
+* Create a new task set in ECS to hold our canary tasks.
 
 ```bash
 # Define variables #
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 TASK_DEF_ARN=$(aws ecs list-task-definitions | \
   jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
+SERVICE_ARN=$(aws ecs list-services --cluster $CLUSTER_NAME | \
+  jq -r ' .serviceArns[] | select( . | contains("sd"))' | tail -1)
 SUBNET_ONE=$(jq < cfn-output.json -r '.PrivateSubnetOne');
 SUBNET_TWO=$(jq < cfn-output.json -r '.PrivateSubnetTwo');
 SUBNET_THREE=$(jq < cfn-output.json -r '.PrivateSubnetThree');
 SECURITY_GROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup');
 CMAP_SVC_ARN=$(aws servicediscovery list-services | \
   jq -r '.Services[] | select(.Name == "crystal-green") | .Arn');
-# Create ecs service #
-aws ecs create-service \
+# Create ecs task set #
+aws ecs create-task-set \
+  --service $SERVICE_ARN \
   --cluster $CLUSTER_NAME \
-  --service-name crystal-service-sd-green \
+  --external-id epoch-task-set \
   --task-definition "$(echo $TASK_DEF_ARN)" \
-  --desired-count 3 \
-  --platform-version LATEST \
   --service-registries "registryArn=$CMAP_SVC_ARN" \
   --launch-type FARGATE \
+  --scale value=50,unit=PERCENT \
   --network-configuration \
       "awsvpcConfiguration={subnets=[$SUBNET_ONE,$SUBNET_TWO,$SUBNET_THREE],
         securityGroups=[$SECURITY_GROUP],
@@ -68,7 +70,7 @@ CMAP_SVC_ID=$(aws servicediscovery list-services | \
 _list_tasks() {
   aws ecs list-tasks \
     --cluster $CLUSTER_NAME \
-    --service crystal-service-sd-green | \
+    --service crystal-service-sd | \
   jq -r ' .taskArns | @text' | \
     while read taskArns; do 
      aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;

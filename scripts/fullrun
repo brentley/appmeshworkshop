@@ -140,7 +140,7 @@ EOF
 
   aws ecs create-service \
     --cluster $CLUSTER \
-    --service-name crystal-service-lb-blue \
+    --service-name crystal-service-lb \
     --task-definition $TASK_DEF \
     --load-balancer targetGroupArn=$TARGET_GROUP,containerName=crystal-service,containerPort=3000 \
     --desired-count 3 \
@@ -299,7 +299,7 @@ update_ecs_service() {
   TASK_DEF_ARN=$(jq < cfn-output.json -r '.CrystalTaskDefinition');
   aws ecs update-service \
         --cluster $CLUSTER_NAME \
-        --service crystal-service-lb-blue \
+        --service crystal-service-lb \
         --task-definition "$(echo $TASK_DEF_ARN | awk -F: '{$7=$7+1}1' OFS=:)"
 
 }

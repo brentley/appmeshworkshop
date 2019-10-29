@@ -47,7 +47,7 @@ INTERNAL_LB_ARN=$(jq < cfn-output.json -r '.InternalLoadBalancerArn');
 # Delete ECS Service
 aws ecs delete-service \
 --cluster $CLUSTER_NAME \
---service crystal-service-lb-blue \
+--service crystal-service-lb \
 --force
 
 # Delete Load Balancer

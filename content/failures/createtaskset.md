@@ -1,53 +1,12 @@
 ---
-title: "Create a new ECS service"
+title: "Create a new ECS task set"
 date: 2018-09-18T17:39:30-05:00
-weight: 50
+weight: 15
 ---
 
-{{% notice info %}}
-This time, instead of using the rolling update (ECS) deployment controller, we will leverage Task Sets to allow controlled management of application revision within a the same service. 
-{{% /notice  %}}
+To get everything working, and deploy the updated container images, we need to create a new task set within the existing `crystal-service-sd` service ECS.
 
-<!-- 
-In ECS, Service Discovery can only be enabled at service creation time if the deployment controller is of type ECS. Since the crystal-service-lb-blue was created using the default deployment controller, and was not enabled for service discovery at creation time, you will need to create a new version which does indeed leverages ECS's support for service discovery.
--->
-
-* Register a new task definition pointing to the crystal-sd-blue virtual node.
-
-```bash
-# Define variables #
-TASK_DEF_ARN=$(aws ecs list-task-definitions | \
-  jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
-TASK_DEF_OLD=$(aws ecs describe-task-definition --task-definition $TASK_DEF_ARN);
-TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
-  | jq ' .taskDefinition' \
-  | jq ' .containerDefinitions[].environment |= map(
-        if .name=="APPMESH_VIRTUAL_NODE_NAME" then 
-              .value="mesh/appmesh-workshop/virtualNode/crystal-sd-blue" 
-        else . end) ' \
-  | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
-); \
-TASK_DEF_FAMILY=$(echo $TASK_DEF_ARN | cut -d"/" -f2 | cut -d":" -f1);
-echo $TASK_DEF_NEW > /tmp/$TASK_DEF_FAMILY.json && 
-# Register ecs task definition #
-aws ecs register-task-definition \
-  --cli-input-json file:///tmp/$TASK_DEF_FAMILY.json
-```
-
-* Create a new service in ECS. This time use a service registry to register task instances.
-
-```bash
-# Define variables #
-CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
-# Create ecs service #
-aws ecs create-service \
-  --cluster $CLUSTER_NAME \
-  --service-name crystal-service-sd \
-  --desired-count 6 \
-  --deployment-controller type=EXTERNAL
-```
-
-* Create a new Task Set ECS and use a service registry to register task instances.
+* Create a new task set.
 
 ```bash
 # Define variables #
@@ -66,7 +25,7 @@ CMAP_SVC_ARN=$(aws servicediscovery list-services | \
 aws ecs create-task-set \
   --service $SERVICE_ARN \
   --cluster $CLUSTER_NAME \
-  --external-id vanilla-task-set \
+  --external-id error-task-set \
   --task-definition "$(echo $TASK_DEF_ARN)" \
   --service-registries "registryArn=$CMAP_SVC_ARN" \
   --launch-type FARGATE \
@@ -77,6 +36,37 @@ aws ecs create-task-set \
         assignPublicIp=DISABLED}"
 ```
 
+* Update the `crystal-service-sd` and scale it to 0%.
+
+```bash
+# Define variables #
+CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
+SERVICE_ARN=$(aws ecs list-services --cluster $CLUSTER_NAME | \
+  jq -r ' .serviceArns[] | select( . | contains("sd"))' | tail -1)
+TASK_DEF_ARN=$(aws ecs list-task-definitions | \
+  jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
+SUBNET_ONE=$(jq < cfn-output.json -r '.PrivateSubnetOne');
+SUBNET_TWO=$(jq < cfn-output.json -r '.PrivateSubnetTwo');
+SUBNET_THREE=$(jq < cfn-output.json -r '.PrivateSubnetThree');
+SECURITY_GROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup');
+CMAP_SVC_ARN=$(aws servicediscovery list-services | \
+  jq -r '.Services[] | select(.Name == "crystal-blue") | .Arn');
+# Create ecs task set #
+aws ecs create-task-set \
+  --service $SERVICE_ARN \
+  --cluster $CLUSTER_NAME \
+  --external-id epoch-task-set \
+  --task-definition "$(echo $TASK_DEF_ARN)" \
+  --service-registries "registryArn=$CMAP_SVC_ARN" \
+  --launch-type FARGATE \
+  --scale value=50,unit=PERCENT \
+  --network-configuration \
+      "awsvpcConfiguration={subnets=[$SUBNET_ONE,$SUBNET_TWO,$SUBNET_THREE],
+        securityGroups=[$SECURITY_GROUP],
+        assignPublicIp=DISABLED}"
+```
+
+
 * Wait for the service tasks to be in a running state and marked healthy for service discovery.
 
 ```bash
@@ -85,18 +75,18 @@ CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 TASK_DEF_ARN=$(aws ecs list-task-definitions | \
   jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1);
 CMAP_SVC_ID=$(aws servicediscovery list-services | \
-  jq -r '.Services[] | select(.Name == "crystal-blue") | .Id');
+  jq -r '.Services[] | select(.Name == "crystal-green") | .Id');
 # Get task state #
 _list_tasks() {
   aws ecs list-tasks \
     --cluster $CLUSTER_NAME \
     --service crystal-service-sd | \
   jq -r ' .taskArns | @text' | \
-    while read taskArns; do 
+    while read taskArns; do
       aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;
     done | \
   jq -r --arg TASK_DEF_ARN $TASK_DEF_ARN \
-    ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN) 
+    ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN)
                     and (.lastStatus == "RUNNING" ))] | length'
 }
 # Get instances health status #
