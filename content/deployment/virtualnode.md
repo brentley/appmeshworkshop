@@ -1,10 +1,10 @@
 ---
 title: "Create a new virtual node"
 date: 2018-09-18T17:39:30-05:00
-weight: 20
+weight: 10
 ---
 
-* Create a new virtual node for our crystal backend. This time, the virtual node will reference our canary version.
+* Create a new virtual node for our Crystal backend. This time, the virtual node will reference our epoch version.
 
 ```bash
 # Define variables #
@@ -13,7 +13,13 @@ SPEC=$(cat <<-EOF
     "serviceDiscovery": {
       "awsCloudMap": {
         "namespaceName": "appmeshworkshop.pvt.local",
-        "serviceName": "crystal-green"
+        "serviceName": "crystal",
+        "attributes": [
+          {
+            "key": "ECS_TASK_SET_EXTERNAL_ID",
+            "value": "epoch-task-set"
+          }
+        ]
       }
     },
     "logging": {
@@ -43,6 +49,6 @@ EOF
 # Create app mesh virtual node #
 aws appmesh create-virtual-node \
   --mesh-name appmesh-workshop \
-  --virtual-node-name crystal-sd-green \
+  --virtual-node-name crystal-sd-epoch \
   --spec "$SPEC"
 ```

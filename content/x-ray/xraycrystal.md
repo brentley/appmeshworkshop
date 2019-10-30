@@ -1,12 +1,12 @@
 ---
-title: "Enable X-Ray for crystal"
+title: "Enable X-Ray for Crystal"
 date: 2018-09-18T16:01:14-05:00
 weight: 10
 ---
 
-AWS X-Ray integrates with AWS App Mesh to manage Envoy proxies for micro-services. App Mesh provides a version of Envoy that you can configure to send trace data to the X-Ray daemon running in a container of the same task. The AWS X-Ray daemon is a software application that listens for traffic on UDP port 2000, gathers raw segment data, and relays it to the AWS X-Ray API. The daemon works in conjunction with the AWS X-Ray SDKs and must be running so that data sent by the SDKs can reach the X-Ray service.
+The AWS X-Ray daemon is a software application that listens for traffic on UDP port 2000, gathers raw segment data, and relays it to the AWS X-Ray API. The daemon works in conjunction with the AWS X-Ray SDKs and must be running so that data sent by the SDKs can reach the X-Ray service.
 
-* Register a new task definition to add the x-ray container, and enable tracing for the envoy container.
+* Register a new task definition to add the x-ray container, and enable tracing for the Envoy container.
 
 ```bash
 # Define variables #
@@ -24,7 +24,7 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
             }
           ]
         else . end) ' \
-  | jq ' .containerDefinitions += 
+  | jq ' .containerDefinitions +=
         [
           {
             "image": "amazon/aws-xray-daemon",
@@ -52,7 +52,7 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
   | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
 ); \
 TASK_DEF_FAMILY=$(echo $TASK_DEF_ARN | cut -d"/" -f2 | cut -d":" -f1);
-echo $TASK_DEF_NEW > /tmp/$TASK_DEF_FAMILY.json && 
+echo $TASK_DEF_NEW > /tmp/$TASK_DEF_FAMILY.json &&
 # Register ecs task definition #
 aws ecs register-task-definition \
   --cli-input-json file:///tmp/$TASK_DEF_FAMILY.json
@@ -66,7 +66,7 @@ TASK_DEF_ARN=$(aws ecs list-task-definitions | \
   jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
 aws ecs update-service \
   --cluster $CLUSTER_NAME \
-  --service crystal-service-lb-blue \
+  --service crystal-service-lb \
   --task-definition "$(echo $TASK_DEF_ARN)"
 ```
 
@@ -81,13 +81,13 @@ TASK_DEF_ARN=$(aws ecs list-task-definitions | \
 _list_tasks() {
    aws ecs list-tasks \
      --cluster $CLUSTER_NAME \
-     --service crystal-service-lb-blue | \
+     --service crystal-service-lb | \
    jq -r ' .taskArns | @text' | \
-     while read taskArns; do 
+     while read taskArns; do
        aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;
      done | \
    jq -r --arg TASK_DEF_ARN $TASK_DEF_ARN \
-     ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN) 
+     ' [.tasks[] | select( (.taskDefinitionArn == $TASK_DEF_ARN)
                      and (.lastStatus == "RUNNING" ))] | length'
 }
 until [ $(_list_tasks) == "3" ]; do
@@ -99,9 +99,3 @@ until [ $(_list_tasks) == "3" ]; do
   fi
 done
 ```
-
-Access the ECS console and find the latest revision of your crystal task definition. Notice there are 3 containers declared, one for the crystal microservice, one for the envoy proxy and a third one for the X-Ray deamon.
-
-Now access the AWS Admin console and go to the X-Ray service. Once in the X-Ray section of the console, select **Service Map** from the left hand side menu. Wait a few seconds for the service map to render. 
-
-When you select a node or edge on an AWS X-Ray service map, the X-Ray console shows a latency distribution histogram. Latency is the amount of time between when a request starts and when it completes. A histogram shows a distribution of latencies. It shows duration on the x-axis, and the percentage of requests that match each duration on the y-axis.

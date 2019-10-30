@@ -1,10 +1,10 @@
 ---
-title: "Install the envoy proxy"
+title: "Install the Envoy proxy"
 date: 2018-09-18T17:40:09-05:00
 weight: 20
 ---
 
-Time to install the envoy proxy. We will use **AWS Systems Manager** (SSM) to configure the EC2 instances that serve the frontend microservice. We will have to create an SSM document to define the actions that SSM will perform on the managed instances. Documents use JavaScript Object Notation (JSON) or YAML.
+Time to install the Envoy proxy. We will use **AWS Systems Manager** (SSM) to configure the EC2 instances that serve the frontend microservice. We will have to create an SSM document to define the actions that SSM will perform on the managed instances. Documents use JavaScript Object Notation (JSON) or YAML.
 
 * Execute the following script in your Cloud9 environment to create the SSM document.
 
@@ -154,7 +154,7 @@ aws ssm create-association \
   --parameters \
       "region=$AWS_REGION,
         meshName=appmesh-workshop,
-        vNodeName=frontend-v1,
+        vNodeName=frontend,
         appPorts=3000"
 ```
 
@@ -170,10 +170,36 @@ _list_association() {
 until [ $(_list_association) != "Pending" ]; do
   echo "Association is pending ..."
   sleep 10s
-  ASSOCIATION_STATUS=$(_list_association)
-  if [ $ASSOCIATION_STATUS != "Pending" ]; then
-    echo "Association $ASSOCIATION_STATUS"
+  if [ $(_list_association) == "Success" ]; then
+    echo "Association created"
     break
   fi
 done
+```
+
+Similarly to what you did with the Crystal backend, validate Envoy is working appropiately on the EC2 instances.
+This time, instead of querying the application, you will query the Envoy server state endpoint.
+
+* Start a Session Manager session with any of the EC2 instances.
+
+```bash
+AUTO_SCALING_GROUP=$(jq < cfn-output.json -r '.RubyAutoScalingGroupName');
+TARGET_EC2=$(aws ec2 describe-instances \
+    --filters Name=tag:aws:autoscaling:groupName,Values=$AUTO_SCALING_GROUP | \
+  jq -r ' .Reservations | first | .Instances | first | .InstanceId')
+aws ssm start-session --target $TARGET_EC2
+```
+
+* Curl the server state endpoint.
+
+```bash
+curl -v localhost:9901/server_info
+```
+
+Notice the value of the **state** property. LIVE means the server is live and serving traffic.
+
+* Terminate the session.
+
+```bash
+exit 
 ```

@@ -5,19 +5,19 @@ chapter: true
 draft: false
 ---
 
-# Introduction to Kubernetes
+# Introduction to AWS App Mesh
 
-A walkthrough of basic Kubernetes concepts.
+A walkthrough of basic App Mesh concepts.
 
-![Title Image](/images/introduction/eks-product-page.png)
+![Title Image](/images/introduction/appmesh-product-page.png)
 
-Welcome to the Amazon EKS Workshop!
+Welcome to the AWS App Mesh Workshop!
 
-The intent of this workshop is to educate users about the features of Amazon EKS.
+The intent of this workshop is to educate users about the features and usage of AWS App Mesh.
 
-Background in EKS, Kubernetes, Docker, and container workflows are not required, but they are recommended.
+Background in ECS, EKS, Docker, and container workflows are not required, but they are recommended.
 
-This chapter will introduce you to the basic workings of Kubernetes, laying the foundation for the hands-on portion of the workshop.
+This chapter will introduce you to the basic workings of App Mesh, laying the foundation for the hands-on portion of the workshop.
 
 Specifically, we will walk you through the following topics:
 

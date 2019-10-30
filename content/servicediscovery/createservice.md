@@ -4,7 +4,15 @@ date: 2018-09-18T17:39:30-05:00
 weight: 50
 ---
 
-* Register a new task definition pointing to the crystal-sd-blue virtual node.
+{{% notice info %}}
+This time, instead of using the rolling update (ECS) deployment controller, we will leverage Task Sets to allow controlled management of application revision within a the same service. 
+{{% /notice  %}}
+
+<!-- 
+In ECS, Service Discovery can only be enabled at service creation time if the deployment controller is of type ECS. Since the crystal-service-lb-blue was created using the default deployment controller, and was not enabled for service discovery at creation time, you will need to create a new version which does indeed leverages ECS's support for service discovery.
+-->
+
+* Register a new task definition pointing to the crystal-sd-vanilla virtual node.
 
 ```bash
 # Define variables #
@@ -15,7 +23,7 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
   | jq ' .taskDefinition' \
   | jq ' .containerDefinitions[].environment |= map(
         if .name=="APPMESH_VIRTUAL_NODE_NAME" then 
-              .value="mesh/appmesh-workshop/virtualNode/crystal-sd-blue" 
+              .value="mesh/appmesh-workshop/virtualNode/crystal-sd-vanilla" 
         else . end) ' \
   | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
 ); \
@@ -31,6 +39,21 @@ aws ecs register-task-definition \
 ```bash
 # Define variables #
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
+# Create ecs service #
+aws ecs create-service \
+  --cluster $CLUSTER_NAME \
+  --service-name crystal-service-sd \
+  --desired-count 6 \
+  --deployment-controller type=EXTERNAL
+```
+
+* Create a new Task Set ECS and use a service registry to register task instances.
+
+```bash
+# Define variables #
+CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
+SERVICE_ARN=$(aws ecs list-services --cluster $CLUSTER_NAME | \
+  jq -r ' .serviceArns[] | select( . | contains("sd"))' | tail -1)
 TASK_DEF_ARN=$(aws ecs list-task-definitions | \
   jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
 SUBNET_ONE=$(jq < cfn-output.json -r '.PrivateSubnetOne');
@@ -38,16 +61,16 @@ SUBNET_TWO=$(jq < cfn-output.json -r '.PrivateSubnetTwo');
 SUBNET_THREE=$(jq < cfn-output.json -r '.PrivateSubnetThree');
 SECURITY_GROUP=$(jq < cfn-output.json -r '.ContainerSecurityGroup');
 CMAP_SVC_ARN=$(aws servicediscovery list-services | \
-  jq -r '.Services[] | select(.Name == "crystal-blue") | .Arn');
-# Create ecs service #
-aws ecs create-service \
+  jq -r '.Services[] | select(.Name == "crystal") | .Arn');
+# Create ecs task set #
+aws ecs create-task-set \
+  --service $SERVICE_ARN \
   --cluster $CLUSTER_NAME \
-  --service-name crystal-service-sd-blue \
+  --external-id vanilla-task-set \
   --task-definition "$(echo $TASK_DEF_ARN)" \
-  --desired-count 3 \
-  --platform-version LATEST \
   --service-registries "registryArn=$CMAP_SVC_ARN" \
   --launch-type FARGATE \
+  --scale value=50,unit=PERCENT \
   --network-configuration \
       "awsvpcConfiguration={subnets=[$SUBNET_ONE,$SUBNET_TWO,$SUBNET_THREE],
         securityGroups=[$SECURITY_GROUP],
@@ -62,12 +85,12 @@ CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 TASK_DEF_ARN=$(aws ecs list-task-definitions | \
   jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1);
 CMAP_SVC_ID=$(aws servicediscovery list-services | \
-  jq -r '.Services[] | select(.Name == "crystal-blue") | .Id');
+  jq -r '.Services[] | select(.Name == "crystal") | .Id');
 # Get task state #
 _list_tasks() {
   aws ecs list-tasks \
     --cluster $CLUSTER_NAME \
-    --service crystal-service-sd-blue | \
+    --service crystal-service-sd | \
   jq -r ' .taskArns | @text' | \
     while read taskArns; do 
       aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;
@@ -100,5 +123,3 @@ until [ $(_list_instances) == "3" ]; do
   fi
 done
 ```
-
-After confirming traffic is routing succesfully, we can shift 100% of our traffic over to the new virtual node. This also means deprovisioning the existing internal load balancer, the ECS service and the tasks running behind it. The CNAME record crystal.appmeshworkshop.hosted.local can now reference crystal.appmeshworkshop.pvt.local.

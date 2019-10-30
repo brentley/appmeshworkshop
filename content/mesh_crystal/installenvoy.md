@@ -1,19 +1,19 @@
 ---
-title: "Add the envoy sidecar proxy"
+title: "Add the Envoy sidecar proxy"
 date: 2018-09-18T17:40:09-05:00
 weight: 20
 ---
 
-Time to add the envoy sidecar proxy to your Crystal backend service. 
+Time to add the Envoy sidecar proxy to your Crystal backend service. 
 Since the service is runing in Fargate you will need to create a new revision of the Task Definition.
-The  task definition you are about to create will include a new container for the Envoy proxy that will run alongside (hence the term sidecar) the existing containerized Crystal micro service. 
+The  task definition you are about to create will include a new container for the Envoy proxy that will run alongside (hence the term sidecar) the existing containerized Crystal microservice. 
 
 At this point you may be wondering how is it possible for Envoy to actually intercept and process all the traffic that is sent to the Crystal container.
 
 The ECS integration for AWS App Mesh leverages iptables provided by the Linux OS. Whenever you launch an ECS service based on a task definition that includes the Envoy proxy, it will apply a set of iptables rules such that all the ingress traffic targetted at the Crystal container port (3000 in our case) gets intercepted and sent instead to port 15000 where the Envoy Proxy listens for ingress traffic.
 After processing its rules, the Envoy proxy establishes an HTTP connection to the app on port 3000 and forward the request. Once the Crystal app is done processing the request it send its response back to the Envoy process over the same HTTP connection. Finally the Envoy process takes the response sent by the app and replies to the client. 
 
-* Register a new task definition with the envoy sidecar proxy.
+* Register a new task definition with the Envoy sidecar proxy.
 
 ```bash
 # Define variables #
@@ -28,7 +28,7 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
             "environment": [
               {
                 "name": "APPMESH_VIRTUAL_NODE_NAME",
-                "value": "mesh/appmesh-workshop/virtualNode/crystal-lb-blue"
+                "value": "mesh/appmesh-workshop/virtualNode/crystal-lb-vanilla"
               }
             ],
             "image": ($ENVOY_REGISTRY + "/aws-appmesh-envoy:v1.11.2.0-prod"),
@@ -90,7 +90,7 @@ TASK_DEF_ARN=$(aws ecs list-task-definitions | \
 # Update ecs service #
 aws ecs update-service \
   --cluster $CLUSTER_NAME \
-  --service crystal-service-lb-blue \
+  --service crystal-service-lb \
   --task-definition "$(echo $TASK_DEF_ARN)"
 ```
 
@@ -105,7 +105,7 @@ TASK_DEF_ARN=$(aws ecs list-task-definitions | \
 _list_tasks() {
   aws ecs list-tasks \
     --cluster $CLUSTER_NAME \
-    --service crystal-service-lb-blue | \
+    --service crystal-service-lb | \
   jq -r ' .taskArns | @text' | \
     while read taskArns; do 
       aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;
@@ -122,4 +122,31 @@ until [ $(_list_tasks) == "3" ]; do
     break
   fi
 done
+```
+
+Next, you will validate Envoy is actually proxing the requests in its way in and out of the Crystal microservice. To do so, we will issue a curl command to the IP address of any of the 3 tasks running as part of the Crystal service.
+
+* Start a Session Manager session with any of the EC2 instances.
+
+```bash
+AUTO_SCALING_GROUP=$(jq < cfn-output.json -r '.RubyAutoScalingGroupName');
+TARGET_EC2=$(aws ec2 describe-instances \
+    --filters Name=tag:aws:autoscaling:groupName,Values=$AUTO_SCALING_GROUP | \
+  jq -r ' .Reservations | first | .Instances | first | .InstanceId')
+aws ssm start-session --target $TARGET_EC2
+```
+
+* Curl the crystal microservice.
+
+```bash
+TARGET_IP=$(dig +short crystal.appmeshworkshop.hosted.local | head -1)
+curl -v $TARGET_IP:3000/crystal
+```
+
+Notice the presence of the **server** header. This is in its own a confirmation that Envoy is proxing requests.
+
+* Terminate the session.
+
+```bash
+exit 
 ```

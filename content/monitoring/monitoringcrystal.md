@@ -1,5 +1,5 @@
 ---
-title: "Enable CloudWatch for crystal"
+title: "Enable CloudWatch for Crystal"
 date: 2018-09-18T16:01:14-05:00
 weight: 10
 ---
@@ -47,7 +47,7 @@ TASK_DEF_ARN=$(aws ecs list-task-definitions | \
   jq -r ' .taskDefinitionArns[] | select( . | contains("crystal"))' | tail -1)
 aws ecs update-service \
   --cluster $CLUSTER_NAME \
-  --service crystal-service-lb-blue \
+  --service crystal-service-lb \
   --task-definition "$(echo $TASK_DEF_ARN)"
 ```
 
@@ -62,7 +62,7 @@ TASK_DEF_ARN=$(aws ecs list-task-definitions | \
 _list_tasks() {
   aws ecs list-tasks \
     --cluster $CLUSTER_NAME \
-    --service crystal-service-lb-blue | \
+    --service crystal-service-lb | \
   jq -r ' .taskArns | @text' | \
     while read taskArns; do 
       aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $taskArns;
@@ -80,5 +80,3 @@ until [ $(_list_tasks) == "3" ]; do
   fi
 done
 ```
-
-Access CloudWatch Logs and find the log group named **appmesh-workshop-crystal-envoy**. Take a few minutes to review the logging details produced by the Envoy container.
