@@ -143,6 +143,10 @@ TARGET_IP=$(dig +short crystal.appmeshworkshop.hosted.local | head -1)
 curl -v $TARGET_IP:3000/crystal
 ```
 
+You sould see an output like this:
+
+![envoy crystal](/images/envoy/crystal.png?height=300px)
+
 Notice the presence of the **server** header. This is in its own a confirmation that Envoy is proxing requests.
 
 * Terminate the session.

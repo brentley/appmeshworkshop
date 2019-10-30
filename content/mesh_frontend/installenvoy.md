@@ -196,6 +196,10 @@ aws ssm start-session --target $TARGET_EC2
 curl -v localhost:9901/server_info
 ```
 
+You sould see an output like this:
+
+![envoy frontend](/images/envoy/frontend.png?height=750px)
+
 Notice the value of the **state** property. LIVE means the server is live and serving traffic.
 
 * Terminate the session.
