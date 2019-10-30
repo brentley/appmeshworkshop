@@ -82,8 +82,8 @@ NODEJS_ECR_REPO=$(jq < cfn-output.json -r '.NodeJSEcrRepo')
 $(aws ecr get-login --no-include-email)
 
 docker build -t crystal-service ecsdemo-crystal
-docker tag crystal-service:latest $CRYSTAL_ECR_REPO:blue
-docker push $CRYSTAL_ECR_REPO:blue
+docker tag crystal-service:latest $CRYSTAL_ECR_REPO:vanilla
+docker push $CRYSTAL_ECR_REPO:vanilla
 
 docker build -t nodejs-service ecsdemo-nodejs
 docker tag nodejs-service:latest $NODEJS_ECR_REPO:latest
