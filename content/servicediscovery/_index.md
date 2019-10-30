@@ -1,5 +1,5 @@
 ---
-title: "Service Discovery"
+title: "Cloud Map Service Discovery"
 chapter: true
 weight: 35
 ---
