@@ -112,10 +112,10 @@ until [ $(_list_tasks) == "3" ]; do
   fi
 done
 sleep 10s
-until [ $(_list_instances) == "3" ]; do
+until [ $(_list_instances) == "9" ]; do
   echo "Instances are registering ..."
   sleep 10s
-  if [ $(_list_instances) == "3" ]; then
+  if [ $(_list_instances) == "9" ]; then
     echo "Instances registered"
     break
   fi
