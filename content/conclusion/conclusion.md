@@ -12,4 +12,4 @@ We have:
 - Switched from dedicated load balancing to service discovery.
 - Implemented traffic routing scenarios to support deployment strategies, and handle failures.
 
-Comments, ideas, issues around App Mesh? Access [App Mesh Public Rodamap](https://github.com/aws/aws-app-mesh-roadmap/issues)
+Comments, ideas, issues around App Mesh? Please submit them on the [App Mesh Public Roadmap](https://github.com/aws/aws-app-mesh-roadmap/issues)
