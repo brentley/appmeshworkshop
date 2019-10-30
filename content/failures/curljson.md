@@ -1,7 +1,7 @@
 ---
 title: "Check results"
 date: 2018-09-18T17:39:30-05:00
-weight: 20
+weight: 30
 ---
 
 * Run the following script to check if you are always getting responses from Crystal. You can compare these results with the random results from the web interface.

@@ -57,24 +57,6 @@ aws ecs create-task-set \
         assignPublicIp=DISABLED}"
 ```
 
-* Update the `crystal-service-sd` and scale it to 0%.
-
-```bash
-# Define variables #
-CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
-SERVICE_ARN=$(aws ecs list-services --cluster $CLUSTER_NAME | \
-  jq -r ' .serviceArns[] | select( . | contains("sd"))' | tail -1)
-TASK_SET_ARN=$(aws ecs describe-task-sets --cluster $CLUSTER_NAME | \
-  jq -r ' .serviceArns[] | select( . | contains("sd"))' | tail -1)
-# Update ecs task set #
-aws ecs update-task-set \
-  --service $SERVICE_ARN \
-  --cluster $CLUSTER_NAME \
-  --task-set epoch-task-set \
-  --scale value=50,unit=PERCENT
-```
-
-
 * Wait for the service tasks to be in a running state and marked healthy for service discovery.
 
 ```bash
