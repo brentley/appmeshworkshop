@@ -43,16 +43,50 @@ After redirecting all the traffic to the new virtual node with the service disco
 # Define variables
 CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 INTERNAL_LB_ARN=$(jq < cfn-output.json -r '.InternalLoadBalancerArn');
-
-# Delete ECS Service
+# Delete ecs service
 aws ecs delete-service \
 --cluster $CLUSTER_NAME \
 --service crystal-service-lb \
 --force
-
-# Delete Load Balancer
+# Delete load lalancer
 aws elbv2 delete-load-balancer \
 --load-balancer-arn $INTERNAL_LB_ARN
+```
+
+* Update the CNAME record in Route53 to crystal.appmeshworkshop.pvt.local
+
+```bash
+HOSTED_ZONE_ID=$(aws route53 list-hosted-zones-by-name \
+    --dns-name appmeshworkshop.hosted.local \
+    --max-items 1 | \
+  jq -r ' .HostedZones | first | .Id');
+RECORD_SET=$(aws route53 list-resource-record-sets --hosted-zone-id=$HOSTED_ZONE_ID | \
+ jq -r '.ResourceRecordSets[] | select (.Name == "crystal.appmeshworkshop.hosted.local.")');
+cat <<-EOF > /tmp/update_r53.json
+{
+  "Comment": "UPDATE crystal.appmeshworkshop.hosted.local",
+  "Changes": [
+    {
+      "Action": "DELETE",
+      "ResourceRecordSet": $RECORD_SET
+    },
+    {
+      "Action": "CREATE",
+      "ResourceRecordSet": {
+        "Name": "crystal.appmeshworkshop.hosted.local",
+        "Type": "CNAME",
+        "TTL": 300,
+        "ResourceRecords": [
+          { "Value": "crystal.appmeshworkshop.pvt.local." }
+        ]
+      }
+    }
+  ]
+}
+EOF
+aws route53 change-resource-record-sets \
+  --hosted-zone-id $HOSTED_ZONE_ID \
+  --change-batch file:///tmp/update_r53.json
 ```
 
 You can now go ahead and test your application again to make sure everything is still working.
