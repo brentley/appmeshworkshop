@@ -103,3 +103,10 @@ until [ $(_list_instances) == "6" ]; do
   fi
 done
  ```
+ 
+Execute the following command to discover the instances (ECS tasks) registered under the service **crystal.appmeshworkshop.pvt.local** with attribute **ECS_TASK_SET_EXTERNAL_ID** equal to **epoch-task-set**
+
+```bash
+aws servicediscovery discover-instances --namespace-name appmeshworkshop.pvt.local \
+  --service-name crystal --query-parameters ECS_TASK_SET_EXTERNAL_ID=epoch-task-set
+```

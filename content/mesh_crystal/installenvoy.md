@@ -13,6 +13,8 @@ At this point you may be wondering how is it possible for Envoy to actually inte
 The ECS integration for AWS App Mesh leverages iptables provided by the Linux OS. Whenever you launch an ECS service based on a task definition that includes the Envoy proxy, it will apply a set of iptables rules such that all the ingress traffic targetted at the Crystal container port (3000 in our case) gets intercepted and sent instead to port 15000 where the Envoy Proxy listens for ingress traffic.
 After processing its rules, the Envoy proxy establishes an HTTP connection to the app on port 3000 and forward the request. Once the Crystal app is done processing the request it send its response back to the Envoy process over the same HTTP connection. Finally the Envoy process takes the response sent by the app and replies to the client. 
 
+{{% notice info %}} Notice the presence of the **APPMESH_VIRTUAL_NODE_NAME** environment variable being passed to the Envoy container. It's value actually reflects the name of the Virtual Node inside App Mesh this proxy is next to. In this case **mesh/appmesh-workshop/virtualNode/crystal-lb-vanilla**. This is the only mandatory environment variable you need to pass to Envoy so it can receive i {{% notice info %}} 
+
 * Register a new task definition with the Envoy sidecar proxy.
 
 ```bash
@@ -142,6 +144,10 @@ aws ssm start-session --target $TARGET_EC2
 TARGET_IP=$(dig +short crystal.appmeshworkshop.hosted.local | head -1)
 curl -v $TARGET_IP:3000/crystal
 ```
+
+You sould see an output like this:
+
+![envoy crystal](/images/envoy/crystal.png?height=300px)
 
 Notice the presence of the **server** header. This is in its own a confirmation that Envoy is proxing requests.
 
