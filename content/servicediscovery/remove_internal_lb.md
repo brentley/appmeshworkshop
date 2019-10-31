@@ -56,6 +56,7 @@ aws elbv2 delete-load-balancer \
 * Update the CNAME record in Route53 to crystal.appmeshworkshop.pvt.local
 
 ```bash
+# Define variables
 HOSTED_ZONE_ID=$(aws route53 list-hosted-zones-by-name \
     --dns-name appmeshworkshop.hosted.local \
     --max-items 1 | \
@@ -84,6 +85,7 @@ cat <<-EOF > /tmp/update_r53.json
   ]
 }
 EOF
+# Change route53 record set
 aws route53 change-resource-record-sets \
   --hosted-zone-id $HOSTED_ZONE_ID \
   --change-batch file:///tmp/update_r53.json
