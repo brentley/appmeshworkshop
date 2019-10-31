@@ -29,7 +29,7 @@ cat > ~/environment/scripts/fetch-outputs <<-"EOF"
 
 #!/bin/bash -ex
 
-STACK_NAME="$(echo $C9_PROJECT | sed 's/^Project-//' | tr 'A-Z' 'a-z')"
+STACK_NAME=appmesh-workshop
 aws cloudformation describe-stacks \
   --stack-name "$STACK_NAME" | \
 jq -r '[.Stacks[0].Outputs[] | 
@@ -135,6 +135,9 @@ Take a moment to familiarize with the resources that were just created. At this 
 ```bash
 echo "http://$(jq -r '.ExternalLoadBalancerDNS' cfn-output.json)/"
 ```
+
+{{% notice info %}} At this point, the EC2 instances are being registered behind the Load Balancer. It might take a while for them to be available, so if you are seeing any error, just wait a little and try to open the URL again. {{% notice info %}} 
+
 
 What's going on?
 

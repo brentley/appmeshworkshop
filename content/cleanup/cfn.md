@@ -1,7 +1,7 @@
 ---
 title: "Delete the baseline template"
 date: 2018-08-07T12:37:34-07:00
-weight: 60
+weight: 70
 ---
 
 * Delete the infrastructure deployed by the baseline template.
