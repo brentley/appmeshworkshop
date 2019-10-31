@@ -14,9 +14,9 @@ In the next few sections, you will perform 2 broad set of tasks:
 
 * You will use the AWS CLI to create and configure the App Mesh resources needed to represent the microservices available in your environment like virtual services and virtual nodes. 
 
-* You will add a docker container running the Envoy proxy to each compute environment where you have microservices running. AWS App Mesh supports EC2, ECS and EKS and will show you how to add Envoy in each of this environments, without modifying your microservice source code. The process for enabling the Envoy proxy is different for each compute environment. In the following sections you will perform the changes needed to enable each compute environment so it can be 
+* You will add a docker container running the Envoy proxy to each compute environment where you have microservices running. AWS App Mesh supports EC2, ECS and EKS and will show you how to add Envoy in each of these environments, without modifying your microservice source code. The process for enabling the Envoy proxy is different for each compute environment. In the following sections you will perform the changes needed to enable each compute environment. 
 
-A key feature of Envoy worth mentioning is that it exposes a set of APIs. These APIs are leverage by AWS App Mesh to dynamically configure Envoy's routing logic, freeing developers from the tedious task of manually updating config files.
+A key feature of Envoy worth mentioning is that it exposes a set of APIs. These APIs are leveraged by AWS App Mesh to dynamically configure Envoy's routing logic, freeing developers from the tedious task of manually updating config files.
 
 Now every time you launch an Envoy enabled microservice, the Envoy proxy will contact the AWS App Mesh Management API to subscribe to resource information for Listeners, Clusters, Routes, and Endpoints. The connection from the Envoy proxy to the AWS App Mesh management API endpoint is held, which allows AWS App Mesh to stream updates to the Envoy proxy as users introduce changes to either of the resources listed above.   
 

@@ -1,7 +1,7 @@
 ---
 title: "Cleanup the admin IAM Role"
 chapter: false
-weight: 90
+weight: 100
 ---
 
 After deleting the Cloud9 instance, you will be able to delete de IAM Role with Administrator access previously created. 
