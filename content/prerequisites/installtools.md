@@ -8,7 +8,7 @@ weight: 16
 Starting from here, when you see command to be entered such as below, you will enter these commands into Cloud9 IDE. You can use the **Copy to clipboard** feature (right hand upper corner) to simply copy and paste into Cloud9. In order to paste, you can use Ctrl + V for Windows or Command + V for Mac.
 {{% /notice %}}
 
-* Before deploying the baseline stack, let's install the required tools (kubectl, jq and gettext) to you Cloud9 environment. To do so, start creating an install script with the following commands:
+* Before deploying the baseline stack, let's install the required tools (kubectl, jq, gettext and the latest awscli version) to you Cloud9 environment. To do so, start creating an install script with the following commands:
 
 ```bash
 # create a folder for the scripts
@@ -36,6 +36,8 @@ if ! [ -x "$(command -v jq)" ] || ! [ -x "$(command -v envsubst)" ] || ! [ -x "$
   echo 'ERROR: tools not installed.' >&2
   exit 1
 fi
+
+pip install awscli --upgrade --user
 
 EOF
 

@@ -29,7 +29,7 @@ cat > ~/environment/scripts/fetch-outputs <<-"EOF"
 
 #!/bin/bash -ex
 
-STACK_NAME="$(echo $C9_PROJECT | sed 's/^Project-//' | tr 'A-Z' 'a-z')"
+STACK_NAME=appmesh-workshop
 aws cloudformation describe-stacks \
   --stack-name "$STACK_NAME" | \
 jq -r '[.Stacks[0].Outputs[] | 
