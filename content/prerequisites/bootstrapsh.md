@@ -138,7 +138,7 @@ echo "http://$(jq -r '.ExternalLoadBalancerDNS' cfn-output.json)/"
 
 {{% notice info %}}
 At this point, the EC2 instances are being registered behind the Load Balancer. It might take a while for them to be available, so if you are seeing any error, just wait a little and try to open the URL again. 
-{{% /notice info %}} 
+{{% /notice %}} 
 
 
 What's going on?
