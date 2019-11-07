@@ -7,9 +7,13 @@ draft: true
 Since we already have the frontend application running, it's time to deploy the NodeJS backend service to your EKS cluster.
 
 
-Let's start creating a deployment for the NodeJs application in the EKS cluster:
+Let's start by creating a new namespace and a deployment for the NodeJs application in the EKS cluster:
+
+
 
 ```bash
+kubectl create ns appmesh-workshop-ns
+
 # Create deployment yaml file
 cat <<-EOF > ~/environment/eks-scripts/nodejs-deployment.yml
 apiVersion: apps/v1
@@ -18,7 +22,7 @@ metadata:
   name: eks-nodejs-app
   labels:
     app: eks-nodejs-app
-  namespace: default
+  namespace: appmesh-workshop-ns
 spec:
   replicas: 3
   selector:
@@ -56,6 +60,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: eks-nodejs-app
+  namespace: appmesh-workshop-ns
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-internal: "true"
 
@@ -84,7 +89,7 @@ jq -r ' .HostedZones | first | .Id' \
 | cut -d '/' -f3);
 RECORD_SET=$(aws route53 list-resource-record-sets --hosted-zone-id=$HOSTED_ZONE_ID | \
 jq -r '.ResourceRecordSets[] | select (.Name == "crystal.appmeshworkshop.hosted.local.") | '.AliasTarget.HostedZoneId'');
-NODEJS_LB_URL=$(kubectl get service eks-nodejs-app -o json | jq -r '.status.loadBalancer.ingress[].hostname')
+NODEJS_LB_URL=$(kubectl get service eks-nodejs-app -n appmesh-workshop-ns -o json | jq -r '.status.loadBalancer.ingress[].hostname')
 
 # Create Route53 batch file
 cat <<-EOF > /tmp/add_nodejs_recordset.json
@@ -113,4 +118,10 @@ aws route53 change-resource-record-sets \
 --change-batch file:///tmp/add_nodejs_recordset.json
 ```
 
-After deploying your application, you will be able to see the NodeJS info in your frontend application.
+Note that the DNS propagation would take a few minutes. Afther sometime you will be able to access your frontend application in the browser and see that you're now receiving responses back from the NodeJS app as well.
+
+If needed, you can use the following command to get the external Load Balancer URl pointing to the EC2 instances running your frontend application:
+
+```bash
+echo "http://$(jq -r '.ExternalLoadBalancerDNS' cfn-output.json)/"
+```
