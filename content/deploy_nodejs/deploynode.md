@@ -19,15 +19,15 @@ cat <<-EOF > ~/environment/eks-scripts/nodejs-deployment.yml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: eks-nodejs-app
+  name: nodejs-app
   labels:
-    app: eks-nodejs-app
+    app: nodejs-app
   namespace: appmesh-workshop-ns
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: eks-nodejs-app
+      app: nodejs-app
   strategy:
     rollingUpdate:
       maxSurge: 25%
@@ -36,12 +36,12 @@ spec:
   template:
     metadata:
       labels:
-        app: eks-nodejs-app
+        app: nodejs-app
     spec:
       containers:
       - image: brentley/ecsdemo-nodejs:latest
         imagePullPolicy: Always
-        name: eks-nodejs-app
+        name: nodejs-app
         ports:
         - containerPort: 3000
           protocol: TCP
@@ -59,14 +59,14 @@ cat <<-EOF > ~/environment/eks-scripts/nodejs-service.yml
 apiVersion: v1
 kind: Service
 metadata:
-  name: eks-nodejs-app
+  name: nodejs-app-service
   namespace: appmesh-workshop-ns
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-internal: "true"
 
 spec:
   selector:
-    app: eks-nodejs-app
+    app: nodejs-app
   ports:
    -  protocol: TCP
       port: 3000
@@ -89,7 +89,7 @@ jq -r ' .HostedZones | first | .Id' \
 | cut -d '/' -f3);
 RECORD_SET=$(aws route53 list-resource-record-sets --hosted-zone-id=$HOSTED_ZONE_ID | \
 jq -r '.ResourceRecordSets[] | select (.Name == "crystal.appmeshworkshop.hosted.local.") | '.AliasTarget.HostedZoneId'');
-NODEJS_LB_URL=$(kubectl get service eks-nodejs-app -n appmesh-workshop-ns -o json | jq -r '.status.loadBalancer.ingress[].hostname')
+NODEJS_LB_URL=$(kubectl get service nodejs-app-service -n appmesh-workshop-ns -o json | jq -r '.status.loadBalancer.ingress[].hostname')
 
 # Create Route53 batch file
 cat <<-EOF > /tmp/add_nodejs_recordset.json

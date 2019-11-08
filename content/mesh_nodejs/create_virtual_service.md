@@ -6,11 +6,27 @@ weight: 15
 
 Now that the Mesh is already created and everything is properly installed in the EKS cluster, it's time to create the resources in App Mesh for the NodeJS application.
 
+Even though the Mesh is already created in the App Mesh service, we still need to create a Mesh inside the EKS cluster, so the controller will be able to interact with the App Mesh service and manage components in it. Let's now create a Mesh inside the cluster with the following commands:
+
+```bash
+# Create the Mesh yaml file
+cat <<"EOF" > ~/environment/eks-scripts/mesh.yml
+apiVersion: appmesh.k8s.aws/v1beta1
+kind: Mesh
+metadata:
+  name: appmesh-workshop
+EOF
+
+# Apply the configuration
+kubectl apply -f  ~/environment/eks-scripts/mesh.yml
+```
+
+
 Start by creating the virtual node with the following commands:
 
 ```bash
 # Define environment variable
-NODEJS_LB_URL=$(kubectl get service eks-nodejs-app -n appmesh-workshop-ns -o json | jq -r '.status.loadBalancer.ingress[].hostname')
+NODEJS_LB_URL=$(kubectl get service nodejs-app-service -n appmesh-workshop-ns -o json | jq -r '.status.loadBalancer.ingress[].hostname')
 
 # Create Virtual Node yaml file
 cat <<"EOF" > ~/environment/eks-scripts/virtual-node.yml
