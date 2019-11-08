@@ -4,9 +4,7 @@ date: 2018-09-18T16:01:14-05:00
 weight: 20
 ---
 
-Access the ECS console and find the latest revision of your Crystal task definition. Notice there are 3 containers declared, one for the Crystal microservice, one for the Envoy proxy and a third one for the X-Ray deamon.
-
-Now access the AWS Admin console and go to the X-Ray service. Once in the X-Ray section of the console, select **Service Map** from the left hand side menu. Wait a few seconds for the service map to render.
+Now access the [X-Ray console](console.aws.amazon.com/xray/home). Once in the X-Ray console, select **Service Map** from the left hand side menu. Wait a few seconds for the service map to render.
 
 You will see something like this:
 

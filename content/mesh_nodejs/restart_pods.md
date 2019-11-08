@@ -37,7 +37,7 @@ kubectl describe pod $NODEJS_POD -n appmesh-workshop-ns
 
 Take a look in the output of this command. You should see the Envoy container image as part of your pod:
 
-```bash
+```text
   envoy:
     Container ID:   docker://5a1e9b03d8c89e6db4797010b1970ee8f1ee930c565990960f7753a06a912970
     Image:          840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.11.2.0-prod
@@ -79,7 +79,7 @@ curl -v http://nodejs.appmeshworkshop.hosted.local:3000/
 
 You should see a response comming from the NodeJS microservice running in the EKS cluster. In this response, look for `envoy` in the `server` parameter:
 
-```
+```text
 *   Trying 10.0.100.206...
 * TCP_NODELAY set
 * Connected to nodejs.appmeshworkshop.hosted.local (10.0.100.206) port 3000 (#0)

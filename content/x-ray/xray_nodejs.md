@@ -6,14 +6,26 @@ weight: 11
 
 Let's now enable the X-Ray integration to the NodeJS app currently running on the EKS cluster. 
 
-The first step is to 
+The first step is to change the EC2 IAM roles so the pods will be able to send information to X-Ray:
 
+```bash
+# Get CloudFormation EKS stack name
+EKS_STACK_NAME=$(eksctl utils describe-stacks --cluster NewEksCluster | sed -n '3p' | cut -d '/' -f2 | cut -d ' ' -f 1)
 
-AUTO_SCALING_GROUP=$(jq < cfn-output.json -r '.RubyAutoScalingGroupName');
-INSTANCE_PROFILE_NAME=$(aws ec2 describe-instances --filters Name=tag:aws:autoscaling:groupName,Values=$AUTO_SCALING_GROUP | jq -r ' .Reservations | first | .Instances | first | .IamInstanceProfile | .Arn' | cut -d '/' -f 2)
-EKS_WORKERS_ROLE=$(aws iam get-instance-profile --instance-profile-name $INSTANCE_PROFILE_NAME | jq -r '.InstanceProfile.Roles[].RoleName')
+# Get Node Group EC2 IAM role name
+ROLE_NAME=$(aws cloudformation describe-stacks \
+--stack-name "$EKS_STACK_NAME" | \
+jq -r '[.Stacks[0].Outputs[] | 
+{key: .OutputKey, value: .OutputValue}] | from_entries' | 
+jq -r '.InstanceRoleARN' |
+cut -d ':' -f 6 | cut -d '/' -f 2)
 
+# Add X-Ray policy
+aws iam attach-role-policy --role-name $ROLE_NAME \
+--policy-arn arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+```
 
+Now that the policies are in place, we need to change the configurations in the App Mesh injector in order to also add the X-Ray container to the pods and configure the Envoy proxy to send data to it:
 
 ```bash
 helm upgrade -i appmesh-inject eks/appmesh-inject \
@@ -23,3 +35,58 @@ helm upgrade -i appmesh-inject eks/appmesh-inject \
 --set tracing.enabled=true \
 --set tracing.provider=x-ray
 ```
+
+Finally, let's restart our pods again in order to force the injection of the X-Ray container:
+
+```bash
+kubectl delete pods -n appmesh-workshop-ns --all 
+```
+
+Let's now check if the X-Ray container was injected in your pod:
+
+```bash
+# Get a single pod name
+NODEJS_POD=$(kubectl get pod --no-headers=true -o \
+name -n appmesh-workshop-ns \
+| awk -F "/" '{print $2}' | \
+head -n 1)
+
+# Describe pod configuration
+kubectl describe pod $NODEJS_POD -n appmesh-workshop-ns
+```
+
+You should see information about the X-Ray daemon container:
+
+```text
+  xray-daemon:
+    Container ID:   docker://47197806db6f658047b12f3905be802ce1e0f58b02b9f94d2ef733e98b6fe4a0
+    Image:          amazon/aws-xray-daemon
+    Image ID:       docker-pullable://amazon/aws-xray-daemon@sha256:5d30d974bd7bd5a864a2d6d4d4696902153d364cc0943efca8ea44e6bf16c1c2
+    Port:           2000/UDP
+    Host Port:      0/UDP
+    State:          Running
+      Started:      Fri, 08 Nov 2019 23:32:09 +0000
+    Ready:          True
+    Restart Count:  0
+    Requests:
+      cpu:        10m
+      memory:     32Mi
+    Environment:  <none>
+    Mounts:       <none>
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  default-token-82w67:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-82w67
+    Optional:    false
+QoS Class:       Burstable
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+```
+
