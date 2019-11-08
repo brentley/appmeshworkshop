@@ -33,7 +33,7 @@ cat <<"EOF" > ~/environment/eks-scripts/virtual-node.yml
 apiVersion: appmesh.k8s.aws/v1beta1
 kind: VirtualNode
 metadata:
-  name: nodejs-application
+  name: nodejs-app
   namespace: appmesh-workshop-ns
 spec:
   meshName: appmesh-workshop
@@ -74,7 +74,7 @@ spec:
           prefix: /
         action:
           weightedTargets:
-            - virtualNodeName: nodejs-application
+            - virtualNodeName: nodejs-app
               weight: 1
 EOF
 
@@ -82,8 +82,3 @@ EOF
 kubectl apply -f  ~/environment/eks-scripts/virtual-service.yml
 ```
 
-Now let's name the `appmesh-workshop-ns` namespace so we will have the envoy sidecar being injected in the application pods:
-
-```bash
-kubectl label namespace appmesh-workshop-ns appmesh.k8s.aws/sidecarInjectorWebhook=enabled
-```

@@ -3,11 +3,15 @@ title: "Inject the Envoy proxy"
 date: 2018-08-07T08:30:11-07:00
 weight: 15
 ---
+The first step to work with the `appmesh-injector` component is to tag the `appmesh-workshop-ns` namespace so we will have the envoy sidecar being injected in the application pods:
 
-The last step, is to restart the pods in order to add the Envoy proxy to them using the App Mesh injector component, which is already installed.
+```bash
+kubectl label namespace appmesh-workshop-ns appmesh.k8s.aws/sidecarInjectorWebhook=enabled
+```
+
+Now, let's restart the pods in order to add the Envoy proxy to them using the App Mesh injector component, which is already installed.
 
 To do so, run the following command:
-
 
 ```bash
 # Restart pods
@@ -56,3 +60,45 @@ Take a look in the output of this command. You should see the Envoy container im
 ```
 
 It means that the injector is working fine and the Envoy is already running inside your NodeJS pod.
+
+Not, it's time to test and see if the responses are being sent by the Envoy proxy. Let's access one of the EC2 instances serving the frontend again:
+
+```bash
+AUTO_SCALING_GROUP=$(jq < cfn-output.json -r '.RubyAutoScalingGroupName');
+TARGET_EC2=$(aws ec2 describe-instances \
+    --filters Name=tag:aws:autoscaling:groupName,Values=$AUTO_SCALING_GROUP | \
+  jq -r ' .Reservations | first | .Instances | first | .InstanceId')
+aws ssm start-session --target $TARGET_EC2
+```
+
+And curl the NodeJS microservice:
+
+```bash
+curl -v http://nodejs.appmeshworkshop.hosted.local:3000/
+```
+
+You should see a response comming from the NodeJS microservice running in the EKS cluster. In this response, look for `envoy` in the `server` parameter:
+
+```
+*   Trying 10.0.100.206...
+* TCP_NODELAY set
+* Connected to nodejs.appmeshworkshop.hosted.local (10.0.100.206) port 3000 (#0)
+> GET / HTTP/1.1
+> Host: nodejs.appmeshworkshop.hosted.local:3000
+> User-Agent: curl/7.61.1
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< x-powered-by: Express
+< content-type: text/plain; charset=utf-8
+< content-length: 65
+< etag: W/"41-Cr+iGiCIiMfq96LyNt+F6PjOvZs"
+< date: Fri, 08 Nov 2019 19:20:23 GMT
+< x-envoy-upstream-service-time: 3
+< server: envoy
+< 
+Node.js backend: Hello! from 10.0.102.185 in AZ-c commit 4252202
+* Connection #0 to host nodejs.appmeshworkshop.hosted.local left intact
+```
+
+This means that the responses from the NodeJS application are passing in the Envoy proxy.
