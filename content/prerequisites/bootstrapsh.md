@@ -21,6 +21,8 @@ echo 'Building Docker Containers'
 ~/environment/scripts/build-containers
 echo 'Creating the ECS Services'
 ~/environment/scripts/create-ecs-service
+echo 'Creating the EKS Services'
+~/environment/scripts/build-eks
 
 EOF
 
