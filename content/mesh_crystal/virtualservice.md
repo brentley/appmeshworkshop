@@ -16,7 +16,7 @@ The Crystal service is running as a service on ECS Fargate and is reachable via 
 
 ```bash
 # Define variables #
-INT_LOAD_BALANCER=$(jq < cfn-output.json -r '.InternalLoadBalancerDNS');
+INT_LOAD_BALANCER=$(jq -r '.InternalLoadBalancerDNS' cfn-output.json);
 SPEC=$(cat <<-EOF
   { 
     "serviceDiscovery": {
