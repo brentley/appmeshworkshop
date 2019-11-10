@@ -81,7 +81,7 @@ git apply --stat ecsdemo-crystal/add_time_ms.patch
 * Run **git apply** to apply the patch.
 
 ```bash
-sh -c 'cd ~/environment/ecsdemo-crystal && git apply add_time_ms.patch'
+git -C ~/environment/ecsdemo-crystal apply add_time_ms.patch
 ```
 
 * Build the container
