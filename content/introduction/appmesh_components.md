@@ -5,6 +5,8 @@ draft: false
 weight: 40
 ---
 
+![Components](/images/introduction/flow.png)
+
 App Mesh is made up of the following components:
 
 **Service mesh** – A service mesh is a logical boundary for network traffic between the services that reside within it.
