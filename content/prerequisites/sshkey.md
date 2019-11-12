@@ -8,8 +8,9 @@ Run the following command to retrieve the SSH Key and store it in Cloud9. This k
 
 ```bash
 # Retrieve private key
+KEY_NAME=$(aws ssm describe-parameters | jq -r 'select(.Parameters[].Name | contains("/appmeshworkshop/keypair/")).Parameters[].Name')
 aws ssm get-parameter \
-  --name /appmeshworkshop/keypair/id_rsa \
+  --name "$KEY_NAME" \
   --with-decryption | jq .Parameter.Value --raw-output > ~/.ssh/id_rsa
 
 # Set appropriate permission on private key

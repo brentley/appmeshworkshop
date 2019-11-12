@@ -704,7 +704,7 @@ Resources:
     Type: Custom::KeyPairHelperLambda
     Properties:
       ServiceToken: !GetAtt KeyPairHelperLambda.Arn
-      KeyName: id_rsa
+      KeyName: !Sub "id_rsa-${RandomStringResource.RandomString}"
       KeyId: !Ref KMSKey
                       
   EC2InstanceRole:
@@ -926,6 +926,51 @@ Resources:
       HostedZoneId: !Ref DnsHostedZone
       Name: crystal.appmeshworkshop.hosted.local
       Type: A
+
+  RandomStringResource:
+    Type: Custom::RandomString
+    Properties:
+      ServiceToken: !GetAtt "RandomStringFunction.Arn"
+      Length: "12"
+
+  RandomStringFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.lambda_handler
+      Timeout: 10
+      Role: !GetAtt "LambdaExecutionRole.Arn"
+      Runtime: python3.6
+      Code:
+        ZipFile: |
+          import cfnresponse
+          from random import choice
+          from string import ascii_lowercase, digits
+          def random_string(length=8, chars=ascii_lowercase + digits):
+            return "".join(choice(chars) for x in range(length))
+          def lambda_handler(event, context):
+            print(f"Data in event: {event}")
+            response_data = {}
+            if event["RequestType"] == "Create":
+              string_length = int(event["ResourceProperties"]["Length"])
+              physicalResourceId = random_string(string_length)
+              response_data = { "RandomString": physicalResourceId }
+
+            else: # if event["RequestType"] == "Update" or event["RequestType"] == "Delete":
+              physicalResourceId = event["PhysicalResourceId"]
+            cfnresponse.send(event, context, cfnresponse.SUCCESS, response_data, physicalResourceId)
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+            Condition: {}
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 
 Outputs:
   InternalLoadBalancerDNS:
