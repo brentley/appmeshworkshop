@@ -1,5 +1,5 @@
 ---
-title: "Distributed Tracing"
+title: "Distributed Tracing with X-Ray"
 chapter: true
 weight: 30
 ---

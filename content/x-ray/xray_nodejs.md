@@ -6,26 +6,7 @@ weight: 11
 
 Let's now enable the X-Ray integration to the NodeJS app currently running on the EKS cluster. 
 
-The first step is to change the EC2 IAM roles so the pods will be able to send information to X-Ray:
-
-```bash
-# Get CloudFormation EKS stack name
-EKS_STACK_NAME=$(eksctl utils describe-stacks --cluster NewEksCluster | sed -n '3p' | cut -d '/' -f2 | cut -d ' ' -f 1)
-
-# Get Node Group EC2 IAM role name
-ROLE_NAME=$(aws cloudformation describe-stacks \
---stack-name "$EKS_STACK_NAME" | \
-jq -r '[.Stacks[0].Outputs[] | 
-{key: .OutputKey, value: .OutputValue}] | from_entries' | 
-jq -r '.InstanceRoleARN' |
-cut -d ':' -f 6 | cut -d '/' -f 2)
-
-# Add X-Ray policy
-aws iam attach-role-policy --role-name $ROLE_NAME \
---policy-arn arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
-```
-
-Now that the policies are in place, we need to change the configurations in the App Mesh injector in order to also add the X-Ray container to the pods and configure the Envoy proxy to send data to it:
+The first step is to change the configurations in the App Mesh injector in order to add the X-Ray container to the pods and configure the Envoy proxy to send data to it:
 
 ```bash
 helm upgrade -i appmesh-inject eks/appmesh-inject \
@@ -36,7 +17,7 @@ helm upgrade -i appmesh-inject eks/appmesh-inject \
 --set tracing.provider=x-ray
 ```
 
-Finally, let's restart our pods again in order to force the injection of the X-Ray container:
+Now, let's restart our pods again in order to force the injection of the X-Ray container:
 
 ```bash
 kubectl delete pods -n appmesh-workshop-ns --all 

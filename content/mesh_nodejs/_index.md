@@ -1,7 +1,7 @@
 ---
 title: "Mesh the NodeJS Service"
 chapter: true
-weight: 21
+weight: 20
 ---
 
 # Mesh the NodeJS Service running on EKS

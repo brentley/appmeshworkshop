@@ -118,7 +118,7 @@ aws route53 change-resource-record-sets \
 --change-batch file:///tmp/add_nodejs_recordset.json
 ```
 
-Note that the DNS propagation would take a few minutes. Afther sometime you will be able to access your frontend application in the browser and see that you're now receiving responses back from the NodeJS app as well.
+Note that the DNS propagation might take a few minutes. Afther sometime you will be able to access your frontend application in the browser and see that you're now receiving responses back from the NodeJS app as well.
 
 If needed, you can use the following command to get the external Load Balancer URl pointing to the EC2 instances running your frontend application:
 

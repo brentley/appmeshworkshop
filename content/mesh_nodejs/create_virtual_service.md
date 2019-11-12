@@ -29,7 +29,7 @@ Start by creating the virtual node with the following commands:
 NODEJS_LB_URL=$(kubectl get service nodejs-app-service -n appmesh-workshop-ns -o json | jq -r '.status.loadBalancer.ingress[].hostname')
 
 # Create Virtual Node yaml file
-cat <<"EOF" > ~/environment/eks-scripts/virtual-node.yml
+cat <<EOF > ~/environment/eks-scripts/virtual-node.yml
 apiVersion: appmesh.k8s.aws/v1beta1
 kind: VirtualNode
 metadata:
@@ -54,7 +54,7 @@ Now, create your virtual service:
 
 ```bash
 # Create Virtual Service yaml file
-cat <<"EOF" > ~/environment/eks-scripts/virtual-service.yml
+cat <<EOF > ~/environment/eks-scripts/virtual-service.yml
 apiVersion: appmesh.k8s.aws/v1beta1
 kind: VirtualService
 metadata:
