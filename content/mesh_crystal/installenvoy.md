@@ -121,11 +121,7 @@ _list_tasks() {
 until [ $(_list_tasks) == "3" ]; do
   echo "Tasks are starting ..."
   sleep 10s
-  if [ $(_list_tasks) == "3" ]; then
-    echo "Tasks started"
-    break
-  fi
-done
+done && echo "Tasks started"
 ```
 
 Next, you will validate Envoy is actually proxing the requests in its way in and out of the Crystal microservice. To do so, we will issue a curl command to the IP address of any of the 3 tasks running as part of the Crystal service.
