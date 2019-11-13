@@ -42,7 +42,7 @@ spec:
         path: /dev/stdout
 EOF
 
- Apply the configuration
+# Apply the configuration
 kubectl apply -f  ~/environment/eks-scripts/virtual-node.yml
 ```
 
