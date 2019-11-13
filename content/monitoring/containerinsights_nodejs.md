@@ -56,3 +56,7 @@ kubectl delete pods -n appmesh-workshop-ns --all
 At this moment you should be able to see data in the CloudWatch logs interface by accessing [this url](http://console.aws.amazon.com/cloudwatch/home#logs:prefix=/aws/containerinsights/appmesh-workshop/). 
 
 ![eks container insights](/images/monitoring/eks_insights.png)
+
+If you navigate to the `/aws/containerinsights/appmesh-workshop/application` will will be able to see all the logs from the `nodejs-app` pod, including the Envoy proxy and X-Ray containers:
+
+![eks container logs](/images/monitoring/eks_insights_containers.png)
