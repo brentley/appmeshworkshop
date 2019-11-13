@@ -1,10 +1,10 @@
 ---
-title: "Mesh the Frontend Service"
+title: "Mesh the NodeJS Service"
 chapter: true
-weight: 21
+weight: 20
 ---
 
-# Mesh the Frontend Ruby Service
+# Mesh the NodeJS Service running on EKS
 
 ![mesh frontend](/images/app_mesh_architecture/AppMeshWorkshopFrontend.png)
 
