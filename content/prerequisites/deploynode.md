@@ -1,7 +1,7 @@
 ---
 title: "Deploy the NodeJS Service"
 date: 2018-09-18T16:01:14-05:00
-weight: 5
+weight: 70
 ---
 Since we already have the frontend application running, it's time to deploy the NodeJS backend service to your EKS cluster.
 
