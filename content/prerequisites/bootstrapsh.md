@@ -40,10 +40,10 @@ jq -r '[.Stacks[0].Outputs[] |
 
 EOF
 
-# EKS Cluster yaml
-
+# Get from the CloudFormation stack
  ~/environment/scripts/fetch-outputs
 
+ # Set environment variables
 STACK_NAME="$(echo $C9_PROJECT | sed 's/^Project-//' | tr 'A-Z' 'a-z')"
 PRIVSUB1_ID=$(jq < cfn-output.json -r '.PrivateSubnetOne')
 PRIVSUB1_AZ=$(aws ec2 describe-subnets --subnet-ids $PRIVSUB1_ID | jq -r '.Subnets[].AvailabilityZone')
@@ -53,6 +53,15 @@ PRIVSUB3_ID=$(jq < cfn-output.json -r '.PrivateSubnetThree')
 PRIVSUB3_AZ=$(aws ec2 describe-subnets --subnet-ids $PRIVSUB3_ID | jq -r '.Subnets[].AvailabilityZone')
 AWS_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | grep region | cut -d\" -f4)
 
+# Check if the variables are populated.
+while [[ -z "${PRIVSUB1_ID}" ]]
+do
+  ~/environment/scripts/fetch-outputs
+  PRIVSUB1_ID=$(jq < cfn-output.json -r '.PrivateSubnetOne')
+  sleep 5
+done
+
+# Create EKS configuration file
 cat > ~/environment/scripts/eks-configuration.yml <<-EOF
 
 apiVersion: eksctl.io/v1alpha5
@@ -88,7 +97,7 @@ nodeGroups:
         externalDNS: true
 EOF
 
-# build eks script
+# Create the EKS building script
 cat > ~/environment/scripts/build-eks <<-"EOF"
 
 

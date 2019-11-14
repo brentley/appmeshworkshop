@@ -19,6 +19,9 @@ sed "s/{{cluster_name}}/$CLUSTER_NAME/;s/{{region_name}}/$AWS_REGION/" | kubectl
 Now that we have the Container Insights properly deployed in the cluster, let's change the NodeJS virtual node, so it will start sending logs to `stdout`:
 
 ```bash
+# Set environment variable
+NODEJS_LB_URL=$(kubectl get service nodejs-app-service -n appmesh-workshop-ns -o json | jq -r '.status.loadBalancer.ingress[].hostname')
+
 # Update virtual node file
 cat <<EOF > ~/environment/eks-scripts/virtual-node.yml
 apiVersion: appmesh.k8s.aws/v1beta1
@@ -33,16 +36,15 @@ spec:
         port: 3000
         protocol: http
   serviceDiscovery:
-    cloudMap:
-      namespaceName: appmeshworkshop.pvt.local
-      serviceName: nodejs
+    dns:
+      hostName: $NODEJS_LB_URL
   logging:
     accessLog:
       file:
         path: /dev/stdout
 EOF
 
- Apply the configuration
+# Apply the configuration
 kubectl apply -f  ~/environment/eks-scripts/virtual-node.yml
 ```
 
