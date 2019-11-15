@@ -41,6 +41,7 @@ jq -r '[.Stacks[0].Outputs[] |
 EOF
 
 # Get from the CloudFormation stack
+chmod +x ~/environment/scripts/fetch-outputs
  ~/environment/scripts/fetch-outputs
 
  # Set environment variables
