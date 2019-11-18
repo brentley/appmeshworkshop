@@ -51,15 +51,6 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
             "name": "envoy"
           }
         ]' \
-  | jq ' .containerDefinitions[0] +=
-        { 
-          "dependsOn": [ 
-            { 
-              "containerName": "envoy",
-              "condition": "HEALTHY" 
-            }
-          ] 
-        }' \
   | jq ' . += 
         { 
           "proxyConfiguration": {
