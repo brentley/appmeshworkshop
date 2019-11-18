@@ -170,11 +170,7 @@ _list_association() {
 until [ $(_list_association) != "Pending" ]; do
   echo "Association is pending ..."
   sleep 10s
-  if [ $(_list_association) == "Success" ]; then
-    echo "Association created"
-    break
-  fi
-done
+done && echo "Association created"
 ```
 
 Similarly to what you did with the Crystal backend, validate Envoy is working appropiately on the EC2 instances.
