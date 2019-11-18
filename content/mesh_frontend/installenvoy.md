@@ -202,6 +202,62 @@ You sould see an output like this:
 
 Notice the value of the **state** property. LIVE means the server is live and serving traffic.
 
+* Compare the responses when connecting directly to the frontend app vs connecting to the loadbalancer in front of frontend service
+
+```bash
+sh-4.2$ curl -v localhost:3000
+* Rebuilt URL to: localhost:3000/
+*   Trying 127.0.0.1...
+* TCP_NODELAY set
+* Connected to localhost (127.0.0.1) port 3000 (#0)
+> GET / HTTP/1.1
+> Host: localhost:3000
+> User-Agent: curl/7.61.1
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< X-Frame-Options: SAMEORIGIN
+< X-XSS-Protection: 1; mode=block
+< X-Content-Type-Options: nosniff
+< Content-Type: text/html; charset=utf-8
+< ETag: W/"82e0fba05d3d87efbc72c560ae2a19d6"
+< Cache-Control: max-age=0, private, must-revalidate
+< X-Request-Id: 2e8aaa9c-f7a8-47fc-94d8-8baf33dd06c7
+< X-Runtime: 0.018936
+< Connection: close
+< Server: thin
+```
+
+VS
+
+```bash
+curl -v $(jq -r .ExternalLoadBalancerDNS cfn-output.json )                                                                                                                                   
+* Rebuilt URL to: ExtLB-appmesh-workshop-972091076.us-west-2.elb.amazonaws.com/
+*   Trying 52.37.89.182...
+* TCP_NODELAY set
+* Connected to ExtLB-appmesh-workshop-972091076.us-west-2.elb.amazonaws.com (52.37.89.182) port 80 (#0)
+> GET / HTTP/1.1
+> Host: ExtLB-appmesh-workshop-972091076.us-west-2.elb.amazonaws.com
+> User-Agent: curl/7.61.1
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< Date: Mon, 18 Nov 2019 05:10:10 GMT
+< Content-Type: text/html; charset=utf-8
+< Transfer-Encoding: chunked
+< Connection: keep-alive
+< x-frame-options: SAMEORIGIN
+< x-xss-protection: 1; mode=block
+< x-content-type-options: nosniff
+< etag: W/"073fd9b223f3ff9ee0c4d911ed924d31"
+< cache-control: max-age=0, private, must-revalidate
+< x-request-id: 656fbfd1-e85c-9e1c-8069-78e04f7b8a19
+< x-runtime: 0.013817
+< server: envoy
+< x-envoy-upstream-service-time: 14
+```
+Notice the change in `server` header
+
 * Terminate the session.
 
 ```bash
