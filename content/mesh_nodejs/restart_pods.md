@@ -61,7 +61,7 @@ Take a look in the output of this command. You should see the Envoy container im
 
 It means that the injector is working fine and the Envoy is already running inside your NodeJS pod.
 
-Not, it's time to test and see if the responses are being sent by the Envoy proxy. Let's access one of the EC2 instances serving the frontend again:
+Now, it's time to test and see if the responses are being sent by the Envoy proxy. Let's access one of the EC2 instances serving the frontend again:
 
 ```bash
 AUTO_SCALING_GROUP=$(jq < cfn-output.json -r '.RubyAutoScalingGroupName');
