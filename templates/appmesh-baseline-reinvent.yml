@@ -1152,7 +1152,9 @@ Outputs:
   NodeInstanceRole:
     Description: The node instance role
     Value: !GetAtt NodeInstanceRole.Arn
-
   NodeSecurityGroup:
     Description: The security group for the node group
     Value: !Ref NodeSecurityGroup
+  EKSClusterName:
+    Description: The EKS Cluster
+    Value: !Ref EksControlPlane
