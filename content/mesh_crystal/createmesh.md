@@ -18,7 +18,7 @@ In the next few sections, you will perform 2 broad set of tasks:
 
 A key feature of Envoy worth mentioning is that it exposes a set of APIs. These APIs are leveraged by AWS App Mesh to dynamically configure Envoy's routing logic, freeing developers from the tedious task of manually updating config files.
 
-Now every time you launch an Envoy enabled microservice, the Envoy proxy will contact the AWS App Mesh Management API to subscribe to resource information for Listeners, Clusters, Routes, and Endpoints. The connection from the Envoy proxy to the AWS App Mesh management API endpoint is held, which allows AWS App Mesh to stream updates to the Envoy proxy as users introduce changes to either of the resources listed above.   
+Now every time you launch an Envoy enabled microservice, the Envoy proxy will contact the AWS App Mesh Management API to subscribe to resource information for Listeners, Clusters, Routes, and Endpoints. The connection from the Envoy proxy to the AWS App Mesh management API endpoint is held open, which allows AWS App Mesh to stream updates to the Envoy proxy as users introduce changes to either of the resources listed above.   
 
 Let's start by creating the service mesh. A service mesh is a logical boundary for network traffic between the services that reside within it.
 
