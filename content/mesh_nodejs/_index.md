@@ -8,9 +8,9 @@ weight: 20
 
 ![mesh frontend](/images/app_mesh_architecture/AppMeshWorkshopFrontend.png)
 
-Now that we already have the App Mesh taking care of our backend network traffic, it's time to put our frontend application inside the Mesh.
+Now that App Mesh is taking care of our Crystal backend network traffic, the next step is to put our NodeJS backend application inside the Mesh.
 
-In this chapter we will install and configure the Envoy proxy into our EC2 instances that are running the Frontend application by using the [AWS Systems Manager (SSM)](https://aws.amazon.com/systems-manager/).
+In this chapter we will install AWS App Mesh Controller For Kubernetes and inject the Envoy proxy into our EKS pods.
 
 To do so, follow these steps:
 
