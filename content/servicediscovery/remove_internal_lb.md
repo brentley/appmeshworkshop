@@ -92,4 +92,3 @@ aws route53 change-resource-record-sets \
 ```
 
 You can now go ahead and test your application again to make sure everything is still working.
-

@@ -21,6 +21,9 @@ echo 'Building Docker Containers'
 ~/environment/scripts/build-containers
 echo 'Creating the ECS Services'
 ~/environment/scripts/create-ecs-service
+echo 'Creating the EKS Cluster'
+~/environment/scripts/build-eks
+
 
 EOF
 
@@ -37,7 +40,65 @@ jq -r '[.Stacks[0].Outputs[] |
 
 EOF
 
-# build eks script
+# Get from the CloudFormation stack
+chmod +x ~/environment/scripts/fetch-outputs
+ ~/environment/scripts/fetch-outputs
+
+ # Set environment variables
+STACK_NAME="$(echo $C9_PROJECT | sed 's/^Project-//' | tr 'A-Z' 'a-z')"
+PRIVSUB1_ID=$(jq < cfn-output.json -r '.PrivateSubnetOne')
+PRIVSUB1_AZ=$(aws ec2 describe-subnets --subnet-ids $PRIVSUB1_ID | jq -r '.Subnets[].AvailabilityZone')
+PRIVSUB2_ID=$(jq < cfn-output.json -r '.PrivateSubnetTwo')
+PRIVSUB2_AZ=$(aws ec2 describe-subnets --subnet-ids $PRIVSUB2_ID | jq -r '.Subnets[].AvailabilityZone')
+PRIVSUB3_ID=$(jq < cfn-output.json -r '.PrivateSubnetThree')
+PRIVSUB3_AZ=$(aws ec2 describe-subnets --subnet-ids $PRIVSUB3_ID | jq -r '.Subnets[].AvailabilityZone')
+AWS_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | grep region | cut -d\" -f4)
+
+# Check if the variables are populated.
+while [[ -z "${PRIVSUB1_ID}" ]]
+do
+  ~/environment/scripts/fetch-outputs
+  PRIVSUB1_ID=$(jq < cfn-output.json -r '.PrivateSubnetOne')
+  sleep 5
+done
+
+# Create EKS configuration file
+cat > ~/environment/scripts/eks-configuration.yml <<-EOF
+
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: $STACK_NAME
+  region: $AWS_REGION
+
+vpc:
+  subnets:
+    private:
+      $PRIVSUB1_AZ: { id: $PRIVSUB1_ID }
+      $PRIVSUB2_AZ: { id: $PRIVSUB2_ID }
+      $PRIVSUB3_AZ: { id: $PRIVSUB3_ID }
+
+nodeGroups:
+  - name: appmesh-workshop-ng
+    labels: { role: workers }
+    instanceType: t2.medium
+    desiredCapacity: 3
+    ssh: 
+      allow: true
+    privateNetworking: true
+    iam:
+      withAddonPolicies:
+        imageBuilder: true
+        albIngress: true
+        autoScaler: true
+        appMesh: true
+        xRay: true
+        cloudWatch: true
+        externalDNS: true
+EOF
+
+# Create the EKS building script
 cat > ~/environment/scripts/build-eks <<-"EOF"
 
 
@@ -52,22 +113,7 @@ then
   exit 1
 fi
 
-~/environment/scripts/fetch-outputs
-
-STACK_NAME="$(echo $C9_PROJECT | sed 's/^Project-//' | tr 'A-Z' 'a-z')"
-PRIVSUB1=$(jq < cfn-output.json -r '.PrivateSubnetOne')
-PRIVSUB2=$(jq < cfn-output.json -r '.PrivateSubnetTwo')
-PRIVSUB3=$(jq < cfn-output.json -r '.PrivateSubnetThree')
-eksctl create cluster -n $STACK_NAME \
-  --vpc-private-subnets $PRIVSUB1,$PRIVSUB2,$PRIVSUB3 \
-  --node-private-networking \
-  --ssh-access \
-  --alb-ingress-access \
-  --appmesh-access \
-  --external-dns-access \
-  --full-ecr-access \
-  --asg-access \
-  --nodes 3
+eksctl create cluster -f ~/environment/scripts/eks-configuration.yml
 
 EOF
 
