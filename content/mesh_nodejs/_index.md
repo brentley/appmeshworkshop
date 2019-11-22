@@ -6,7 +6,7 @@ weight: 20
 
 # Mesh the NodeJS Service running on EKS
 
-![mesh frontend](/images/app_mesh_architecture/AppMeshWorkshopFrontend.png)
+![mesh backend nodejs](/images/app_mesh_architecture/AppMeshWorkshopMeshBackendNodeJS.png)
 
 Now that App Mesh is taking care of our Crystal backend network traffic, the next step is to put our NodeJS backend application inside the Mesh.
 
