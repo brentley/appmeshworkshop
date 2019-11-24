@@ -11,7 +11,7 @@ while getopts ":f:t:" opt; do
   esac
 done
 
-curl -s https://raw.githubusercontent.com/brentley/appmeshworkshop/master/templates/appmesh-baseline-reinvent-policies.yml -o /tmp/appmesh-baseline.yml
+curl -s https://raw.githubusercontent.com/brentley/appmeshworkshop/master/templates/appmesh-baseline-reinvent.yml -o /tmp/appmesh-baseline.yml
 
 [ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
 {
