@@ -4,7 +4,7 @@ chapter: false
 weight: 23
 ---
 
-The following bootstrap scripts will (1) build the Docker images, (2) push them to the ECR repository, and (3) create the ECS services.
+The following bootstrap scripts will (1) build the Docker images, (2) push them to the ECR repository, (3) create the ECS services, and (4) build the EKS cluster.
 
 * Create the bootstrap scripts
 
@@ -40,12 +40,12 @@ jq -r '[.Stacks[0].Outputs[] |
 
 EOF
 
-# Get from the CloudFormation stack
-chmod +x ~/environment/scripts/fetch-outputs
- ~/environment/scripts/fetch-outputs
+# Create EKS configuration file
+cat > ~/environment/scripts/eks-configuration <<-"EOF"
 
- # Set environment variables
-STACK_NAME="$(echo $C9_PROJECT | sed 's/^Project-//' | tr 'A-Z' 'a-z')"
+#!/bin/bash -ex
+
+STACK_NAME=appmesh-workshop
 PRIVSUB1_ID=$(jq < cfn-output.json -r '.PrivateSubnetOne')
 PRIVSUB1_AZ=$(aws ec2 describe-subnets --subnet-ids $PRIVSUB1_ID | jq -r '.Subnets[].AvailabilityZone')
 PRIVSUB2_ID=$(jq < cfn-output.json -r '.PrivateSubnetTwo')
@@ -54,53 +54,43 @@ PRIVSUB3_ID=$(jq < cfn-output.json -r '.PrivateSubnetThree')
 PRIVSUB3_AZ=$(aws ec2 describe-subnets --subnet-ids $PRIVSUB3_ID | jq -r '.Subnets[].AvailabilityZone')
 AWS_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | grep region | cut -d\" -f4)
 
-# Check if the variables are populated.
-while [[ -z "${PRIVSUB1_ID}" ]]
-do
-  ~/environment/scripts/fetch-outputs
-  PRIVSUB1_ID=$(jq < cfn-output.json -r '.PrivateSubnetOne')
-  sleep 5
-done
+cat > ~/environment/scripts/eks-configuration.yml <<-EKS_CONF
+  apiVersion: eksctl.io/v1alpha5
+  kind: ClusterConfig
 
-# Create EKS configuration file
-cat > ~/environment/scripts/eks-configuration.yml <<-EOF
+  metadata:
+    name: $STACK_NAME
+    region: $AWS_REGION
 
-apiVersion: eksctl.io/v1alpha5
-kind: ClusterConfig
+  vpc:
+    subnets:
+      private:
+        $PRIVSUB1_AZ: { id: $PRIVSUB1_ID }
+        $PRIVSUB2_AZ: { id: $PRIVSUB2_ID }
+        $PRIVSUB3_AZ: { id: $PRIVSUB3_ID }
 
-metadata:
-  name: $STACK_NAME
-  region: $AWS_REGION
-
-vpc:
-  subnets:
-    private:
-      $PRIVSUB1_AZ: { id: $PRIVSUB1_ID }
-      $PRIVSUB2_AZ: { id: $PRIVSUB2_ID }
-      $PRIVSUB3_AZ: { id: $PRIVSUB3_ID }
-
-nodeGroups:
-  - name: appmesh-workshop-ng
-    labels: { role: workers }
-    instanceType: t2.medium
-    desiredCapacity: 3
-    ssh: 
-      allow: true
-    privateNetworking: true
-    iam:
-      withAddonPolicies:
-        imageBuilder: true
-        albIngress: true
-        autoScaler: true
-        appMesh: true
-        xRay: true
-        cloudWatch: true
-        externalDNS: true
+  nodeGroups:
+    - name: appmesh-workshop-ng
+      labels: { role: workers }
+      instanceType: t2.medium
+      desiredCapacity: 3
+      ssh: 
+        allow: true
+      privateNetworking: true
+      iam:
+        withAddonPolicies:
+          imageBuilder: true
+          albIngress: true
+          autoScaler: true
+          appMesh: true
+          xRay: true
+          cloudWatch: true
+          externalDNS: true
+EKS_CONF
 EOF
 
 # Create the EKS building script
 cat > ~/environment/scripts/build-eks <<-"EOF"
-
 
 #!/bin/bash
 
@@ -113,6 +103,7 @@ then
   exit 1
 fi
 
+sh -c ~/environment/scripts/eks-configuration
 eksctl create cluster -f ~/environment/scripts/eks-configuration.yml
 
 EOF
