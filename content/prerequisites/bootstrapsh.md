@@ -92,19 +92,25 @@ EOF
 # Create the EKS building script
 cat > ~/environment/scripts/build-eks <<-"EOF"
 
-#!/bin/bash
+#!/bin/bash -ex
 
-set -ex
+EKS_CLUSTER=$(jq < cfn-output.json -r '.EKSClusterName')
 
-if ! aws sts get-caller-identity --query Arn | \
-  grep -q 'assumed-role/AppMesh-Workshop-Admin/i-'
+if [ -z "$EKS_CLUSTER" ]
 then
-  echo "Your role is not set correctly for this instance"
-  exit 1
-fi
+  
+  if ! aws sts get-caller-identity --query Arn | \
+    grep -q 'assumed-role/AppMesh-Workshop-Admin/i-'
+  then
+    echo "Your role is not set correctly for this instance"
+    exit 1
+  fi
 
-sh -c ~/environment/scripts/eks-configuration
-eksctl create cluster -f ~/environment/scripts/eks-configuration.yml
+  sh -c ~/environment/scripts/eks-configuration
+  eksctl create cluster -f ~/environment/scripts/eks-configuration.yml
+else
+  echo "Cluster already created"
+fi
 
 EOF
 
