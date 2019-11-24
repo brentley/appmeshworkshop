@@ -1,0 +1,40 @@
+#!/bin/bash
+
+while getopts ":f:t:" opt; do
+  case $opt in
+    f) csv_file="$OPTARG"
+    ;;
+    t) token="$OPTARG"
+    ;;
+    \?) echo "Invalid option -$OPTARG" >&2
+    ;;
+  esac
+done
+
+curl -s https://raw.githubusercontent.com/brentley/appmeshworkshop/master/templates/appmesh-baseline-reinvent-policies.yml -o /tmp/appmesh-baseline.yml
+
+[ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
+{
+    read
+    while IFS=, read -r game_id team_id name table_number team_hash team_hash_login aws_account_id status
+    do
+        unset AWS_SESSION_TOKEN
+        unset AWS_SECRET_ACCESS_KEY
+        unset AWS_ACCESS_KEY_ID 
+        
+        fed_login=$(curl -H 'Accept: application/json' -H "Authorization: Bearer ${token}" https://api.eventengine.run/games/${game_id}/teams/${team_id}/sign-in-url?type=team)
+        credentials=$(echo $fed_login | jq ' .credentials')
+
+        export AWS_ACCESS_KEY_ID=`echo $credentials | jq -r ' ."access-key"'`
+        export AWS_SECRET_ACCESS_KEY=`echo $credentials | jq -r ' ."secret-key"'`
+        export AWS_SESSION_TOKEN=`echo $credentials | jq -r ' ."session-token"'`
+        export AWS_DEFAULT_REGION=us-west-2
+
+        vpc_id=$(aws ec2 describe-vpcs | jq -r ' .Vpcs | first | .VpcId')
+        subnet_id=$(aws ec2 describe-subnets --filters Name=vpc-id,Values=$vpc_id | jq -r ' .Subnets | first | .SubnetId')
+        aws cloudformation create-stack --template-body file:///tmp/appmesh-baseline.yml \
+            --stack-name appmesh-workshop \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --parameters ParameterKey=Cloud9SubnetId,ParameterValue=$subnet_id
+    done
+} < $csv_file
