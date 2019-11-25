@@ -12,17 +12,23 @@ HOSTED_ZONE_ID=$(aws route53 list-hosted-zones-by-name \
     --dns-name appmeshworkshop.hosted.local \
     --max-items 1 | \
   jq -r ' .HostedZones | first | .Id');
-  RECORD_SET=$(aws route53 list-resource-record-sets --hosted-zone-id=$HOSTED_ZONE_ID | \
+  CRYSTAL_RECORD_SET=$(aws route53 list-resource-record-sets --hosted-zone-id=$HOSTED_ZONE_ID | \
  jq -r '.ResourceRecordSets[] | select (.Name == "crystal.appmeshworkshop.hosted.local.")');
+  NODEJS_RECORD_SET=$(aws route53 list-resource-record-sets --hosted-zone-id=$HOSTED_ZONE_ID | \
+ jq -r '.ResourceRecordSets[] | select (.Name == "nodejs.appmeshworkshop.hosted.local.")');
 
 # Create temaplate file
 cat <<-EOF > /tmp/delete_r53.json
 {
-  "Comment": "DELETE crystal.appmeshworkshop.hosted.local",
+  "Comment": "DELETE crystal.appmeshworkshop.hosted.local and nodejs.appmeshworkshop.hosted.local",
   "Changes": [
     {
       "Action": "DELETE",
-      "ResourceRecordSet": $RECORD_SET
+      "ResourceRecordSet": $CRYSTAL_RECORD_SET
+    },
+    {
+      "Action": "DELETE",
+      "ResourceRecordSet": $NODEJS_RECORD_SET    
     }
   ]
 }
