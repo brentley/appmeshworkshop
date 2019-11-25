@@ -123,8 +123,8 @@ else
           groups:
             - system:bootstrappers
             - system:nodes
-  EKS_AUTH
-  kubect apply -f ~/tmp/aws-auth-cm.yml
+EKS_AUTH
+  kubectl apply -f /tmp/aws-auth-cm.yml
 fi
 
 EOF
