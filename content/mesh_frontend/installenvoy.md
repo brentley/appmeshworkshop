@@ -202,10 +202,16 @@ You sould see an output like this:
 
 Notice the value of the **state** property. LIVE means the server is live and serving traffic.
 
-* Compare the responses when connecting directly to the frontend app vs connecting to the loadbalancer in front of frontend service
+* Compare the responses when connecting directly to the frontend app vs connecting to the loadbalancer in front of frontend service. To do so, run the following command from the ssm Session:
+
 
 ```bash
 sh-4.2$ curl -v localhost:3000
+```
+
+You should see the following output:
+
+```text
 * Rebuilt URL to: localhost:3000/
 *   Trying 127.0.0.1...
 * TCP_NODELAY set
@@ -228,10 +234,19 @@ sh-4.2$ curl -v localhost:3000
 < Server: thin
 ```
 
-VS
+Now, exit from the ssm session and run the following commands from the Cloud9 environment: 
 
 ```bash
-curl -v $(jq -r .ExternalLoadBalancerDNS cfn-output.json )                                                                                                                                   
+# Exit the ssm session
+exit
+
+# Curl the Load Balancer URL
+curl -v $(jq -r .ExternalLoadBalancerDNS cfn-output.json )
+```
+
+The output should be similar to this:
+
+```text
 * Rebuilt URL to: ExtLB-appmesh-workshop-972091076.us-west-2.elb.amazonaws.com/
 *   Trying 52.37.89.182...
 * TCP_NODELAY set
@@ -256,10 +271,5 @@ curl -v $(jq -r .ExternalLoadBalancerDNS cfn-output.json )
 < server: envoy
 < x-envoy-upstream-service-time: 14
 ```
-Notice the change in `server` header
 
-* Terminate the session.
-
-```bash
-exit 
-```
+Notice the change in `server` header. from `thin` to `envoy` when calling the URL from the external world.
