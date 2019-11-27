@@ -6,7 +6,7 @@ weight: 15
 
 # Mesh the Backend Crystal Service
 
-![mesh backend](/images/app_mesh_architecture/AppMeshWorkshopMeshBackend.png)
+![mesh backend](/images/app_mesh_architecture/mesh_crystal.png)
 
 At this point, you should have the application up and running in your lab environment with the EC2 instances serving the frontend and the ECS service managing the backend tasks.
 

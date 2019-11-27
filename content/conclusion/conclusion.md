@@ -6,7 +6,7 @@ weight: 1
 
 We have:
 
-- Configured App Mesh in services that run in different compute platforms, specifically EC2 and Fargate.
+- Configured App Mesh in services that run in different compute platforms, specifically EC2, EKS and Fargate.
 - Added monitoring and logging capabilities using CloudWatch.
 - Added distributed tracing capabilities using X-Ray.
 - Switched from dedicated load balancing to service discovery.

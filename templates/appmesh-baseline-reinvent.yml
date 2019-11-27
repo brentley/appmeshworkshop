@@ -5,9 +5,12 @@ Description: This stack deploys the baseline infrastructure
 
 Parameters:
 
-  Cloud9IAMRole: 
+  Cloud9IAMRoleName: 
     Type: String
     Default: AppMesh-Workshop-Admin
+
+  Cloud9SubnetId:
+    Type: 'AWS::EC2::Subnet::Id'
     
   NodeImageIdSSMParam:
     Type: "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>"
@@ -17,8 +20,6 @@ Parameters:
   LatestAmiId:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
-
-
 
 Mappings:
 
@@ -38,9 +39,57 @@ Mappings:
     PrivateThree:
       CIDR: '10.0.102.0/24'
 
-
 Resources:
-        
+
+  Cloud9Environment:
+    Type: AWS::Cloud9::EnvironmentEC2
+    Properties:
+      AutomaticStopTimeMinutes: 30
+      InstanceType: t2.small
+      Name: !Sub Project-${AWS::StackName}
+      SubnetId: !Ref Cloud9SubnetId
+
+  Cloud9IAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref Cloud9IAMRoleName
+      AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action: 
+              - sts:AssumeRole
+      Path: /  
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  EksServiceRole:
+    Description: Allows EKS to manage clusters on your behalf.
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+            Effect: Allow
+            Principal:
+              Service:
+                - eks.amazonaws.com
+            Action: 
+              - sts:AssumeRole
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+        - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+
+
+  Cloud9InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref Cloud9IAMRole
+
   Crystal:
     Type: AWS::ECR::Repository
 
@@ -53,10 +102,10 @@ Resources:
       ClusterName: !Sub cluster-${AWS::StackName}
   
   EksControlPlane:
-    Type: 'AWS::EKS::Cluster'
+    Type: AWS::EKS::Cluster
     Properties:
       Name: appmesh-workshop
-      Version: '1.14'
+      Version: "1.14"
       RoleArn: !GetAtt EksServiceRole.Arn
       ResourcesVpcConfig:
         SecurityGroupIds:
@@ -65,21 +114,24 @@ Resources:
           - !Ref PrivateSubnetOne
           - !Ref PrivateSubnetTwo
           - !Ref PrivateSubnetThree
+
   EksServiceRole:
     Description: Allows EKS to manage clusters on your behalf.
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: 2012-10-17
+        Version: "2012-10-17"
         Statement:
             Effect: Allow
             Principal:
               Service:
                 - eks.amazonaws.com
-            Action: sts:AssumeRole
+            Action: 
+              - sts:AssumeRole
       ManagedPolicyArns: 
         - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
         - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+
   EksControlPlaneSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -87,7 +139,7 @@ Resources:
       VpcId: !Ref VPC  
 
   NodeInstanceRole:
-    Type: "AWS::IAM::Role"
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
@@ -97,31 +149,202 @@ Resources:
               Service:
                 - ec2.amazonaws.com
             Action:
-              - "sts:AssumeRole"
+              - sts:AssumeRole
       ManagedPolicyArns:
-        - "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-        - "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-        - "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-        - "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
-        - "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
-
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
       Path: /
+
   NodeInstanceProfile:
-    Type: "AWS::IAM::InstanceProfile"
+    Type: AWS::IAM::InstanceProfile
     Properties:
       Path: /
       Roles:
         - Ref: NodeInstanceRole
+  
+  PolicyALBIngress:
+   Type: AWS::IAM::Policy
+   Properties:
+    PolicyDocument:
+     Statement:
+      Action:
+       - 'acm:DescribeCertificate'
+       - 'acm:ListCertificates'
+       - 'acm:GetCertificate'
+       - 'ec2:AuthorizeSecurityGroupIngress'
+       - 'ec2:CreateSecurityGroup'
+       - 'ec2:CreateTags'
+       - 'ec2:DeleteTags'
+       - 'ec2:DeleteSecurityGroup'
+       - 'ec2:DescribeAccountAttributes'
+       - 'ec2:DescribeAddresses'
+       - 'ec2:DescribeInstances'
+       - 'ec2:DescribeInstanceStatus'
+       - 'ec2:DescribeInternetGateways'
+       - 'ec2:DescribeNetworkInterfaces'
+       - 'ec2:DescribeSecurityGroups'
+       - 'ec2:DescribeSubnets'
+       - 'ec2:DescribeTags'
+       - 'ec2:DescribeVpcs'
+       - 'ec2:ModifyInstanceAttribute'
+       - 'ec2:ModifyNetworkInterfaceAttribute'
+       - 'ec2:RevokeSecurityGroupIngress'
+       - 'elasticloadbalancing:AddListenerCertificates'
+       - 'elasticloadbalancing:AddTags'
+       - 'elasticloadbalancing:CreateListener'
+       - 'elasticloadbalancing:CreateLoadBalancer'
+       - 'elasticloadbalancing:CreateRule'
+       - 'elasticloadbalancing:CreateTargetGroup'
+       - 'elasticloadbalancing:DeleteListener'
+       - 'elasticloadbalancing:DeleteLoadBalancer'
+       - 'elasticloadbalancing:DeleteRule'
+       - 'elasticloadbalancing:DeleteTargetGroup'
+       - 'elasticloadbalancing:DeregisterTargets'
+       - 'elasticloadbalancing:DescribeListenerCertificates'
+       - 'elasticloadbalancing:DescribeListeners'
+       - 'elasticloadbalancing:DescribeLoadBalancers'
+       - 'elasticloadbalancing:DescribeLoadBalancerAttributes'
+       - 'elasticloadbalancing:DescribeRules'
+       - 'elasticloadbalancing:DescribeSSLPolicies'
+       - 'elasticloadbalancing:DescribeTags'
+       - 'elasticloadbalancing:DescribeTargetGroups'
+       - 'elasticloadbalancing:DescribeTargetGroupAttributes'
+       - 'elasticloadbalancing:DescribeTargetHealth'
+       - 'elasticloadbalancing:ModifyListener'
+       - 'elasticloadbalancing:ModifyLoadBalancerAttributes'
+       - 'elasticloadbalancing:ModifyRule'
+       - 'elasticloadbalancing:ModifyTargetGroup'
+       - 'elasticloadbalancing:ModifyTargetGroupAttributes'
+       - 'elasticloadbalancing:RegisterTargets'
+       - 'elasticloadbalancing:RemoveListenerCertificates'
+       - 'elasticloadbalancing:RemoveTags'
+       - 'elasticloadbalancing:SetIpAddressType'
+       - 'elasticloadbalancing:SetSecurityGroups'
+       - 'elasticloadbalancing:SetSubnets'
+       - 'elasticloadbalancing:SetWebACL'
+       - 'iam:CreateServiceLinkedRole'
+       - 'iam:GetServerCertificate'
+       - 'iam:ListServerCertificates'
+       - 'waf-regional:GetWebACLForResource'
+       - 'waf-regional:GetWebACL'
+       - 'waf-regional:AssociateWebACL'
+       - 'waf-regional:DisassociateWebACL'
+       - 'tag:GetResources'
+       - 'tag:TagResources'
+       - 'waf:GetWebACL'
+      Effect: Allow
+      Resource: '*'
+     Version: "2012-10-17"
+    PolicyName: !Sub ${AWS::StackName}-PolicyALBIngress
+    Roles:
+     - !Ref NodeInstanceRole
+   
+  PolicyAppMesh:
+   Type: AWS::IAM::Policy
+   Properties:
+    PolicyDocument:
+     Statement:
+      Action:
+       - 'appmesh:*'
+       - 'servicediscovery:CreateService'
+       - 'servicediscovery:GetService'
+       - 'servicediscovery:RegisterInstance'
+       - 'servicediscovery:DeregisterInstance'
+       - 'servicediscovery:ListInstances'
+       - 'servicediscovery:ListNamespaces'
+       - 'route53:GetHealthCheck'
+       - 'route53:CreateHealthCheck'
+       - 'route53:UpdateHealthCheck'
+       - 'route53:ChangeResourceRecordSets'
+       - 'route53:DeleteHealthCheck'
+      Effect: Allow
+      Resource: '*'
+     Version: "2012-10-17"
+    PolicyName: !Sub ${AWS::StackName}-PolicyAppMesh
+    Roles:
+     - !Ref NodeInstanceRole
+    
+  PolicyAutoScaling:
+   Type: AWS::IAM::Policy
+   Properties:
+    PolicyDocument:
+     Statement:
+      Action:
+       - 'autoscaling:DescribeAutoScalingGroups'
+       - 'autoscaling:DescribeAutoScalingInstances'
+       - 'autoscaling:DescribeLaunchConfigurations'
+       - 'autoscaling:DescribeTags'
+       - 'autoscaling:SetDesiredCapacity'
+       - 'autoscaling:TerminateInstanceInAutoScalingGroup'
+       - 'ec2:DescribeLaunchTemplateVersions'
+      Effect: Allow
+      Resource: '*'
+     Version: "2012-10-17"
+    PolicyName: !Sub ${AWS::StackName}-PolicyAutoScaling
+    Roles:
+      - !Ref NodeInstanceRole
+
+  PolicyExternalDNSChangeSet:
+   Type: AWS::IAM::Policy
+   Properties:
+    PolicyDocument:
+     Statement:
+      Action:
+       - 'route53:ChangeResourceRecordSets'
+      Effect: Allow
+      Resource: arn:aws:route53:::hostedzone/*
+     Version: "2012-10-17"
+    PolicyName: !Sub ${AWS::StackName}-PolicyExternalDNSChangeSet
+    Roles:
+     - !Ref NodeInstanceRole
+
+  PolicyExternalDNSHostedZones:
+   Type: AWS::IAM::Policy
+   Properties:
+    PolicyDocument:
+     Statement:
+      Action:
+       - 'route53:ListHostedZones'
+       - 'route53:ListResourceRecordSets'
+      Effect: Allow
+      Resource: '*'
+     Version: "2012-10-17"
+    PolicyName: !Sub ${AWS::StackName}-PolicyExternalDNSHostedZones
+    Roles:
+    - !Ref NodeInstanceRole
+
+  PolicyXRay:
+   Type: AWS::IAM::Policy
+   Properties:
+    PolicyDocument:
+     Statement:
+      Action:
+      - 'xray:PutTraceSegments'
+      - 'xray:PutTelemetryRecords'
+      - 'xray:GetSamplingRules'
+      - 'xray:GetSamplingTargets'
+      - 'xray:GetSamplingStatisticSummaries'
+      Effect: Allow
+      Resource: '*'
+     Version: "2012-10-17"
+    PolicyName: !Sub ${AWS::StackName}-PolicyXRay
+    Roles:
+     - !Ref NodeInstanceRole      
+
   NodeSecurityGroup:
-    Type: "AWS::EC2::SecurityGroup"
+    Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for all nodes in the cluster
       Tags:
         - Key: !Sub kubernetes.io/cluster/appmesh-workshop
           Value: owned
       VpcId: !Ref VPC
+
   NodeSecurityGroupIngress:
-    Type: "AWS::EC2::SecurityGroupIngress"
+    Type: AWS::EC2::SecurityGroupIngress
     DependsOn: NodeSecurityGroup
     Properties:
       Description: Allow node to communicate with each other
@@ -130,8 +353,9 @@ Resources:
       IpProtocol: "-1"
       SourceSecurityGroupId: !Ref NodeSecurityGroup
       ToPort: 65535
+
   ClusterControlPlaneSecurityGroupIngress:
-    Type: "AWS::EC2::SecurityGroupIngress"
+    Type: AWS::EC2::SecurityGroupIngress
     DependsOn: NodeSecurityGroup
     Properties:
       Description: Allow pods to communicate with the cluster API Server
@@ -140,8 +364,9 @@ Resources:
       IpProtocol: tcp
       SourceSecurityGroupId: !Ref NodeSecurityGroup
       ToPort: 443
+
   ControlPlaneEgressToNodeSecurityGroup:
-    Type: "AWS::EC2::SecurityGroupEgress"
+    Type: AWS::EC2::SecurityGroupEgress
     DependsOn: NodeSecurityGroup
     Properties:
       Description: Allow the cluster control plane to communicate with worker Kubelet and pods
@@ -150,8 +375,9 @@ Resources:
       GroupId: !Ref EksControlPlaneSecurityGroup
       IpProtocol: tcp
       ToPort: 65535
+
   ControlPlaneEgressToNodeSecurityGroupOn443:
-    Type: "AWS::EC2::SecurityGroupEgress"
+    Type: AWS::EC2::SecurityGroupEgress
     DependsOn: NodeSecurityGroup
     Properties:
       Description: Allow the cluster control plane to communicate with pods running extension API servers on port 443
@@ -160,8 +386,9 @@ Resources:
       GroupId: !Ref EksControlPlaneSecurityGroup
       IpProtocol: tcp
       ToPort: 443
+
   NodeSecurityGroupFromControlPlaneIngress:
-    Type: "AWS::EC2::SecurityGroupIngress"
+    Type: AWS::EC2::SecurityGroupIngress
     DependsOn: NodeSecurityGroup
     Properties:
       Description: Allow worker Kubelets and pods to receive communication from the cluster control plane
@@ -170,8 +397,9 @@ Resources:
       IpProtocol: tcp
       SourceSecurityGroupId: !Ref EksControlPlaneSecurityGroup
       ToPort: 65535
+
   NodeSecurityGroupFromControlPlaneOn443Ingress:
-    Type: "AWS::EC2::SecurityGroupIngress"
+    Type: AWS::EC2::SecurityGroupIngress
     DependsOn: NodeSecurityGroup
     Properties:
       Description: Allow pods running extension API servers on port 443 to receive communication from cluster control plane
@@ -180,12 +408,12 @@ Resources:
       IpProtocol: tcp
       SourceSecurityGroupId: !Ref EksControlPlaneSecurityGroup
       ToPort: 443
+
   NodeLaunchConfig:
-    Type: "AWS::AutoScaling::LaunchConfiguration"
+    Type: AWS::AutoScaling::LaunchConfiguration
     DependsOn: 
       - KeyPair
       - EksControlPlane
-
     Properties:
       AssociatePublicIpAddress: "false"
       BlockDeviceMappings:
@@ -200,17 +428,22 @@ Resources:
       KeyName: !GetAtt KeyPair.Name
       SecurityGroups:
         - Ref: NodeSecurityGroup
-      UserData: !Base64
-        "Fn::Sub": |
-          #!/bin/bash
-          set -o xtrace
-          /etc/eks/bootstrap.sh appmesh-workshop
-          /opt/aws/bin/cfn-signal --exit-code $? \
-                   --stack  ${AWS::StackName} \
-                   --resource NodeGroup  \
-                   --region ${AWS::Region}
+      UserData:
+          Fn::Base64:
+            Fn::Join:
+              - "\n"
+              -
+                - |
+                  #!/bin/bash
+                  set -o xtrace
+                  /etc/eks/bootstrap.sh appmesh-workshop
+                  /opt/aws/bin/cfn-signal --exit-code $? \
+                          --stack  ${AWS::StackName} \
+                          --resource NodeGroup  \
+                          --region ${AWS::Region}
+                - |
   NodeGroup:
-    Type: "AWS::AutoScaling::AutoScalingGroup"
+    Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       DesiredCapacity: 3
       LaunchConfigurationName: !Ref NodeLaunchConfig
@@ -229,12 +462,10 @@ Resources:
           - !Ref PrivateSubnetThree
     UpdatePolicy:
       AutoScalingRollingUpdate:
-        MaxBatchSize: "1"
+        MaxBatchSize: 1
         MinInstancesInService: 3
         PauseTime: PT5M
-    
-
-
+  
   CrystalTaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties: 
@@ -697,10 +928,10 @@ Resources:
         - Effect: Allow
           Principal:
             Service:
-            - ecs.amazonaws.com
-            - ecs-tasks.amazonaws.com
+              - ecs.amazonaws.com
+              - ecs-tasks.amazonaws.com
           Action:
-          - sts:AssumeRole
+            - sts:AssumeRole
       Path: /
       Policies:
       - PolicyName: ECSServiceRolePolicy
@@ -741,7 +972,7 @@ Resources:
             Service:
               - ecs-tasks.amazonaws.com
           Action: 
-            - 'sts:AssumeRole'
+            - sts:AssumeRole
       Path: /
       Policies:
         - PolicyName: ECSTaskRolePolicy
@@ -821,8 +1052,8 @@ Resources:
               Service:
                 - lambda.amazonaws.com
             Action:
-              - 'sts:AssumeRole'
-      Path: "/"
+              - sts:AssumeRole
+      Path: /
       Policies:
         - PolicyName: KeyPairHelperExecutionPolicy
           PolicyDocument:
@@ -875,7 +1106,7 @@ Resources:
             Principal:          
               AWS: 
                 - !GetAtt KeyPairHelperExecutionRole.Arn
-                - !Sub arn:aws:iam::${AWS::AccountId}:role/${Cloud9IAMRole}
+                - !Sub arn:aws:iam::${AWS::AccountId}:role/${Cloud9IAMRoleName}
             Action:
               - 'kms:Encrypt'
               - 'kms:Decrypt'
@@ -907,7 +1138,7 @@ Resources:
               Service:
                 - ec2.amazonaws.com
             Action: 
-              - 'sts:AssumeRole'
+              - sts:AssumeRole
         MaxSessionDuration: 43200
         Path: /
         ManagedPolicyArns:

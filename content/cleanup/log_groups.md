@@ -10,5 +10,9 @@ weight: 80
 # Delete CloudWatch log groups
 aws logs delete-log-group --log-group-name appmesh-workshop-crystal-envoy
 aws logs delete-log-group --log-group-name appmesh-workshop-frontend-envoy
-
+aws logs delete-log-group --log-group-name /aws/containerinsights/appmesh-workshop/application
+aws logs delete-log-group --log-group-name /aws/containerinsights/appmesh-workshop/dataplane
+aws logs delete-log-group --log-group-name /aws/containerinsights/appmesh-workshop/host
+aws logs delete-log-group --log-group-name /aws/containerinsights/appmesh-workshop/performance
+aws logs delete-log-group --log-group-name /aws/ecs/containerinsights/cluster-appmesh-workshop/performance
 ```

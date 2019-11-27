@@ -6,7 +6,7 @@ weight: 50
 
 # Monitoring the Example Microservices
 
-![failures](/images/app_mesh_architecture/AppMeshWorkshopCloudMap.png)
+![failures](/images/app_mesh_architecture/servicediscovery.png)
 
 Planning to handling transient faults is a common practice in a microservices architecture. Retry of a request can help overcome short lived network blips or short term interruptions on the server services due to redeployments like Service Unavailable (HTTP Error code 503), Gateway Timeout (HTTP Error code 504).
 

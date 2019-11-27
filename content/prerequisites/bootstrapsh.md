@@ -4,7 +4,7 @@ chapter: false
 weight: 23
 ---
 
-The following bootstrap scripts will (1) build the Docker images, (2) push them to the ECR repository, and (3) create the ECS services.
+The following bootstrap scripts will (1) build the Docker images, (2) push them to the ECR repository, (3) create the ECS services, and (4) build the EKS cluster.
 
 * Create the bootstrap scripts
 
@@ -24,7 +24,6 @@ echo 'Creating the ECS Services'
 echo 'Creating the EKS Cluster'
 ~/environment/scripts/build-eks
 
-
 EOF
 
 # fetch-outputs script
@@ -40,12 +39,12 @@ jq -r '[.Stacks[0].Outputs[] |
 
 EOF
 
-# Get from the CloudFormation stack
-chmod +x ~/environment/scripts/fetch-outputs
- ~/environment/scripts/fetch-outputs
+# Create EKS configuration file
+cat > ~/environment/scripts/eks-configuration <<-"EOF"
 
- # Set environment variables
-STACK_NAME="$(echo $C9_PROJECT | sed 's/^Project-//' | tr 'A-Z' 'a-z')"
+#!/bin/bash -ex
+
+STACK_NAME=appmesh-workshop
 PRIVSUB1_ID=$(jq < cfn-output.json -r '.PrivateSubnetOne')
 PRIVSUB1_AZ=$(aws ec2 describe-subnets --subnet-ids $PRIVSUB1_ID | jq -r '.Subnets[].AvailabilityZone')
 PRIVSUB2_ID=$(jq < cfn-output.json -r '.PrivateSubnetTwo')
@@ -54,66 +53,79 @@ PRIVSUB3_ID=$(jq < cfn-output.json -r '.PrivateSubnetThree')
 PRIVSUB3_AZ=$(aws ec2 describe-subnets --subnet-ids $PRIVSUB3_ID | jq -r '.Subnets[].AvailabilityZone')
 AWS_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | grep region | cut -d\" -f4)
 
-# Check if the variables are populated.
-while [[ -z "${PRIVSUB1_ID}" ]]
-do
-  ~/environment/scripts/fetch-outputs
-  PRIVSUB1_ID=$(jq < cfn-output.json -r '.PrivateSubnetOne')
-  sleep 5
-done
+cat > /tmp/eks-configuration.yml <<-EKS_CONF
+  apiVersion: eksctl.io/v1alpha5
+  kind: ClusterConfig
+  metadata:
+    name: $STACK_NAME
+    region: $AWS_REGION
+  vpc:
+    subnets:
+      private:
+        $PRIVSUB1_AZ: { id: $PRIVSUB1_ID }
+        $PRIVSUB2_AZ: { id: $PRIVSUB2_ID }
+        $PRIVSUB3_AZ: { id: $PRIVSUB3_ID }
+  nodeGroups:
+    - name: appmesh-workshop-ng
+      labels: { role: workers }
+      instanceType: t2.medium
+      desiredCapacity: 3
+      ssh: 
+        allow: true
+      privateNetworking: true
+      iam:
+        withAddonPolicies:
+          imageBuilder: true
+          albIngress: true
+          autoScaler: true
+          appMesh: true
+          xRay: true
+          cloudWatch: true
+          externalDNS: true
+EKS_CONF
 
-# Create EKS configuration file
-cat > ~/environment/scripts/eks-configuration.yml <<-EOF
-
-apiVersion: eksctl.io/v1alpha5
-kind: ClusterConfig
-
-metadata:
-  name: $STACK_NAME
-  region: $AWS_REGION
-
-vpc:
-  subnets:
-    private:
-      $PRIVSUB1_AZ: { id: $PRIVSUB1_ID }
-      $PRIVSUB2_AZ: { id: $PRIVSUB2_ID }
-      $PRIVSUB3_AZ: { id: $PRIVSUB3_ID }
-
-nodeGroups:
-  - name: appmesh-workshop-ng
-    labels: { role: workers }
-    instanceType: t2.medium
-    desiredCapacity: 3
-    ssh: 
-      allow: true
-    privateNetworking: true
-    iam:
-      withAddonPolicies:
-        imageBuilder: true
-        albIngress: true
-        autoScaler: true
-        appMesh: true
-        xRay: true
-        cloudWatch: true
-        externalDNS: true
 EOF
 
 # Create the EKS building script
 cat > ~/environment/scripts/build-eks <<-"EOF"
 
+#!/bin/bash -ex
 
-#!/bin/bash
+EKS_CLUSTER_NAME=$(jq < cfn-output.json -r '.EKSClusterName')
 
-set -ex
-
-if ! aws sts get-caller-identity --query Arn | \
-  grep -q 'assumed-role/AppMesh-Workshop-Admin/i-'
+if [ -z "$EKS_CLUSTER_NAME" ]
 then
-  echo "Your role is not set correctly for this instance"
-  exit 1
-fi
+  
+  if ! aws sts get-caller-identity --query Arn | \
+    grep -q 'assumed-role/AppMesh-Workshop-Admin/i-'
+  then
+    echo "Your role is not set correctly for this instance"
+    exit 1
+  fi
 
-eksctl create cluster -f ~/environment/scripts/eks-configuration.yml
+  sh -c ~/environment/scripts/eks-configuration
+  eksctl create cluster -f /tmp/eks-configuration.yml
+else
+
+  NODES_IAM_ROLE=$(jq < cfn-output.json -r '.NodeInstanceRole')
+
+  aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER_NAME
+  cat > /tmp/aws-auth-cm.yml <<-EKS_AUTH
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: aws-auth
+      namespace: kube-system
+    data:
+      mapRoles: |
+        - rolearn: $NODES_IAM_ROLE 
+          username: system:node:{{EC2PrivateDNSName}}
+          groups:
+            - system:bootstrappers
+            - system:nodes
+EKS_AUTH
+  kubectl apply -f /tmp/aws-auth-cm.yml
+fi
 
 EOF
 
