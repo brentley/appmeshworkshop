@@ -28,7 +28,7 @@ done
         export AWS_SESSION_TOKEN=`echo $credentials | jq -r ' ."session-token"'`
         export AWS_DEFAULT_REGION=us-west-2
 
-        instance_id=$(aws ec2 describe-instances --filters Name=image-id,Values=ami-05f091d3ff4113110 | jq -r ' .Reservations | first | .Instances | first | .InstanceId')
+        instance_id=$(aws ec2 describe-instances --filters Name=image-id,Values=ami-05f091d3ff4113110,ami-0433265c8b987b1a0 | jq -r ' .Reservations | first | .Instances | first | .InstanceId')
         instance_profile=$(aws iam list-instance-profiles | jq -r ' .InstanceProfiles[] | select( .InstanceProfileName | contains("Cloud9")) | .InstanceProfileName')
 
         aws ec2 associate-iam-instance-profile --instance-id $instance_id --iam-instance-profile Name=$instance_profile
