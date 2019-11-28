@@ -14,7 +14,7 @@ The ECS integration for AWS App Mesh leverages iptables provided by the Linux OS
 After processing its rules, the Envoy proxy establishes an HTTP connection to the app on port 3000 and forward the request. Once the Crystal app is done processing the request it send its response back to the Envoy process over the same HTTP connection. Finally the Envoy process takes the response sent by the app and replies to the client. 
 
 {{% notice info %}} 
-Notice the presence of the **APPMESH_VIRTUAL_NODE_NAME** environment variable being passed to the Envoy container. It's value actually reflects the name of the Virtual Node inside App Mesh this proxy is next to. In this case **mesh/appmesh-workshop/virtualNode/crystal-lb-vanilla**. This is the only mandatory environment variable you need to pass to Envoy so it can receive ingress traffic. 
+Notice the presence of the **APPMESH_VIRTUAL_NODE_NAME** environment variable being passed to the Envoy container, its value actually reflects the name of the Virtual Node inside App Mesh this proxy is next to. In this case **mesh/appmesh-workshop/virtualNode/crystal-lb-vanilla**. This is the only mandatory environment variable you need to pass to Envoy so it can receive ingress traffic. 
 {{% /notice %}} 
 
 * Register a new task definition with the Envoy sidecar proxy.
