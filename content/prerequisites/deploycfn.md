@@ -14,13 +14,24 @@ curl -s https://raw.githubusercontent.com/brentley/appmeshworkshop/master/templa
 * Deploy the CloudFormation stack:
 
 ```bash
+# Define environment variable
 IAM_ROLE=$(curl -s 169.254.169.254/latest/meta-data/iam/info | \
   jq -r '.InstanceProfileArn' | cut -d'/' -f2)
-aws cloudformation deploy \
-  --template-file appmesh-baseline.yml \
-  --stack-name appmesh-workshop \
-  --capabilities CAPABILITY_IAM \
-  --parameter-overrides Cloud9IAMRole=$IAM_ROLE
+
+#Check if the template is already deployed. If not, deploy it
+CFN_TEMPLATE=$(aws cloudformation list-stacks | jq -c '.StackSummaries[].StackName | select( . == "appmesh-workshop" )')
+
+if [ -z "$CFN_TEMPLATE" ]
+then
+  echo "Deploying Cloudformation Template"
+  aws cloudformation deploy \
+    --template-file appmesh-baseline.yml \
+    --stack-name appmesh-workshop \
+    --capabilities CAPABILITY_IAM \
+    --parameter-overrides Cloud9IAMRole=$IAM_ROLE
+else
+  echo "Template already deployed. Go ahead to the next chapter."
+fi
 ```
 
 ___
