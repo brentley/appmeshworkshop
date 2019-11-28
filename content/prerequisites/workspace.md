@@ -25,6 +25,10 @@ Cloud9 requires third-party-cookies. You can whitelist the [specific domains]( h
 ### Launch Cloud9:
 Create a Cloud9 Environment: [https://us-west-2.console.aws.amazon.com/cloud9/home?region=us-west-2](https://us-west-2.console.aws.amazon.com/cloud9/home?region=us-west-2)
 
+{{% notice warning %}}
+Make sure you are naming your Cloud9 environment `AppMesh-Workshop`, otherwise things will break later.
+{{% /notice %}}
+
 - Select **Create environment**
 - Name it **AppMesh-Workshop**, and take all other defaults
 - When it comes up, customize the environment by closing the **welcome tab**
