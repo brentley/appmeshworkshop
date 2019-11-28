@@ -5,20 +5,12 @@ chapter: true
 draft: false
 ---
 
-# Introduction to AWS App Mesh
+# Introduction to Performing Analytics at the Edge
 
 A walkthrough of basic App Mesh concepts.
 
 ![Title Image](/images/introduction/appmesh-product-page.png)
 
-Welcome to the AWS App Mesh Workshop!
+Welcome to the Performing Analytics at the Edge IoT Workshop!
 
-The intent of this workshop is to educate users about the features and usage of AWS App Mesh.
-
-Background in ECS, EKS, Docker, and container workflows are not required, but they are recommended.
-
-This chapter will introduce you to the basic workings of App Mesh, laying the foundation for the hands-on portion of the workshop.
-
-Specifically, we will walk you through the following topics:
-
-{{% children showhidden="false" %}}
+The intent of this workshop is to educate users about the features and usage of AWS Greengrass IoT to perform analytics at the edge.

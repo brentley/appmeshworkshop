@@ -1,7 +1,7 @@
 languageCode = "en-us"
 ignoreFiles = [ "\\.files/README.md$",  ]
 defaultContentLanguage = "en"
-title = "Amazon App Mesh Workshop"
+title = "Performing Analytics at the Edge Workshop"
 theme = "learn"
 uglyurls = false
 googleAnalytics = "UA-44634850-4"
@@ -12,17 +12,17 @@ relativeURLs = true
 hrefTargetBlank = true
 
 [params]
-editURL = "https://github.com/brentley/appmeshworkshop/edit/master/content/"
+editURL = "https://github.com/mk01git/appmeshworkshop/edit/master/content/"
 themeVariant = "mine"
 showVisitedLinks = false
 author = "Brent Langston"
-description = "Amazon App Mesh Workshop"
+description = "Performing Analytics at the Edge Workshop"
 disableSearch = false
 disableAssetsBusting = false
 disableLanguageSwitchingButton = true
 disableShortcutsTitle=false
 disableInlineCopyToClipBoard = true
-ghrepo = "https://github.com/brentley/appmeshworkshop/"
+ghrepo = "https://github.com/mk01git/appmeshworkshop/"
 branch = "master"
 template_bucket = "appmeshworkshop.com"
 pygmentsUseClasses = true
@@ -54,7 +54,7 @@ weight = 20
 
 [[menu.shortcuts]]
 name = "<i class='fab fa-github'></i> GitHub Project"
-url = "https://github.com/brentley/appmeshworkshop"
+url = "https://github.com/mk01git/appmeshworkshop"
 weight = 30
 
 [[menu.shortcuts]]

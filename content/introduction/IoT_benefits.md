@@ -1,5 +1,5 @@
 ---
-title: "App Mesh benefits"
+title: "Greengrass benefits"
 date: 2018-10-03T10:15:55-07:00
 draft: false
 weight: 50
