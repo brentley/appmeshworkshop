@@ -206,7 +206,8 @@ Notice the value of the **state** property. LIVE means the server is live and se
 
 
 ```bash
-sh-4.2$ curl -v localhost:3000
+# run this inside ssm session
+curl -v localhost:3000
 ```
 
 You should see the following output:
