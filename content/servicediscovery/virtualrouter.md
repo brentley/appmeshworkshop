@@ -28,7 +28,7 @@ aws appmesh create-virtual-router \
   --spec "$SPEC"
 ```
 
-* Create a route to shift the traffic to the new virtual node. For now, all traffic will be sent to the crystal-lb-vanilla virtual node. Once the crystal-sd-vanilla virutal node is fully operational, we will distribute between them at a 2:1 ratio (i.e., the crystal-sd-epoch node will receive two thirds of the traffic).
+* Create a route to shift the traffic to the new virtual node. For now, all traffic will be sent to the crystal-lb-vanilla virtual node. Once the crystal-sd-vanilla virutal node is fully operational, we will distribute between them at a 2:1 ratio (i.e., the crystal-sd-vanilla node will receive two thirds of the traffic).
 
 ```bash
 # Define variables #
