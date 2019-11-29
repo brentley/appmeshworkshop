@@ -4,7 +4,7 @@ date: 2018-09-18T16:01:14-05:00
 weight: 20
 ---
 
-Now access the [X-Ray console](console.aws.amazon.com/xray/home). Once in the X-Ray console, select **Service Map** from the left hand side menu. Wait a few seconds for the service map to render.
+Now access the [X-Ray console](https://console.aws.amazon.com/xray/home). Once in the X-Ray console, select **Service Map** from the left hand side menu. Wait a few seconds for the service map to render.
 
 You will see something like this:
 
