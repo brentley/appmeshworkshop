@@ -32,7 +32,7 @@ EOF
 kubectl apply -f  ~/environment/eks-scripts/virtual-node.yml
 ```
 
-Ater aplying these changes, your pods IP Addresses will be added to the `appmeshworkshop.pvt.local` domain name, previously created in the Cloud Map. You can check that everything is working properly by using the AWS cli command bellow:
+After applying these changes, your pods IP Addresses will be added to the `appmeshworkshop.pvt.local` domain name, previously created in the Cloud Map. You can check that everything is working properly by using the AWS cli command bellow:
 
 ```bash
 aws servicediscovery discover-instances \
