@@ -93,7 +93,7 @@ cat > ~/environment/scripts/build-eks <<-"EOF"
 
 EKS_CLUSTER_NAME=$(jq < cfn-output.json -r '.EKSClusterName')
 
-if [ -z "$EKS_CLUSTER_NAME" ]
+if [ -z "$EKS_CLUSTER_NAME" ] || [ "$EKS_CLUSTER_NAME" == null ]
 then
   
   if ! aws sts get-caller-identity --query Arn | \
