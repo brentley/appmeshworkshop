@@ -18,6 +18,9 @@ kubectl delete deployment nodejs-app -n appmesh-workshop-ns
 Now, let's deregister the instances from the Cloud Map service discovery:
 
 ```bash
+NAMESPACE=$(aws servicediscovery list-namespaces | \
+  jq -r ' .Namespaces[] | 
+    select ( .Properties.HttpProperties.HttpName == "appmeshworkshop.pvt.local" ) | .Id ');
 SERVICE_ID=$(aws servicediscovery list-services --filters Name="NAMESPACE_ID",Values=$NAMESPACE,Condition="EQ" | jq -r ' .Services[] | [ .Id ] | @tsv ' )
 aws servicediscovery list-instances --service-id $SERVICE_ID | jq -r ' .Instances[] | [ .Id ] | @tsv ' |\
   while IFS=$'\t' read -r instanceId; do 
