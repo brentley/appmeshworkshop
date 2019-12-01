@@ -55,7 +55,7 @@ git apply --stat ecsdemo-crystal/add_server_error.patch
 Run **git apply** to apply the patch.
 
 ```bash
-sh -c 'cd ~/environment/ecsdemo-crystal && git apply add_server_error.patch'
+git -C ~/environment/ecsdemo-crystal apply add_server_error.patch
 ```
 
 And build the container with the newest version of the Crystal application:
