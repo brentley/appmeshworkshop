@@ -47,6 +47,9 @@ EOF
 
   sudo yum install -y jq gettext
 
+  sudo wget -O /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/2.4.0/yq_linux_amd64
+  sudo chmod +x /usr/local/bin/yq
+  
   sudo curl --silent --location -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.13.7/bin/linux/amd64/kubectl
   sudo chmod +x /usr/local/bin/kubectl
 
@@ -312,7 +315,7 @@ deploy_nodejs() {
   kubectl apply -f appmeshworkshop/templates/nodeingress.yaml
 }
 
-
+export AWS_REGION=us-west-2 && \
 clone_repos && \
 download_cf_template && \
 deploy_cf_template && \
