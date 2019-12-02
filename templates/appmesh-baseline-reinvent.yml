@@ -424,7 +424,7 @@ Resources:
             VolumeType: gp2
       IamInstanceProfile: !Ref NodeInstanceProfile
       ImageId: !Ref NodeImageIdSSMParam
-      InstanceType: t2.micro
+      InstanceType: m5.large
       KeyName: !GetAtt KeyPair.Name
       SecurityGroups:
         - Ref: NodeSecurityGroup
