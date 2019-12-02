@@ -1,0 +1,34 @@
+#!/bin/bash
+
+while getopts ":f:t:" opt; do
+  case $opt in
+    f) csv_file="$OPTARG"
+    ;;
+    t) token="$OPTARG"
+    ;;
+    \?) echo "Invalid option -$OPTARG" >&2
+    ;;
+  esac
+done
+
+[ ! -f $INPUT ] && { echo "$INPUT file not found"; exit 99; }
+{
+    read
+    while IFS=, read -r game_id team_id name table_number team_hash team_hash_login aws_account_id status
+    do
+        unset AWS_SESSION_TOKEN
+        unset AWS_SECRET_ACCESS_KEY
+        unset AWS_ACCESS_KEY_ID 
+        
+        fed_login=$(curl -s -H 'Accept: application/json' -H "Authorization: Bearer ${token}" https://api.eventengine.run/games/${game_id}/teams/${team_id}/sign-in-url?type=team)
+        credentials=$(echo $fed_login | jq ' .credentials')
+
+        export AWS_ACCESS_KEY_ID=`echo $credentials | jq -r ' ."access-key"'`
+        export AWS_SECRET_ACCESS_KEY=`echo $credentials | jq -r ' ."secret-key"'`
+        export AWS_SESSION_TOKEN=`echo $credentials | jq -r ' ."session-token"'`
+        export AWS_DEFAULT_REGION=us-west-2
+
+        status=$(aws cloudformation describe-stacks --stack-name appmesh-workshop | jq ' .Stacks | first | .StackStatus')
+        echo 'Team ID:' ${team_id} ',Status:' $status
+    done
+} < $csv_file

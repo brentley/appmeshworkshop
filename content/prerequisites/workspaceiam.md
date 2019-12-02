@@ -55,6 +55,8 @@ The output assumed-role name should contain:
 
 ```
 AppMesh-Workshop-Admin
+or
+TeamRole
 ```
 
 #### VALID
