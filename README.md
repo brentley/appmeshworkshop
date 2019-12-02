@@ -1,6 +1,6 @@
 # appmeshworkshop
 
-https://master.dkte6nu5h527q.amplifyapp.com/
+https://appmeshworkshop.com
 
 This is how I set up my environment:
 (I am using gitpod.io for editing)
