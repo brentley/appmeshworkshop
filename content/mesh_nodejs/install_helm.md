@@ -13,11 +13,8 @@ If you accidentally run 'helm init', you can safely uninstall tiller by running 
 
 ```
 cd ~/environment
-
 curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get > get_helm.sh
-
 chmod +x get_helm.sh
-
 ./get_helm.sh
 ```
 
