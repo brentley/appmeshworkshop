@@ -27,9 +27,9 @@ After restarting all the pods, you can check if the envoy proxy was added to it 
 ```bash
 # Get a single pod name
 NODEJS_POD=$(kubectl get pod --no-headers=true -o \
-name -n appmesh-workshop-ns \
-| awk -F "/" '{print $2}' | \
-head -n 1)
+  name -n appmesh-workshop-ns | \
+  awk -F "/" '{print $2}' | \
+  head -n 1)
 
 # Describe pod configuration
 kubectl describe pod $NODEJS_POD -n appmesh-workshop-ns
