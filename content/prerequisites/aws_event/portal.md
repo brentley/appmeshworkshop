@@ -8,25 +8,18 @@ weight: 20
 
 This workshop creates an AWS acccount and a Cloud9 environment. You will need the **Participant Hash** provided upon entry, and your email address to track your unique session.
 
-Connect to the portal by clicking the button or browsing to [https://portal.awsworkshop.io/](https://portal.awsworkshop.io/).
+Connect to the portal by clicking the button or browsing to [https://dashboard.eventengine.run/](https://dashboard.eventengine.run/). The following screen shows up.
 
-<a
-  href="https://portal.awsworkshop.io/"
-target="_blank" class="btn btn-default">
-Connect to Portal
-<i class="fas fa-sign-in-alt"></i>
-</a>
+![Event Engine](/images/event-engine-initial-screen.png)
 
-![Portal Login](/images/portal_login.png)
+Enter the provided hash in the text box. The button on the bottom right corner changes to **Accept Terms & Login**. Click on that button to continue.
 
-Enter your **Participant Hash** and your email address, and click **Log In**.
+![Event Engine Dashboard](/images/event-engine-dashboard.png)
 
-Once you have been logged in, please first log into the AWS console by clicking on the <i class="fas fa-terminal"></i> button. Once you have successfully logged into the AWS Console, you can open the Cloud9 IDE by clicking on the <i class="fas fa-desktop"></i> button.
+Click on **AWS Console** on dashboard.
 
-![Portal Buttons](/images/portal_buttons.png)
+![Event Engine AWS Console](/images/event-engine-aws-console.png)
 
-{{% notice note %}}
-The workshop added an IAM role for performing all the steps of the workshop in the Cloud9 Environment. You do not need to add a role to the instance powering the Cloud9 Environment.
-{{% /notice %}}
+Take the defaults and click on **Open AWS Console**. This will open AWS Console in a new browser tab.
 
-Once you have completed the step above, you can head straight to [**Deploy the baseline stack**](/prerequisites/deploycfn/)
+Once you have completed the step above, you can head straight to [**Create a Workspace**](/020_prerequisites/workspace/)
