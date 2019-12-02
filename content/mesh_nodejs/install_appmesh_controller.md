@@ -34,7 +34,7 @@ Install the mutating admission webhook (aws-app-mesh-inject):
 
 ```bash
 helm upgrade -i appmesh-inject eks/appmesh-inject \
---namespace appmesh-system \
---set mesh.create=false \
---set mesh.name=appmesh-workshop
+  --namespace appmesh-system \
+  --set mesh.create=false \
+  --set mesh.name=appmesh-workshop
 ```
