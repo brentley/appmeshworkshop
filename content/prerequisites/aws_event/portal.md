@@ -22,4 +22,15 @@ Click on **AWS Console** on dashboard.
 
 Take the defaults and click on **Open AWS Console**. This will open AWS Console in a new browser tab.
 
-Once you have completed the step above, you can head straight to [**Create a Workspace**](/prerequisites/workspace/)
+
+{{% notice info %}}
+If you are running this workshop at an AWS Event, someone might have warmed your account for you. This means that you might already have the baseline infrastructure created and ready. Follow the next step to confirm if this is the case.
+{{% /notice %}}
+
+After logging in to your AWS account, click on the following link to access the Cloud9 console: 
+
+https://console.aws.amazon.com/cloud9/home
+
+When in the Cloud9 console, check if there is a Cloud9 environment with the name `Project-appmesh-workshop` created. If so, click on `Open IDE` button to access the Cloud9 instance and continue the workshop from the chapter [**Update IAM Settings for your workspace**](/prerequisites/workspaceiam/)
+
+If the Cloud9 environment is not present, head straight to [**Create a Workspace**](/prerequisites/workspace/).
