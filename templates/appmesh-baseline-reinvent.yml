@@ -45,7 +45,7 @@ Resources:
     Type: AWS::Cloud9::EnvironmentEC2
     Properties:
       AutomaticStopTimeMinutes: 30
-      InstanceType: t3.small
+      InstanceType: t3.medium
       Name: !Sub Project-${AWS::StackName}
       SubnetId: !Ref Cloud9SubnetId
 
