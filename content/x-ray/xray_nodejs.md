@@ -14,7 +14,8 @@ helm upgrade -i appmesh-inject eks/appmesh-inject \
   --set mesh.create=false \
   --set mesh.name=appmesh-workshop \
   --set tracing.enabled=true \
-  --set tracing.provider=x-ray
+  --set tracing.provider=x-ray \
+  --recreate-pods
 ```
 
 Now, let's restart our pods again in order to force the injection of the X-Ray container:
