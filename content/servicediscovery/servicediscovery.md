@@ -7,7 +7,7 @@ The Crystal backend service operates behind an internal (dedicated) load balance
 
 Given the dependencies between Cloud Map, ECS and App Mesh, you will proceed in the following order to enable Service Discovery:
 
-1. We will start of by configuring a namespace and a service in Cloud Map.
+1. We will start off by configuring a namespace and a service in Cloud Map.
 2. We will then create the App Mesh resources needed to represent the new version of our ECS-based Crystal service.
 3. Finally we will create a new service in ECS for the Crystal backend.
 
