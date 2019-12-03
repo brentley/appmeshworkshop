@@ -46,7 +46,7 @@ You can compare the IP addresses presented in the `Instance ID` fields with your
 kubectl get pods -n appmesh-workshop-ns -o wide
 ```
 
-Or you can access the [Cloud Map console](console.aws.amazon.com/cloudmap/home), click in the `appmeshworkshop.pvt.local` domain name and then in the `nodejs` service name to see that your pods are registered under `Service instances`:
+Or you can access the [Cloud Map console](https://console.aws.amazon.com/cloudmap/home), click in the `appmeshworkshop.pvt.local` domain name and then in the `nodejs` service name to see that your pods are registered under `Service instances`:
 
 
 ![cloud map](/images/cloud_map/check_pods.png)
