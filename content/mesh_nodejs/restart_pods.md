@@ -102,3 +102,9 @@ Node.js backend: Hello! from 10.0.102.185 in AZ-c commit 4252202
 ```
 
 This means that the responses from the NodeJS application are passing in the Envoy proxy.
+
+* Terminate the session.
+
+```bash
+exit 
+```
