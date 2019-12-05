@@ -10,7 +10,7 @@ A **virtual service** is an abstraction of a real service that is provided by a 
 
 Virtual nodes have friendly names. We will name this virtual node **crystal-lb-vanilla**. Inside a Virtual nodes  you will also define the service discovery mechanism for your service. It support both DNS and Cloud Map based service discovery. We will start by using DNS and most specifically we will leverage the DNS name given to the internal ALB that is already fronting our ECS Service.
 
-The Crystal service is running as a service on ECS Fargate and is reachable via an internal Application Loal Balander. Lets use the DNS name given to it by AWS as part of the CloudFormation  template run in section Start the Workshop.
+The Crystal service is running as a service on ECS Fargate and is reachable via an internal Application Load Balancer. Lets use the DNS name given to it by AWS as part of the CloudFormation  template run in section Start the Workshop.
 
 * Start by creating the virtual node.
 
