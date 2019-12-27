@@ -71,7 +71,7 @@ cat > /tmp/eks-configuration.yml <<-EKS_CONF
       instanceType: t2.medium
       desiredCapacity: 3
       ssh: 
-        allow: true
+        allow: false
       privateNetworking: true
       iam:
         withAddonPolicies:
