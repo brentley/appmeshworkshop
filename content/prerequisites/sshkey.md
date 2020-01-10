@@ -2,7 +2,7 @@
 title: "Retrieve the SSH key"
 chapter: false
 weight: 22
-draft: true
+draft: false
 ---
 
 Run the following command to retrieve the SSH Key and store it in Cloud9. This key will be used on the ec2 and worker node instances to allow ssh access if necessary.
