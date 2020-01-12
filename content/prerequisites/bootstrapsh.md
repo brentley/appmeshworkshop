@@ -68,7 +68,7 @@ cat > /tmp/eks-configuration.yml <<-EKS_CONF
   nodeGroups:
     - name: appmesh-workshop-ng
       labels: { role: workers }
-      instanceType: t2.medium
+      instanceType: m5.large
       desiredCapacity: 3
       ssh: 
         allow: false

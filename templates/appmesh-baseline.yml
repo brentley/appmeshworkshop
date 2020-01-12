@@ -9,6 +9,10 @@ Parameters:
     Type: String
     Default: AppMesh-Workshop-Admin
 
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+
 Mappings:
 
   SubnetConfig:
@@ -26,14 +30,6 @@ Mappings:
       CIDR: '10.0.101.0/24'
     PrivateThree:
       CIDR: '10.0.102.0/24'
-
-  InstanceMap:
-    us-east-1:
-      AMI: 'ami-0b69ea66ff7391e80'
-    us-east-2:
-      AMI: 'ami-00c03f7f7f2ec15c3'
-    us-west-2:
-      AMI: 'ami-04b762b4289fba92b'
 
 Resources:
         
@@ -776,11 +772,7 @@ Resources:
       LaunchTemplateName: !Sub Ruby-EC2Instance-LaunchTemplate-${AWS::StackName}
       LaunchTemplateData:
         KeyName: !GetAtt KeyPair.Name
-        ImageId: 
-          Fn::FindInMap:
-            - InstanceMap
-            - !Ref AWS::Region
-            - AMI        
+        ImageId: !Ref LatestAmiId
         InstanceType: t2.medium
         InstanceInitiatedShutdownBehavior: terminate
         IamInstanceProfile:
