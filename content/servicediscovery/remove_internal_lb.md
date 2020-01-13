@@ -45,12 +45,12 @@ CLUSTER_NAME=$(jq < cfn-output.json -r '.EcsClusterName');
 INTERNAL_LB_ARN=$(jq < cfn-output.json -r '.InternalLoadBalancerArn');
 # Delete ecs service
 aws ecs delete-service \
---cluster $CLUSTER_NAME \
---service crystal-service-lb \
---force
+  --cluster $CLUSTER_NAME \
+  --service crystal-service-lb \
+  --force
 # Delete load lalancer
 aws elbv2 delete-load-balancer \
---load-balancer-arn $INTERNAL_LB_ARN
+  --load-balancer-arn $INTERNAL_LB_ARN
 ```
 
 * Update the CNAME record in Route53 to crystal.appmeshworkshop.pvt.local
