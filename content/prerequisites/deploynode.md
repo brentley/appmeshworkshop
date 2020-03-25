@@ -11,7 +11,7 @@ Let's start by creating a new namespace and a deployment for the NodeJs applicat
 
 
 ```bash
-kubectl create ns appmesh-workshop-ns
+kubectl create namespace appmesh-workshop-ns
 
 # Create directory for eks scripts
 mkdir ~/environment/eks-scripts
