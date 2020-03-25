@@ -16,3 +16,6 @@ App Mesh deploys and configures a proxy that manages all communications traffic 
 
 #### Enhance any application
 You can use App Mesh with services running on any compute service such as AWS Fargate, Amazon ECS, Amazon EKS, and Amazon EC2. App Mesh can monitor and control communications for monoliths running on EC2, teams running containerized applications, orchestration systems, or VPCs as a single application without any code changes.
+
+#### End-to-end Encryption
+App Mesh gives you the ability to encrypt traffic between services using AWS Certificate Manager (ACM) or customer-provided certificates. This helps you to achieve the security and compliance requirements while building enterprise grade mesh architectures. 
