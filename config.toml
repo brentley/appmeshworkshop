@@ -62,6 +62,20 @@ name = "<i class='fas fa-envelope'></i> Have questions?"
 url = "mailto:appmeshworkshop@amazon.com"
 weight = 40
 
+[[menu.shortcuts]]
+name = "<i class='fas fa-chalkboard'></i> EKS Workshop"
+url = "https://eksworkshop.com"
+weight = 6
+
+[[menu.shortcuts]]
+name = "<i class='fas fa-chalkboard'></i> ECS Workshop"
+url = "https://ecsworkshop.com"
+weight = 7
+
+[[menu.shortcuts]]
+name = "<i class='fas fa-chalkboard'></i> AWS Partner Workshops"
+url = "https://awsworkshop.io"
+weight = 8
 
 [outputs]
 home = [ "HTML", "JSON"]
