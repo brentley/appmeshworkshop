@@ -4,7 +4,20 @@ date: 2018-08-07T13:37:53-07:00
 weight: 20
 ---
 
-* Delete the services in the namespace.
+Deregister the instances from the Cloud Map service discovery.
+
+```bash
+NAMESPACE=$(aws servicediscovery list-namespaces | \
+  jq -r ' .Namespaces[] | 
+    select ( .Properties.HttpProperties.HttpName == "appmeshworkshop.pvt.local" ) | .Id ');
+SERVICE_ID=$(aws servicediscovery list-services --filters Name="NAMESPACE_ID",Values=$NAMESPACE,Condition="EQ" | jq -r ' .Services[] | [ .Id ] | @tsv ' )
+aws servicediscovery list-instances --service-id $SERVICE_ID | jq -r ' .Instances[] | [ .Id ] | @tsv ' |\
+  while IFS=$'\t' read -r instanceId; do 
+    aws servicediscovery deregister-instance --service-id $SERVICE_ID --instance-id $instanceId
+  done
+```
+
+Delete the services in the namespace.
 
 ```bash
 # Define variables #
@@ -21,7 +34,7 @@ jq -r ' .Services[] | [ .Id ] | @tsv ' | \
   done
 ```
 
-* Delete the namespace.
+Delete the namespace.
 
 ```bash
 # Define variables #

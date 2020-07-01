@@ -11,19 +11,21 @@ Since we are using the `AWS App Mesh Controller For K8s` and it is already integ
 ```bash
 # Update the Virtual Node yaml file
 cat <<EOF > ~/environment/eks-scripts/virtual-node.yml
-apiVersion: appmesh.k8s.aws/v1beta1
+apiVersion: appmesh.k8s.aws/v1beta2
 kind: VirtualNode
 metadata:
   name: nodejs-app
   namespace: appmesh-workshop-ns
 spec:
-  meshName: appmesh-workshop
+  podSelector:
+    matchLabels:
+      app: nodejs-app
   listeners:
     - portMapping:
         port: 3000
         protocol: http
   serviceDiscovery:
-    cloudMap:
+    awsCloudMap:
       namespaceName: appmeshworkshop.pvt.local
       serviceName: nodejs
 EOF

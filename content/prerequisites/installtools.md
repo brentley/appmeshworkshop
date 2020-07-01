@@ -19,15 +19,15 @@ cat > ~/environment/scripts/install-tools <<-"EOF"
 
 #!/bin/bash -ex
 
-sudo yum install -y jq gettext
+sudo yum install -y jq gettext bash-completion
 
 sudo curl --silent --location "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm"
 sudo yum install -y session-manager-plugin.rpm
 
-sudo wget -O /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/2.4.0/yq_linux_amd64
-sudo chmod +x /usr/local/bin/yq
-sudo curl --silent --location -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.13.7/bin/linux/amd64/kubectl
+sudo curl --silent --location -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.16.8/bin/linux/amd64/kubectl
 sudo chmod +x /usr/local/bin/kubectl
+echo 'source <(kubectl completion bash)' >>~/.bashrc
+source ~/.bashrc
 
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
 sudo mv -v /tmp/eksctl /usr/local/bin
