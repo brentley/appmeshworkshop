@@ -6,69 +6,36 @@ weight: 11
 
 Let's now enable the X-Ray integration to the NodeJS app currently running on the EKS cluster. 
 
-The first step is to change the configurations in the App Mesh injector in order to add the X-Ray container to the pods and configure the Envoy proxy to send data to it:
+The first step is to change the configuration of the App Mesh controller in order to automatically add the X-Ray container to new pods and configure the Envoy proxy containers to send data to them:
 
 ```bash
-helm upgrade -i appmesh-inject eks/appmesh-inject \
+helm upgrade -i appmesh-controller eks/appmesh-controller \
   --namespace appmesh-system \
-  --set mesh.create=false \
-  --set mesh.name=appmesh-workshop \
+  --set region=${AWS_REGION} \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=appmesh-controller \
   --set tracing.enabled=true \
-  --set tracing.provider=x-ray \
-  --recreate-pods
+  --set tracing.provider=x-ray
 ```
 
 Now, let's restart our pods again in order to force the injection of the X-Ray container:
 
 ```bash
-kubectl delete pods -n appmesh-workshop-ns --all 
+kubectl -n appmesh-workshop-ns rollout restart deployment nodejs-app
+```
+
+Monitor the restarts and move on once the new pods are all in a `Running` state.
+
+```bash
+kubectl -n appmesh-workshop-ns get pods -w
 ```
 
 Let's now check if the X-Ray container was injected in your pod:
 
 ```bash
-# Get a single pod name
-NODEJS_POD=$(kubectl get pod --no-headers=true -o \
-name -n appmesh-workshop-ns \
-| awk -F "/" '{print $2}' | \
-head -n 1)
-
-# Describe pod configuration
-kubectl describe pod $NODEJS_POD -n appmesh-workshop-ns
+POD=$(kubectl -n appmesh-workshop-ns get pods -o jsonpath='{.items[0].metadata.name}')
+kubectl -n appmesh-workshop-ns get pods ${POD} -o jsonpath='{.spec.containers[*].name}'; echo
 ```
 
-You should see information about the X-Ray daemon container:
-
-```text
-  xray-daemon:
-    Container ID:   docker://47197806db6f658047b12f3905be802ce1e0f58b02b9f94d2ef733e98b6fe4a0
-    Image:          amazon/aws-xray-daemon
-    Image ID:       docker-pullable://amazon/aws-xray-daemon@sha256:5d30d974bd7bd5a864a2d6d4d4696902153d364cc0943efca8ea44e6bf16c1c2
-    Port:           2000/UDP
-    Host Port:      0/UDP
-    State:          Running
-      Started:      Fri, 08 Nov 2019 23:32:09 +0000
-    Ready:          True
-    Restart Count:  0
-    Requests:
-      cpu:        10m
-      memory:     32Mi
-    Environment:  <none>
-    Mounts:       <none>
-Conditions:
-  Type              Status
-  Initialized       True 
-  Ready             True 
-  ContainersReady   True 
-  PodScheduled      True 
-Volumes:
-  default-token-82w67:
-    Type:        Secret (a volume populated by a Secret)
-    SecretName:  default-token-82w67
-    Optional:    false
-QoS Class:       Burstable
-Node-Selectors:  <none>
-Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
-                 node.kubernetes.io/unreachable:NoExecute for 300s
-```
+You should see a `xray-daemon` container in the pod along with the app and Envoy containers.
 
