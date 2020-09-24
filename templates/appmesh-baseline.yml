@@ -98,6 +98,10 @@ Resources:
         - !Ref PublicSubnetOne
         - !Ref PublicSubnetTwo
         - !Ref PublicSubnetThree
+    DependsOn:
+      - PublicSubnetOneRouteTableAssociation
+      - PublicSubnetTwoRouteTableAssociation
+      - PublicSubnetThreeRouteTableAssociation
 
   ExternalListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -874,6 +878,10 @@ Resources:
         - !Ref PrivateSubnetOne
         - !Ref PrivateSubnetTwo
         - !Ref PrivateSubnetThree
+    DependsOn:
+      - PrivateRouteTableOneAssociation
+      - PrivateRouteTableTwoAssociation
+      - PrivateRouteTableThreeAssociation
 
   InternalListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
