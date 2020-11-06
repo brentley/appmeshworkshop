@@ -36,9 +36,9 @@ index b08ae32..b6875b5 100644
 +          context.response.headers["Content-Type"] = "text/plain"
 +          context.response.puts "The server cannot handle the request"
 +        end
-       elsif context.request.path == "/health"
-         context.response.content_type = "text/plain"
-         context.response.print "Healthy!"
+       elsif context.request.path == "/crystal/api" || context.request.path == "/crystal/api/"
+         context.response.content_type = "application/json"
+         context.response.print %Q({"from":"Crystal backend", "message": "#{az_message}", "commit": "#{code_hash.chomp}"})
 --
 2.22.0
 
