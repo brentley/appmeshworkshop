@@ -62,9 +62,9 @@ index 2fad0ea..b08ae32 100644
          context.response.content_type = "text/plain"
 -        context.response.print "Crystal backend: Hello! from #{az_message} commit #{code_hash}"
 +        context.response.print "Crystal backend: Hello! from #{az_message} commit #{code_hash} at #{epoch_ms}"
-       elsif context.request.path == "/health"
-         context.response.content_type = "text/plain"
-         context.response.print "Healthy!"
+       elsif context.request.path == "/crystal/api" || context.request.path == "/crystal/api/"
+         context.response.content_type = "application/json"
+         context.response.print %Q({"from":"Crystal backend", "message": "#{az_message}", "commit": "#{code_hash.chomp}"})
 --
 2.22.0
 
