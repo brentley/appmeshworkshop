@@ -15,7 +15,9 @@ helm upgrade -i appmesh-controller eks/appmesh-controller \
   --set serviceAccount.create=false \
   --set serviceAccount.name=appmesh-controller \
   --set tracing.enabled=true \
-  --set tracing.provider=x-ray
+  --set tracing.provider=x-ray \
+  --set sidecar.image.repository=840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy \
+  --set sidecar.image.tag=v1.12.5.0-prod
 ```
 
 Now, let's restart our pods again in order to force the injection of the X-Ray container:
