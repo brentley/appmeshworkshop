@@ -4,7 +4,7 @@ date: 2018-08-07T12:37:34-07:00
 weight: 40
 ---
 
-* Delete the virutal services.
+* Delete the virtual services.
 
 ```bash
 # Delete app mesh virtual services #
@@ -18,7 +18,7 @@ jq -r ' .virtualServices[] | [.virtualServiceName] | @tsv ' | \
   done
 ```
 
-* Delete the virutal routers.
+* Delete the virtual routers.
 
 ```bash
 # Delete app mesh virtual routers #
