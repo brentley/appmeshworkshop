@@ -49,7 +49,7 @@ TASK_DEF_NEW=$(echo $TASK_DEF_OLD \
             }
           }
         ]' \
-  | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision) '
+  | jq ' del(.status, .compatibilities, .taskDefinitionArn, .requiresAttributes, .revision, .registeredAt, .registeredBy) '
 ); \
 TASK_DEF_FAMILY=$(echo $TASK_DEF_ARN | cut -d"/" -f2 | cut -d":" -f1);
 echo $TASK_DEF_NEW > /tmp/$TASK_DEF_FAMILY.json &&
