@@ -57,3 +57,5 @@ curl -v $NLB_ENDPOINT/ecs/crystal
 ```
 
 You should now see a response similar to the one below
+
+![crystal](/images/crystal-ingress-output.png)
