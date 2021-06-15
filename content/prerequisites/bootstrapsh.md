@@ -127,6 +127,11 @@ EKS_AUTH
   kubectl apply -f /tmp/aws-auth-cm.yml
 fi
 
+# grant access for external EC2 IAM Role for further tests 
+EXTERNAL_EC2_ROLE_ID=$(jq < cfn-output.json -r '.Ec2ExternalRole')
+EXTERNAL_EC2_ROLE_ARN=$(aws iam get-role --role-name $EXTERNAL_EC2_ROLE_ID | jq -r '.Role.Arn')
+eksctl create iamidentitymapping --cluster appmesh-workshop --arn $EXTERNAL_EC2_ROLE_ARN --group system:masters --username AdminExternal
+
 EOF
 
 # build-containers script

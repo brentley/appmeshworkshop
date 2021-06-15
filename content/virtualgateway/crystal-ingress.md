@@ -40,9 +40,8 @@ Connect to the EC2 instance outside the mesh in order to test reachability from 
 
 ```
 EXTERNAL_EC2=$(aws ec2 describe-instances --filters Name=tag:Usage,Values=ExternalEC2Instance | jq -r '.Reservations[].Instances[].InstanceId')
-aws ssm start-session --target $EXTERNAL_EC2
 
-Starting session with SessionId: xxxxx-03f74a1b6fabf65d4
+aws ssm start-session --target $EXTERNAL_EC2
 ```
 
 And finally, let’s get the FQDN of the NLB that was created as part of the K8s Service of type LoadBalancer.
