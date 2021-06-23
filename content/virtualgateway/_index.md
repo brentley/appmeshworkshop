@@ -1,5 +1,5 @@
 ---
-title: "Virtual Gateway"
+title: "Ingress with Virtual Gateway"
 chapter: true
 weight: 38
 ---
@@ -12,7 +12,7 @@ So what is an Ingress you may ask? Well, it’s a set of components that provide
 
 As you may recall, we have a frontend running on EC2 with 2 dependencies, one of them on ECS and another one on EKS. 
 
-So under this arrangement there is not need for an Ingress for, say,  the EKS backed service because its clients also reside inside the mesh (the app running on EC2). But what if you had an external client (sitting outside the mesh, in the same VPC) for instance a curler client that needs to access the Virtual Service represented by our EKS service? Ingress are the way to enable such communications.
+So under this arrangement there is no need for an Ingress for, say,  the EKS backed service because its clients also reside inside the mesh (the app running on EC2). But what if you had an external client (sitting outside the mesh, in the same VPC) for instance a curler client that needs to access the Virtual Service represented by our EKS service? Ingress are the way to enable such communications.
 
 AppMesh offers a construct called Virtual Gateway, that provides this ingress functionality. You can read more about it [here](https://docs.aws.amazon.com/app-mesh/latest/userguide/virtual_gateways.html). The newer versions of the AppMesh controllers provide CDR for Virtual Gateways and Virtual Routes. So you can create a VG as you would with any other AppMesh construct, by leveraging the kubectl tool.
 
@@ -20,6 +20,8 @@ So what happens when you create such component? The AppMesh controller will auto
 
 Here is a diagram of the new architecture with the Virtual gateway in place. 
 
+![virtualgateway](/images/virtual-gateway.png)
+
 Let’s get started!
 
-![virtualgateway](/images/virtual-gateway.png)
+{{% children showhidden="false" %}}
