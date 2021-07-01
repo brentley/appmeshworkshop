@@ -19,7 +19,7 @@ IAM_ROLE=$(curl -s 169.254.169.254/latest/meta-data/iam/info | \
   jq -r '.InstanceProfileArn' | cut -d'/' -f2)
 
 #Check if the template is already deployed. If not, deploy it
-CFN_TEMPLATE=$(aws cloudformation list-stacks | jq -c '.StackSummaries[].StackName | select( . == "appmesh-workshop" )')
+CFN_TEMPLATE=$(aws cloudformation list-stacks | jq -c '.StackSummaries[] | select( .StackStatus == "CREATE_COMPLETE" and .StackName == "appmesh-workshop")')
 
 if [ -z "$CFN_TEMPLATE" ]
 then
