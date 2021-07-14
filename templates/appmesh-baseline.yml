@@ -748,11 +748,41 @@ Resources:
                   - 'route53:UpdateHealthCheck'
                 Resource: '*'
 
+  EC2ExternalInstanceRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action: 
+              - 'sts:AssumeRole'
+        MaxSessionDuration: 43200
+        Path: /
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+        Policies:
+          - PolicyName: EC2InstanceExternalRolePolicy
+            PolicyDocument:
+              Statement:
+              - Effect: Allow
+                Action:
+                  - 'eks:DescribeCluster'
+                Resource: '*'
+                
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Roles:
         - !Ref EC2InstanceRole
+
+  InstanceProfileExternal:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2ExternalInstanceRole
 
   EC2InstanceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -766,6 +796,56 @@ Resources:
             CidrIp: 0.0.0.0/0
             FromPort: 22
             ToPort: 22
+
+  EC2ExternalInstance:
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: !Ref LatestAmiId
+      InstanceType: t3.micro
+      KeyName: !GetAtt KeyPair.Name
+      SecurityGroupIds: 
+        - !Ref EC2InstanceSecurityGroup
+      SubnetId: !Ref PrivateSubnetOne
+      IamInstanceProfile: !Ref InstanceProfileExternal
+      Tags: 
+        - Key: Name
+          Value: !Sub External-EC2Instance-${AWS::StackName}
+        - Key: Usage
+          Value: ExternalEC2Instance
+      UserData: 
+          Fn::Base64:
+            Fn::Join:
+              - "\n"
+              -
+                - |
+                  #!/bin/bash -ex
+                  exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+
+                  # tools script
+                  cat > /home/ec2-user/install-tools <<-"EOF"
+
+                  #!/bin/bash -ex
+
+                  sudo yum install -y jq bash-completion
+
+                  sudo curl --silent --location -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.16.8/bin/linux/amd64/kubectl
+                  sudo chmod +x /usr/local/bin/kubectl
+                  echo 'source <(kubectl completion bash)' >>/home/ec2-user/.bashrc
+                  #source ~/.bashrc
+
+                  if ! [ -x "$(command -v jq)" ] || ! [ -x "$(command -v envsubst)" ] || ! [ -x "$(command -v kubectl)" ]; then
+                    echo 'ERROR: tools not installed.' >&2
+                    exit 1
+                  fi
+
+                  pip install awscli --upgrade --user
+
+                  EOF
+
+                  chmod +x /home/ec2-user/install-tools
+                  /home/ec2-user/install-tools
+
+
 
   RubyEC2InstanceLaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
@@ -964,3 +1044,5 @@ Outputs:
     Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${NodeJS}
   RubyAutoScalingGroupName:
     Value: !Ref RubyAutoScalingGroup
+  Ec2ExternalRole:
+    Value: !Ref EC2ExternalInstanceRole
