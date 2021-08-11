@@ -20,8 +20,8 @@ Date:
 Subject: [PATCH 1/2] add canary hash
 
 ---
- code_hash.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+     code_hash.txt | 2 +-
+     1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/code_hash.txt b/code_hash.txt
 index a7c041f..dbd1857 100644
@@ -40,31 +40,31 @@ Date:
 Subject: [PATCH 2/2] add time ms
 
 ---
- src/server.cr | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+     src/server.cr | 4 +++-
+     1 file changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/src/server.cr b/src/server.cr
 index 2fad0ea..b08ae32 100644
 --- a/src/server.cr
 +++ b/src/server.cr
 @@ -1,5 +1,6 @@
- require "logger"
- require "http/server"
+     require "logger"
+     require "http/server"
 +require "time"
 
- log = Logger.new(STDOUT)
- log.level = Logger::DEBUG
+     log = Logger.new(STDOUT)
+     log.level = Logger::DEBUG
 @@ -24,8 +25,9 @@ server = HTTP::Server.new(
-     HTTP::CompressHandler.new,
-     ]) do |context|
-       if context.request.path == "/crystal" || context.request.path == "/crystal/"
+         HTTP::CompressHandler.new,
+         ]) do |context|
+           if context.request.path == "/crystal" || context.request.path == "/crystal/"
 +        epoch_ms = Time.now.epoch_ms
-         context.response.content_type = "text/plain"
+             context.response.content_type = "text/plain"
 -        context.response.print "Crystal backend: Hello! from #{az_message} commit #{code_hash}"
 +        context.response.print "Crystal backend: Hello! from #{az_message} commit #{code_hash} at #{epoch_ms}"
-       elsif context.request.path == "/health"
-         context.response.content_type = "text/plain"
-         context.response.print "Healthy!"
+           elsif context.request.path == "/crystal/api" || context.request.path == "/crystal/api/"
+             context.response.content_type = "application/json"
+             context.response.print %Q({"from":"Crystal backend", "message": "#{az_message}", "commit": "#{code_hash.chomp}"})
 --
 2.22.0
 
