@@ -32,7 +32,7 @@ jq -r ' .virtualRouters[] | [.virtualRouterName] | @tsv ' | \
     jq -r ' .routes[] | [ .routeName] | @tsv ' | \
       while IFS=$'\t' read -r routeName; do 
         aws appmesh delete-route \
-          --mesh appmesh-workshop \
+          --mesh-name appmesh-workshop \
           --virtual-router-name $virtualRouterName \
           --route-name $routeName
       done
